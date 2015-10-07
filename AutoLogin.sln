@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin", "AutoLogin\AutoLogin.vcxproj", "{EBA183F4-4794-4288-BB24-F14599A69F84}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MTL", "MTL\MTL.vcxitems", "{8F74A2B9-8385-4336-A294-A64E3947E266}"
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		MTL\MTL.vcxitems*{8f74a2b9-8385-4336-a294-a64e3947e266}*SharedItemsImports = 9
+		MTL\MTL.vcxitems*{eba183f4-4794-4288-bb24-f14599a69f84}*SharedItemsImports = 4
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|ARM = Release|ARM
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Debug|ARM.ActiveCfg = Debug|ARM
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Debug|ARM.Build.0 = Debug|ARM
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Debug|ARM.Deploy.0 = Debug|ARM
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Debug|x64.ActiveCfg = Debug|x64
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Debug|x64.Build.0 = Debug|x64
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Debug|x64.Deploy.0 = Debug|x64
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Debug|x86.ActiveCfg = Debug|Win32
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Debug|x86.Build.0 = Debug|Win32
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Debug|x86.Deploy.0 = Debug|Win32
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Release|ARM.ActiveCfg = Release|ARM
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Release|ARM.Build.0 = Release|ARM
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Release|ARM.Deploy.0 = Release|ARM
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Release|x64.ActiveCfg = Release|x64
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Release|x64.Build.0 = Release|x64
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Release|x64.Deploy.0 = Release|x64
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Release|x86.ActiveCfg = Release|Win32
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Release|x86.Build.0 = Release|Win32
+		{EBA183F4-4794-4288-BB24-F14599A69F84}.Release|x86.Deploy.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)mtl\wrappers\Handle.h">
+      <Filter>Wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)mtl\wrappers\HString.h">
+      <Filter>Wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)mtl\wrappers\HStringReference.h">
+      <Filter>Wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)mtl\internals\ComPtrRef.h">
+      <Filter>Internals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)mtl\internals\ConsistencyChecker.h">
+      <Filter>Internals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)mtl\internals\RemoveIUnknown.h">
+      <Filter>Internals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)mtl\internals\TypeAggregator.h">
+      <Filter>Internals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)mtl\client\ComPtr.h">
+      <Filter>Client</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)mtl\client\Async.h">
+      <Filter>Client</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)mtl\internals\InvokeHelper.h">
+      <Filter>Internals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)mtl\internals\utility.h">
+      <Filter>Internals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MTL\implements\ComClass.h">
+      <Filter>Implements</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MTL\implements\RuntimeClass.h">
+      <Filter>Implements</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MTL\collections\IterableAdapter.h">
+      <Filter>Collections</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MTL\collections\IteratorAdapter.h">
+      <Filter>Collections</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Client">
+      <UniqueIdentifier>{1b9e16fa-057b-4d66-949b-77b37c350ab8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collections">
+      <UniqueIdentifier>{5319d28f-c2cb-4eb7-a22a-15a8389e4a89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Implements">
+      <UniqueIdentifier>{ef0d3621-4edf-4d41-ae7a-05127ee4941a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internals">
+      <UniqueIdentifier>{5619d8c9-9b60-4fc3-8da4-1a0856ea20e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Wrappers">
+      <UniqueIdentifier>{7a25e26f-b761-4133-8692-af24e9eee1fd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
