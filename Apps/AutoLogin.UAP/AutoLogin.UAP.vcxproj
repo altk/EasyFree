@@ -178,6 +178,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="macro.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
