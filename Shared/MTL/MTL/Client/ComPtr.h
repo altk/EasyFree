@@ -86,7 +86,7 @@ namespace MTL
 
 			T* Detach() noexcept
 			{
-				TypeAggregator* temp = nullptr;
+				Internals::TypeAggregator<T, Ts...>* temp = nullptr;
 				std::swap(temp, _pointer);
 				return static_cast<T*>(temp);
 			}

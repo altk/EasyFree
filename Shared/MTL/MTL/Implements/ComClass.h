@@ -17,7 +17,7 @@ namespace MTL
 
 		protected:
 			template<typename U, typename ... Us>
-			void* QueryInterfaceImpl(const GUID& guid) const noexcept
+			void* QueryInterfaceImpl(const GUID& guid) noexcept
 			{
 				using namespace Internals;
 
@@ -29,7 +29,7 @@ namespace MTL
 			}
 
 			template<int = 0>
-			void* QueryInterfaceImpl(const GUID&) const noexcept
+			void* QueryInterfaceImpl(const GUID&) noexcept
 			{
 				return nullptr;
 			}

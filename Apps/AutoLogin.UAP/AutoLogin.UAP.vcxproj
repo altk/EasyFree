@@ -136,6 +136,12 @@
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
+    <Midl>
+      <GenerateStublessProxies>false</GenerateStublessProxies>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <GenerateClientFiles>None</GenerateClientFiles>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
@@ -144,6 +150,12 @@
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
+    <Midl>
+      <GenerateStublessProxies>false</GenerateStublessProxies>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <GenerateClientFiles>None</GenerateClientFiles>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -152,6 +164,12 @@
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
+    <Midl>
+      <GenerateStublessProxies>false</GenerateStublessProxies>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <GenerateClientFiles>None</GenerateClientFiles>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -160,6 +178,12 @@
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
+    <Midl>
+      <GenerateStublessProxies>false</GenerateStublessProxies>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <GenerateClientFiles>None</GenerateClientFiles>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -168,6 +192,12 @@
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
+    <Midl>
+      <GenerateStublessProxies>false</GenerateStublessProxies>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <GenerateClientFiles>None</GenerateClientFiles>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -176,6 +206,12 @@
       <CompileAsManaged>false</CompileAsManaged>
       <CompileAsWinRT>false</CompileAsWinRT>
     </ClCompile>
+    <Midl>
+      <GenerateStublessProxies>false</GenerateStublessProxies>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <GenerateClientFiles>None</GenerateClientFiles>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="macro.h" />

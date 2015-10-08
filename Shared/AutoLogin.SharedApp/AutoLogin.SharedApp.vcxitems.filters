@@ -4,13 +4,33 @@
     <Filter Include="Internal">
       <UniqueIdentifier>{dddd8c68-f14a-42ac-9c21-3e44e93594f5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Implementations">
+      <UniqueIdentifier>{6cbb6481-2532-458c-abae-ffe7dba0256c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)Internal\ApplicationMain.cpp">
       <Filter>Internal</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Implementations\FrameworkViewSource.cpp">
+      <Filter>Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Implementations\FrameworkView.cpp">
+      <Filter>Implementations</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)AutoLogin.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\App.h">
+      <Filter>Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\FrameworkViewSource.h">
+      <Filter>Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\FrameworkView.h">
+      <Filter>Implementations</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
