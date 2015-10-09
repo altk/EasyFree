@@ -6,7 +6,7 @@ namespace AutoLogin
 {
 	namespace Implementations
 	{
-		class FrameworkView : public MTL::Implements::RuntimeClass<ABI::Windows::ApplicationModel::Core::IFrameworkView>
+		class FrameworkView final : public MTL::Implements::RuntimeClass<ABI::Windows::ApplicationModel::Core::IFrameworkView>
 		{
 			ABI::Windows::UI::Core::ICoreWindow* _pCoreWindow;
 		public:

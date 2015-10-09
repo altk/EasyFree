@@ -6,7 +6,7 @@ namespace AutoLogin
 {
 	namespace Implementations
 	{
-		class FrameworkViewSource : public MTL::Implements::RuntimeClass<ABI::Windows::ApplicationModel::Core::IFrameworkViewSource>
+		class FrameworkViewSource final : public MTL::Implements::RuntimeClass<ABI::Windows::ApplicationModel::Core::IFrameworkViewSource>
 		{
 		public:
 			STDMETHODIMP GetRuntimeClassName(HSTRING* result) override;

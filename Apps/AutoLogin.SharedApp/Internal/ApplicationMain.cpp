@@ -20,6 +20,6 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) noexcept
 	GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
 						 &coreApplication);
 
-	ComPtr<FrameworkViewSource> viewSource(new FrameworkViewSource());
+	ComPtr<IFrameworkViewSource> viewSource(new FrameworkViewSource());
 	coreApplication->Run(viewSource.Get());
 }

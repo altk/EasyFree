@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <crtdbg.h>
 
+#ifndef NOEXCEPT
+#define NOEXCEPT noexcept
+#endif
+
 #ifndef NOVTABLE
 #if (_MSC_VER >= 1100) 
 #define NOVTABLE __declspec(novtable)

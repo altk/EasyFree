@@ -5,22 +5,20 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{BD3A3789-27B5-49EE-9F09-E74848B3D5AC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{8B30D8D9-FA00-4D88-83FC-2B8FDA079383}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Background", "Background", "{08C8F0ED-C719-42CF-959B-B84FB66B7AEE}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MTL", "Shared\MTL\MTL.vcxitems", "{8F74A2B9-8385-4336-A294-A64E3947E266}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin.SharedApp", "Shared\AutoLogin.SharedApp\AutoLogin.SharedApp.vcxitems", "{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin.UAP", "Apps\AutoLogin.UAP\AutoLogin.UAP.vcxproj", "{172EFB8C-DF85-444B-9220-2551B7443D62}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MTL", "MTL\MTL.vcxitems", "{8F74A2B9-8385-4336-A294-A64E3947E266}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin.SharedApp", "Apps\AutoLogin.SharedApp\AutoLogin.SharedApp.vcxitems", "{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Shared\MTL\MTL.vcxitems*{8f74a2b9-8385-4336-a294-a64e3947e266}*SharedItemsImports = 9
-		Shared\AutoLogin.SharedApp\AutoLogin.SharedApp.vcxitems*{172efb8c-df85-444b-9220-2551b7443d62}*SharedItemsImports = 4
-		Shared\MTL\MTL.vcxitems*{172efb8c-df85-444b-9220-2551b7443d62}*SharedItemsImports = 4
-		Shared\AutoLogin.SharedApp\AutoLogin.SharedApp.vcxitems*{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}*SharedItemsImports = 9
+		MTL\MTL.vcxitems*{8f74a2b9-8385-4336-a294-a64e3947e266}*SharedItemsImports = 9
+		MTL\MTL.vcxitems*{172efb8c-df85-444b-9220-2551b7443d62}*SharedItemsImports = 4
+		Apps\AutoLogin.SharedApp\AutoLogin.SharedApp.vcxitems*{172efb8c-df85-444b-9220-2551b7443d62}*SharedItemsImports = 4
+		Apps\AutoLogin.SharedApp\AutoLogin.SharedApp.vcxitems*{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}*SharedItemsImports = 9
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -54,8 +52,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{8F74A2B9-8385-4336-A294-A64E3947E266} = {8B30D8D9-FA00-4D88-83FC-2B8FDA079383}
-		{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7} = {8B30D8D9-FA00-4D88-83FC-2B8FDA079383}
 		{172EFB8C-DF85-444B-9220-2551B7443D62} = {BD3A3789-27B5-49EE-9F09-E74848B3D5AC}
+		{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7} = {BD3A3789-27B5-49EE-9F09-E74848B3D5AC}
 	EndGlobalSection
 EndGlobal
