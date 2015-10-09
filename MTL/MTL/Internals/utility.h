@@ -3,6 +3,7 @@
 #include <array>
 #include <tuple>
 #include <type_traits>
+#include <macro.h>
 
 namespace MTL
 {
@@ -91,7 +92,7 @@ namespace MTL
 		template <typename ... Ts>
 		struct iids_holder
 		{
-			static GUID* getIids()
+			static GUID* getIids() NOEXCEPT
 			{
 				return (new std::array<GUID, sizeof...(Ts)>{ __uuidof(Ts)... })->data();
 			}

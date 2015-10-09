@@ -13,7 +13,7 @@ namespace MTL
 
 			using Pointer = typename Traits::Pointer;
 
-			explicit Handle(Pointer value = Traits::Invalid()) noexcept
+			explicit Handle(Pointer value = Traits::Invalid()) NOEXCEPT
 				: _pointer(value)
 			{
 			}
@@ -22,12 +22,12 @@ namespace MTL
 
 			Handle& operator=(const Handle&) = delete;
 			
-			Handle(Handle&& other) noexcept
+			Handle(Handle&& other) NOEXCEPT
 				: _pointer(other.Detach())
 			{
 			}
 
-			Handle& operator=(Handle&& other) noexcept
+			Handle& operator=(Handle&& other) NOEXCEPT
 			{
 				if (this != other)
 				{
@@ -37,55 +37,55 @@ namespace MTL
 				return *this;
 			}
 
-			~Handle() noexcept
+			~Handle() NOEXCEPT
 			{
 				Close();
 			}
 
-			explicit operator bool() const noexcept
+			explicit operator bool() const NOEXCEPT
 			{
 				return _pointer != Traits::Invalid();
 			}
 
-			Pointer Get() const noexcept
+			Pointer Get() const NOEXCEPT
 			{
 				return _pointer;
 			}
 
-			Pointer* GetAddressOf() noexcept
+			Pointer* GetAddressOf() NOEXCEPT
 			{
 				ASSERT(!*this);
 
 				return &_pointer;
 			}
 
-			Pointer* ReleaseAndGetAddressOf() noexcept
+			Pointer* ReleaseAndGetAddressOf() NOEXCEPT
 			{
 				Close();
 				return GetAddressOf();
 			}
 
-			Pointer Detach() noexcept
+			Pointer Detach() NOEXCEPT
 			{
 				Pointer value = _pointer;
 				_pointer = Traits::Invalid();
 				return value;
 			}
 
-			void Reset(Pointer ptr = Traits::Invalid()) noexcept
+			void Reset(Pointer ptr = Traits::Invalid()) NOEXCEPT
 			{
 				Close();
 				_pointer = ptr;
 			}
 
-			void Swap(Handle& other) noexcept
+			void Swap(Handle& other) NOEXCEPT
 			{
 				std::swap(_pointer, other._pointer);
 			}
 		
 		protected:
 
-			void Close() noexcept
+			void Close() NOEXCEPT
 			{
 				Traits::Close(_pointer);
 			}
@@ -101,7 +101,7 @@ namespace MTL
 namespace std
 {
 	template<typename Traits>
-	inline void swap(MTL::Wrappers::Handle<Traits> & left, MTL::Wrappers::Handle<Traits> & right) noexcept
+	inline void swap(MTL::Wrappers::Handle<Traits> & left, MTL::Wrappers::Handle<Traits> & right) NOEXCEPT
 	{
 		left.Swap(right);
 	}

@@ -9,13 +9,13 @@ namespace MTL
 		class HStringReference final 
 		{
 		public:
-			HStringReference(const wchar_t* const value, unsigned length) noexcept
+			HStringReference(const wchar_t* const value, unsigned length) NOEXCEPT
 			{
 				VERIFY_SUCCEEDED(WindowsCreateStringReference(value, length, &_stringHeader, &_string));
 			}
 
 			template<unsigned Length>
-			explicit HStringReference(const wchar_t(&string)[Length]) noexcept
+			explicit HStringReference(const wchar_t(&string)[Length]) NOEXCEPT
 				: HStringReference(string, Length - 1)
 			{
 			}
@@ -32,7 +32,7 @@ namespace MTL
 
 			void operator delete[](void*) = delete;
 
-			HSTRING Get() const noexcept
+			HSTRING Get() const NOEXCEPT
 			{
 				return _string;
 			}

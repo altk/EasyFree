@@ -1,5 +1,6 @@
 #pragma once
 #include <utility>
+#include <macro.h>
 #include <MTL\Implements\ComClass.h>
 
 namespace MTL
@@ -9,7 +10,7 @@ namespace MTL
 		template <typename TDelegateInterface, typename TCallback, typename ... TArgs>
 		struct InvokeHelper final : Implements::ComClass<TDelegateInterface>
 		{
-			explicit InvokeHelper(TCallback&& callback) noexcept
+			explicit InvokeHelper(TCallback&& callback) NOEXCEPT
 				: _callback(std::forward<TCallback>(callback))
 			{
 			}
@@ -19,7 +20,7 @@ namespace MTL
 			InvokeHelper& operator=(const InvokeHelper&) = default;
 			InvokeHelper& operator=(InvokeHelper&&) = default;
 
-			STDMETHODIMP Invoke(TArgs... args) noexcept override
+			STDMETHODIMP Invoke(TArgs... args) NOEXCEPT override
 			{
 				return _callback(std::forward<TArgs>(args)...);
 			}
@@ -28,7 +29,7 @@ namespace MTL
 		};
 
 		template <typename TDelegateInterface, typename TCallback, typename ... TArgs>
-		inline InvokeHelper<TDelegateInterface, TCallback, TArgs...> ÑreateInvokeHelper(TCallback&& callback, types_pack<TArgs...>) noexcept
+		inline InvokeHelper<TDelegateInterface, TCallback, TArgs...> ÑreateInvokeHelper(TCallback&& callback, types_pack<TArgs...>) NOEXCEPT
 		{
 			return InvokeHelper<TDelegateInterface, TCallback, TArgs...>(std::forward<TCallback>(callback));
 		}

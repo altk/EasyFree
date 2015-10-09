@@ -11,12 +11,12 @@ namespace MTL
 		{
 			using Pointer = HSTRING;
 
-			static Pointer Invalid() noexcept
+			static Pointer Invalid() NOEXCEPT
 			{
 				return nullptr;
 			}
 
-			static void Close(Pointer value) noexcept
+			static void Close(Pointer value) NOEXCEPT
 			{
 				VERIFY_SUCCEEDED(WindowsDeleteString(value));
 			}
@@ -25,30 +25,30 @@ namespace MTL
 		class HString final : public Handle<HStringTraits>
 		{
 		public:
-			explicit HString(Pointer pointer = HStringTraits::Invalid()) noexcept
+			explicit HString(Pointer pointer = HStringTraits::Invalid()) NOEXCEPT
 				: Handle<HStringTraits>(pointer)
 			{
 			}
 
-			HString(const wchar_t* const string, unsigned const length) noexcept
+			HString(const wchar_t* const string, unsigned const length) NOEXCEPT
 			{
 				VERIFY_SUCCEEDED(WindowsCreateString(string, length, GetAddressOf()));
 			}
 
 			template <unsigned Length>
-			explicit HString(const wchar_t(&string)[Length]) noexcept
+			explicit HString(const wchar_t(&string)[Length]) NOEXCEPT
 				: HString(string, Length-1)
 			{
 			}
 
-			HString(const HString& other) noexcept
+			HString(const HString& other) NOEXCEPT
 			{
 				VERIFY_SUCCEEDED(WindowsDuplicateString(other.Get(), GetAddressOf()));
 			}
 
-			HString(HString&&) noexcept = default;
+			HString(HString&&) NOEXCEPT = default;
 
-			HString& operator=(const HString& other) noexcept
+			HString& operator=(const HString& other) NOEXCEPT
 			{
 				if (this != &other)
 				{
@@ -58,31 +58,31 @@ namespace MTL
 				return *this;
 			}
 
-			HString& operator=(HString&&) noexcept = default;
+			HString& operator=(HString&&) NOEXCEPT = default;
 
-			HString Substring(unsigned start) const noexcept
+			HString Substring(unsigned start) const NOEXCEPT
 			{
 				HString result;
 				VERIFY_SUCCEEDED(WindowsSubstring(Get(), start, result.GetAddressOf()));
 				return result;
 			}
 
-			const wchar_t* GetRawBuffer() const noexcept
+			const wchar_t* GetRawBuffer() const NOEXCEPT
 			{
 				return WindowsGetStringRawBuffer(Get(), nullptr);
 			}
 
-			const wchar_t* GetRawBuffer(unsigned* length) const noexcept
+			const wchar_t* GetRawBuffer(unsigned* length) const NOEXCEPT
 			{
 				return WindowsGetStringRawBuffer(Get(), length);
 			}
 
-			unsigned Size() const noexcept
+			unsigned Size() const NOEXCEPT
 			{
 				return WindowsGetStringLen(Get());
 			}
 
-			bool Empty() const noexcept
+			bool Empty() const NOEXCEPT
 			{
 				return 0 == WindowsIsStringEmpty(Get());
 			}

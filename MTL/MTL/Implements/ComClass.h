@@ -1,7 +1,7 @@
 #pragma once
 #include <Unknwn.h>
-#include <MTL\Internals\utility.h>
 #include <macro.h>
+#include <MTL\Internals\utility.h>
 
 namespace MTL
 {
@@ -17,7 +17,7 @@ namespace MTL
 
 		protected:
 			template<typename U, typename ... Us>
-			void* QueryInterfaceImpl(const GUID& guid) noexcept
+			void* QueryInterfaceImpl(const GUID& guid) NOEXCEPT
 			{
 				using namespace Internals;
 
@@ -29,18 +29,18 @@ namespace MTL
 			}
 
 			template<int = 0>
-			void* QueryInterfaceImpl(const GUID&) noexcept
+			void* QueryInterfaceImpl(const GUID&) NOEXCEPT
 			{
 				return nullptr;
 			}
 
 		public:
-			STDMETHODIMP_(ULONG) AddRef() noexcept override
+			STDMETHODIMP_(ULONG) AddRef() NOEXCEPT override
 			{
 				return InterlockedIncrement(&_counter);
 			}
 
-			STDMETHODIMP_(ULONG) Release() noexcept override
+			STDMETHODIMP_(ULONG) Release() NOEXCEPT override
 			{
 				auto const remaining = InterlockedDecrement(&_counter);
 				if (0 == remaining)
@@ -50,7 +50,7 @@ namespace MTL
 				return remaining;
 			}
 
-			STDMETHODIMP QueryInterface(const GUID& guid, void** result) noexcept override
+			STDMETHODIMP QueryInterface(const GUID& guid, void** result) NOEXCEPT override
 			{
 				if (guid == __uuidof(T) ||
 					guid == __uuidof(IUnknown) ||

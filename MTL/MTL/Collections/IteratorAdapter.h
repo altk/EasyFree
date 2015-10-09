@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.foundation.collections.h>
+#include <macro.h>
 #include <MTL\Implements\RuntimeClass.h>
 
 namespace MTL
@@ -11,13 +12,13 @@ namespace MTL
 		{
 		public:
 
-			IteratorAdapter(TIterator&& begin, TIterator&& end) noexcept
+			IteratorAdapter(TIterator&& begin, TIterator&& end) NOEXCEPT
 				: _begin(std::forward<TIterator>(begin))
 				, _end(std::forward<TIterator>(end))
 			{
 			}
 
-			STDMETHODIMP GetRuntimeClassName(HSTRING* className) noexcept override
+			STDMETHODIMP GetRuntimeClassName(HSTRING* className) NOEXCEPT override
 			{
 				using namespace Wrappers;
 
@@ -25,19 +26,19 @@ namespace MTL
 				return S_OK;
 			}
 
-			STDMETHODIMP get_Current(typename TIterator::value_type* current) noexcept override
+			STDMETHODIMP get_Current(typename TIterator::value_type* current) NOEXCEPT override
 			{
 				*current = *_begin;
 				return S_OK;
 			}
 
-			STDMETHODIMP get_HasCurrent(boolean* hasCurrent) noexcept override
+			STDMETHODIMP get_HasCurrent(boolean* hasCurrent) NOEXCEPT override
 			{
 				*hasCurrent = _begin != _end;
 				return S_OK;
 			}
 
-			STDMETHODIMP MoveNext(boolean* hasCurrent) noexcept override
+			STDMETHODIMP MoveNext(boolean* hasCurrent) NOEXCEPT override
 			{
 				if (_begin != _end)
 				{

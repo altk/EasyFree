@@ -31,9 +31,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)mtl\internals\InvokeHelper.h">
       <Filter>Internals</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)mtl\internals\utility.h">
-      <Filter>Internals</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)MTL\implements\ComClass.h">
       <Filter>Implements</Filter>
     </ClInclude>
@@ -45,6 +42,9 @@
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)MTL\collections\IteratorAdapter.h">
       <Filter>Collections</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)mtl\internals\utility.h">
+      <Filter>Internals</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

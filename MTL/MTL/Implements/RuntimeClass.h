@@ -1,5 +1,6 @@
 #pragma once
 #include <inspectable.h>
+#include <macro.h>
 #include <MTL\Implements\ComClass.h>
 #include <MTL\Internals\utility.h>
 
@@ -11,7 +12,7 @@ namespace MTL
 		class RuntimeClass abstract : public ComClass<T, Ts...>
 		{
 		public:
-			STDMETHODIMP GetIids(ULONG* count, GUID** array) noexcept override
+			STDMETHODIMP GetIids(ULONG* count, GUID** array) NOEXCEPT override
 			{
 				using namespace Internals;
 
@@ -24,7 +25,7 @@ namespace MTL
 				return S_OK;
 			}
 
-			STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) noexcept override
+			STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) NOEXCEPT override
 			{
 				*trustLevel = BaseTrust;
 				return S_OK;

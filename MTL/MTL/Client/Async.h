@@ -1,5 +1,6 @@
 #pragma once
 #include <utility>
+#include <macro.h>
 #include <MTL\Client\ComPtr.h>
 #include <MTL\Internals\utility.h>
 #include <MTL\Internals\InvokeHelper.h>
@@ -9,7 +10,7 @@ namespace MTL
 	namespace Client
 	{
 		template<typename TDelegateInterface, typename TCallback>
-		inline ComPtr<TDelegateInterface> CreateCallback(TCallback&& callback) noexcept
+		inline ComPtr<TDelegateInterface> CreateCallback(TCallback&& callback) NOEXCEPT
 		{
 			using namespace Internals;
 
@@ -29,7 +30,7 @@ namespace MTL
 		{
 		public:
 			template <typename TArgument>
-			static auto GetTask(ABI::Windows::Foundation::IAsyncOperation<TArgument>* asyncOperation) noexcept
+			static auto GetTask(ABI::Windows::Foundation::IAsyncOperation<TArgument>* asyncOperation) NOEXCEPT
 			{
 				using namespace concurrency;
 				using namespace ABI::Windows::Foundation::Internal;
@@ -50,7 +51,7 @@ namespace MTL
 			}
 
 			template <typename TArgument, typename TProgress>
-			static auto GetTask(ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>* asyncOperation) noexcept
+			static auto GetTask(ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>* asyncOperation) NOEXCEPT
 			{
 				using namespace concurrency;
 				using namespace ABI::Windows::Foundation::Internal;

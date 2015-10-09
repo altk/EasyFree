@@ -23,14 +23,14 @@ struct Tracer
 	char const * m_filename;
 	unsigned m_line;
 
-	Tracer(char const * filename, unsigned const line) noexcept
+	Tracer(char const * filename, unsigned const line) NOEXCEPT
 		: m_filename(filename)
 		, m_line(line)
 	{
 
 	}
 
-	void operator()(wchar_t const * format, ...) const noexcept
+	void operator()(wchar_t const * format, ...) const NOEXCEPT
 	{
 		wchar_t buffer[512];
 		auto count = swprintf_s(buffer, L"%S(%d): ", m_filename, m_line);

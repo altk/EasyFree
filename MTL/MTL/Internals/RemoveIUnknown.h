@@ -14,9 +14,9 @@ namespace MTL
 
 		private:
 
-			STDMETHODIMP_(ULONG) AddRef() noexcept;
-			STDMETHODIMP_(ULONG) Release() noexcept;
-			STDMETHODIMP QueryTInterface(IID, void** ppvObject) noexcept;
+			STDMETHODIMP_(ULONG) AddRef() ;
+			STDMETHODIMP_(ULONG) Release();
+			STDMETHODIMP QueryTInterface(IID, void** ppvObject);
 		};
 	}
 }

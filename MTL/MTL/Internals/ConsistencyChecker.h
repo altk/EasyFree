@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <typeinfo>
+#include <macro.h>
 
 namespace MTL
 {
@@ -9,13 +10,13 @@ namespace MTL
 		template <typename TAggegator, typename ... Ts>
 		struct ConsistencyChecker 
 		{
-			static void Check(TAggegator*) noexcept;
+			static void Check(TAggegator*) NOEXCEPT;
 		};
 
 		template <typename TAggegator, typename T, typename ... Ts>
 		struct ConsistencyChecker<TAggegator, T, Ts...>
 		{
-			static void Check(TAggegator* aggregator) noexcept
+			static void Check(TAggegator* aggregator) NOEXCEPT
 			{
 				if (nullptr == aggregator) return;
 
@@ -55,13 +56,13 @@ namespace MTL
 		template <typename TAggegator>
 		struct ConsistencyChecker<TAggegator>
 		{
-			static void Check(TAggegator*) noexcept
+			static void Check(TAggegator*) NOEXCEPT
 			{
 			}
 		};
 
 		template <typename TAggegator, typename T, typename ... Ts>
-		void CheckConsistency(TAggegator* aggregator) noexcept
+		void CheckConsistency(TAggegator* aggregator) NOEXCEPT
 		{
 			ConsistencyChecker<TAggegator, T, Ts...>::Check(aggregator);
 		}

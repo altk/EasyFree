@@ -1,6 +1,7 @@
 #pragma once
 #include <roapi.h>
- 
+#include <macro.h>
+
 namespace MTL
 {
 	namespace Internals
@@ -14,18 +15,18 @@ namespace MTL
 			ComPtrRef(const ComPtrRef&) = delete;
 			ComPtrRef& operator=(const ComPtrRef&) = delete;
 
-			explicit ComPtrRef(T** pointer) noexcept
+			explicit ComPtrRef(T** pointer) NOEXCEPT
 				: _pointer(pointer)
 			{
 			}
 
-			ComPtrRef(ComPtrRef&& other) noexcept
+			ComPtrRef(ComPtrRef&& other) NOEXCEPT
 				: _pointer(other._pointer)
 			{
 				other._pointer = nullptr;
 			}
 
-			ComPtrRef& operator=(ComPtrRef&& other) noexcept
+			ComPtrRef& operator=(ComPtrRef&& other) NOEXCEPT
 			{
 				if (this != &other)
 				{
@@ -35,17 +36,17 @@ namespace MTL
 				return *this;
 			}
 
-			operator IInspectable**() noexcept
+			operator IInspectable**() NOEXCEPT
 			{
 				return reinterpret_cast<IInspectable**>(_pointer);
 			}
 
-			operator T**() noexcept
+			operator T**() NOEXCEPT
 			{
 				return _pointer;
 			}
 
-			operator void**() noexcept
+			operator void**() NOEXCEPT
 			{
 				return reinterpret_cast<void**>(_pointer);
 			}
@@ -62,18 +63,18 @@ namespace MTL
 			ComPtrRef(const ComPtrRef&) = delete;
 			ComPtrRef& operator=(const ComPtrRef&) = delete;
 
-			explicit ComPtrRef(IInspectable** pointer) noexcept
+			explicit ComPtrRef(IInspectable** pointer) NOEXCEPT
 				: _pointer(pointer)
 			{
 			}
 
-			ComPtrRef(ComPtrRef&& other) noexcept
+			ComPtrRef(ComPtrRef&& other) NOEXCEPT
 				: _pointer(other._pointer)
 			{
 				other._pointer = nullptr;
 			}
 
-			ComPtrRef& operator=(ComPtrRef&& other) noexcept
+			ComPtrRef& operator=(ComPtrRef&& other) NOEXCEPT
 			{
 				if (this != &other)
 				{
@@ -83,12 +84,12 @@ namespace MTL
 				return *this;
 			}
 
-			operator IInspectable**() noexcept
+			operator IInspectable**() NOEXCEPT
 			{
 				return _pointer;
 			}
 
-			operator void**() noexcept
+			operator void**() NOEXCEPT
 			{
 				return reinterpret_cast<void**>(_pointer);
 			}
@@ -107,7 +108,7 @@ namespace ABI
 		namespace Foundation
 		{
 			template <typename TInterface>
-			inline STDMETHODIMP GetActivationFactory(HSTRING activatableClassId, MTL::Internals::ComPtrRef<TInterface> factory) noexcept
+			inline STDMETHODIMP GetActivationFactory(HSTRING activatableClassId, MTL::Internals::ComPtrRef<TInterface> factory) NOEXCEPT
 			{
 				return GetActivationFactory(activatableClassId, static_cast<TInterface**>(factory));
 			}

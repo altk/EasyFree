@@ -1,11 +1,12 @@
 #include "pch.h"
 #include <roapi.h>
 #include <Windows.ApplicationModel.h>
+#include <macro.h>
 #include <MTL\Client\ComPtr.h>
 #include <MTL\Wrappers\HStringReference.h>
 #include <Implementations\FrameworkViewSource.h>
 
-int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) noexcept
+int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) NOEXCEPT
 {
 	using namespace ABI::Windows::Foundation;
 	using namespace ABI::Windows::ApplicationModel::Core;

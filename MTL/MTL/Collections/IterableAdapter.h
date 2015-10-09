@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.foundation.collections.h>
+#include <macro.h>
 #include <MTL\Implements\RuntimeClass.h>
 #include <MTL\collections\IteratorAdapter.h>
 
@@ -12,12 +13,12 @@ namespace MTL
 		{
 		public:
 
-			explicit IterableAdapter(TCollection&& collection) noexcept
+			explicit IterableAdapter(TCollection&& collection) NOEXCEPT
 				: _collection(std::forward<TCollection>(collection))
 			{
 			}
 
-			STDMETHODIMP GetRuntimeClassName(HSTRING* className) noexcept override
+			STDMETHODIMP GetRuntimeClassName(HSTRING* className) NOEXCEPT override
 			{
 				using namespace Wrappers;
 
