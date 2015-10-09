@@ -4,11 +4,11 @@
 #include <crtdbg.h>
 
 #ifndef CONSTEXPR
-#define CONSTEXPR constexpr
+#define CONSTEXPR const
 #endif
 
 #ifndef NOEXCEPT
-#define NOEXCEPT noexcept
+#define NOEXCEPT throw()
 #endif
 
 #ifndef NOVTABLE

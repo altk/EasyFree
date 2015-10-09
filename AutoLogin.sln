@@ -13,12 +13,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MTL", "MTL\MTL.vcxitems", "
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin.SharedApp", "Apps\AutoLogin.SharedApp\AutoLogin.SharedApp.vcxitems", "{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin.WP81", "Apps\AutoLogin.WP81\AutoLogin.WP81.vcxproj", "{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		MTL\MTL.vcxitems*{8f74a2b9-8385-4336-a294-a64e3947e266}*SharedItemsImports = 9
 		MTL\MTL.vcxitems*{172efb8c-df85-444b-9220-2551b7443d62}*SharedItemsImports = 4
 		Apps\AutoLogin.SharedApp\AutoLogin.SharedApp.vcxitems*{172efb8c-df85-444b-9220-2551b7443d62}*SharedItemsImports = 4
 		Apps\AutoLogin.SharedApp\AutoLogin.SharedApp.vcxitems*{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}*SharedItemsImports = 9
+		MTL\MTL.vcxitems*{56342b2c-8301-4be0-a5a4-a96fd9c76aee}*SharedItemsImports = 4
+		Apps\AutoLogin.SharedApp\AutoLogin.SharedApp.vcxitems*{56342b2c-8301-4be0-a5a4-a96fd9c76aee}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -47,6 +51,20 @@ Global
 		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x86.ActiveCfg = Release|Win32
 		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x86.Build.0 = Release|Win32
 		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x86.Deploy.0 = Release|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|ARM.ActiveCfg = Debug|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|ARM.Build.0 = Debug|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|ARM.Deploy.0 = Debug|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x64.ActiveCfg = Debug|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x86.ActiveCfg = Debug|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x86.Build.0 = Debug|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x86.Deploy.0 = Debug|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|ARM.ActiveCfg = Release|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|ARM.Build.0 = Release|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|ARM.Deploy.0 = Release|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x64.ActiveCfg = Release|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x86.ActiveCfg = Release|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x86.Build.0 = Release|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x86.Deploy.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -54,5 +72,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{172EFB8C-DF85-444B-9220-2551B7443D62} = {BD3A3789-27B5-49EE-9F09-E74848B3D5AC}
 		{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7} = {BD3A3789-27B5-49EE-9F09-E74848B3D5AC}
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE} = {BD3A3789-27B5-49EE-9F09-E74848B3D5AC}
 	EndGlobalSection
 EndGlobal

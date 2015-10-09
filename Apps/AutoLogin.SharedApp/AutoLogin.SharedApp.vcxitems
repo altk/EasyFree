@@ -18,6 +18,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Implementations\FrameworkView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Implementations\FrameworkViewSource.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Internal\ApplicationMain.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)pch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)AutoLogin.idl" />
@@ -26,5 +29,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\App.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\FrameworkView.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\FrameworkViewSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
   </ItemGroup>
 </Project>

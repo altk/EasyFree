@@ -7,10 +7,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="pch.h" />
     <ClInclude Include="macro.h" />
   </ItemGroup>
   <ItemGroup>

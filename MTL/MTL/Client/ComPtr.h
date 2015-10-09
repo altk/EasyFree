@@ -20,7 +20,7 @@ namespace MTL
 
 		public:
 
-			ComPtr() NOEXCEPT = default;
+			ComPtr() = default;
 
 			explicit ComPtr(T* defaultInterface) NOEXCEPT
 				: _pointer(reinterpret_cast<Internals::TypeAggregator<T, Ts...>*>(defaultInterface)) { }

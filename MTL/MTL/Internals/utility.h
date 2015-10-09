@@ -78,13 +78,13 @@ namespace MTL
 		template <typename T, typename ... Ts>
 		struct interface_counter
 		{
-			static constexpr unsigned typesCount = interface_counter<Ts...>::typesCount + static_cast<unsigned>(!is_cloaked<T>::value);
+			static CONSTEXPR unsigned typesCount = interface_counter<Ts...>::typesCount + static_cast<unsigned>(!is_cloaked<T>::value);
 		};
 
 		template <typename T>
 		struct interface_counter<T>
 		{
-			static constexpr unsigned typesCount = static_cast<unsigned>(!is_cloaked<T>::value);
+			static CONSTEXPR unsigned typesCount = static_cast<unsigned>(!is_cloaked<T>::value);
 		};
 
 #pragma endregion
@@ -125,20 +125,20 @@ namespace MTL
 		template<typename TMemberFunction>
 		struct arg_traits
 		{
-			static constexpr int argsCount = -1;
+			static CONSTEXPR int argsCount = -1;
 		};
 
 		template<typename TDelegateInterface>
 		struct arg_traits<HRESULT(STDMETHODCALLTYPE TDelegateInterface::*)(void)>
 		{
-			static constexpr int argsCount = 0;
+			static CONSTEXPR int argsCount = 0;
 			typedef types_pack<void> types;
 		};
 
 		template<typename TDelegateInterface, typename ... TArgs>
 		struct arg_traits<HRESULT(STDMETHODCALLTYPE TDelegateInterface::*)(TArgs...)>
 		{
-			static constexpr int argsCount = sizeof...(TArgs);
+			static CONSTEXPR int argsCount = sizeof...(TArgs);
 			typedef types_pack<TArgs...> types;
 		};
 

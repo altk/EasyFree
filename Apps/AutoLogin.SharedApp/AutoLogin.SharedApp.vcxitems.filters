@@ -18,6 +18,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Implementations\FrameworkView.cpp">
       <Filter>Implementations</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)pch.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)AutoLogin.idl" />
@@ -32,5 +33,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\FrameworkView.h">
       <Filter>Implementations</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
   </ItemGroup>
 </Project>
