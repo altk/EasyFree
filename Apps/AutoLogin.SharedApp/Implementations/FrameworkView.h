@@ -22,7 +22,7 @@ namespace AutoLogin
 
 			STDMETHODIMP Uninitialize() override;
 		private:
-			MTL::Client::ComPtr<ABI::Windows::UI::Core::ICoreWindow> _pCoreWindow;
+			MTL::Client::ComPtr<ABI::Windows::UI::Core::ICoreWindow> _coreWindow;
 		};
 	}
 }
