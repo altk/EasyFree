@@ -9,8 +9,6 @@ namespace MTL
 		template <typename T>
 		struct ComPtrRef final
 		{
-			static_assert(std::is_base_of<IInspectable, T>::value, "T must inherit IInspectable");
-
 			ComPtrRef() = delete;
 			ComPtrRef(const ComPtrRef&) = delete;
 			ComPtrRef& operator=(const ComPtrRef&) = delete;
@@ -34,6 +32,11 @@ namespace MTL
 					other._pointer = nullptr;
 				}
 				return *this;
+			}
+
+			operator IUnknown**() NOEXCEPT
+			{
+				return reinterpret_cast<IUnknown**>(_pointer);
 			}
 
 			operator IInspectable**() NOEXCEPT
