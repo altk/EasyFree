@@ -1,14 +1,14 @@
 #pragma once
 #include <Windows.ApplicationModel.core.h>
 #include <MTL\implements\RuntimeClass.h>
+#include <MTL\Client\ComPtr.h>
 
 namespace AutoLogin
 {
 	namespace Implementations
 	{
 		class FrameworkView final : public MTL::Implements::RuntimeClass<ABI::Windows::ApplicationModel::Core::IFrameworkView>
-		{
-			ABI::Windows::UI::Core::ICoreWindow* _pCoreWindow;
+		{			
 		public:
 			STDMETHODIMP GetRuntimeClassName(HSTRING* result) override;
 
@@ -21,6 +21,8 @@ namespace AutoLogin
 			STDMETHODIMP Run() override;
 
 			STDMETHODIMP Uninitialize() override;
+		private:
+			MTL::Client::ComPtr<ABI::Windows::UI::Core::ICoreWindow> _pCoreWindow;
 		};
 	}
 }

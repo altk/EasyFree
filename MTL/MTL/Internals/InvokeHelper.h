@@ -8,23 +8,42 @@ namespace MTL
 	namespace Internals
 	{
 		template <typename TDelegateInterface, typename TCallback, typename ... TArgs>
-		struct InvokeHelper final : Implements::ComClass<TDelegateInterface>
+		class InvokeHelper final : public Implements::ComClass<TDelegateInterface>
 		{
+		public:
 			explicit InvokeHelper(TCallback&& callback) NOEXCEPT
-				: _callback(std::forward<TCallback>(callback))
+				: _callback(std::forward<TCallback>(callback)) { }
+
+			InvokeHelper(const InvokeHelper& other) NOEXCEPT
+				: _callback(other._callback) { }
+
+			InvokeHelper(InvokeHelper&& other) NOEXCEPT
+				: _callback(std::move(other._callback)) { }
+
+			InvokeHelper& operator=(const InvokeHelper& other) NOEXCEPT
 			{
+				if (this != &other)
+				{
+					_callback = other._callback;
+				}
+				return *this;
 			}
 
-			InvokeHelper(const InvokeHelper&) = default;
-			InvokeHelper(InvokeHelper&&) = default;
-			InvokeHelper& operator=(const InvokeHelper&) = default;
-			InvokeHelper& operator=(InvokeHelper&&) = default;
+			InvokeHelper& operator=(InvokeHelper&& other) NOEXCEPT
+			{
+				if (this != &other)
+				{
+					_callback = std::move(other._callback);
+				}
+				return *this;
+			}
 
-			STDMETHODIMP Invoke(TArgs... args) NOEXCEPT override
+			STDMETHODIMP Invoke(TArgs ... args) NOEXCEPT override
 			{
 				return _callback(std::forward<TArgs>(args)...);
 			}
 
+		private:
 			TCallback _callback;
 		};
 

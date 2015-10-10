@@ -1,4 +1,6 @@
 #pragma once
+#include <ppltasks.h>
+#include <windows.foundation.h>
 #include <utility>
 #include <macro.h>
 #include <MTL\Client\ComPtr.h>
@@ -28,9 +30,9 @@ namespace MTL
 
 		struct AsyncOperationHelper final
 		{
-		public:
 			template <typename TArgument>
-			static auto GetTask(ABI::Windows::Foundation::IAsyncOperation<TArgument>* asyncOperation) NOEXCEPT
+			static auto GetTask(ABI::Windows::Foundation::IAsyncOperation<TArgument>* asyncOperation) NOEXCEPT -> 
+				concurrency::task<typename ABI::Windows::Foundation::Internal::GetAbiType<typename ABI::Windows::Foundation::IAsyncOperation<TArgument>::TResult_complex>::type>
 			{
 				using namespace concurrency;
 				using namespace ABI::Windows::Foundation::Internal;
@@ -51,7 +53,8 @@ namespace MTL
 			}
 
 			template <typename TArgument, typename TProgress>
-			static auto GetTask(ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>* asyncOperation) NOEXCEPT
+			static auto GetTask(ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>* asyncOperation) NOEXCEPT ->
+				concurrency::task<typename ABI::Windows::Foundation::Internal::GetAbiType<typename ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>::TResult_complex>::type>
 			{
 				using namespace concurrency;
 				using namespace ABI::Windows::Foundation::Internal;

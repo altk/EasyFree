@@ -29,9 +29,9 @@ namespace MTL
 
 			Handle& operator=(Handle&& other) NOEXCEPT
 			{
-				if (this != other)
+				if (this != &other)
 				{
-					Attach(other.Detach());
+					Reset(other.Detach());
 				}
 
 				return *this;

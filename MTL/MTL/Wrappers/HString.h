@@ -46,7 +46,10 @@ namespace MTL
 				VERIFY_SUCCEEDED(WindowsDuplicateString(other.Get(), GetAddressOf()));
 			}
 
-			HString(HString&&) NOEXCEPT = default;
+			HString(HString&& other) NOEXCEPT
+				: Handle<HStringTraits>(other.Detach())
+			{
+			}
 
 			HString& operator=(const HString& other) NOEXCEPT
 			{
@@ -58,7 +61,14 @@ namespace MTL
 				return *this;
 			}
 
-			HString& operator=(HString&&) NOEXCEPT = default;
+			HString& operator=(HString&& other) NOEXCEPT
+			{
+				if(this != &other)
+				{
+					Handle<HStringTraits>::operator=(std::move(other));
+				}
+				return *this;
+			}
 
 			HString Substring(unsigned start) const NOEXCEPT
 			{
