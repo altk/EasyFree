@@ -95,6 +95,7 @@ namespace MTL
 			{
 				InternalRelease();
 				_pointer = reinterpret_cast<Internals::TypeAggregator<T, Ts...>*>(ptr);
+				InternalAddRef();
 			}
 
 			template <typename U>
