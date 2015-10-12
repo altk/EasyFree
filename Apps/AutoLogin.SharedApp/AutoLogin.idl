@@ -1,18 +1,18 @@
-import "Windows.UI.Xaml.idl";
+import "Windows.ApplicationModel.Core.idl";
 
 namespace AutoLogin
 {
-	interface IApp;
+	interface IApplication;
 
-	runtimeclass App;
+	runtimeclass Application;
 }
 
 namespace AutoLogin
 {
-	[exclusiveto(AutoLogin.App)]
+	[exclusiveto(AutoLogin.Application)]
 	[uuid(11F8F7D8-0C71-4A01-A6A8-5D895FBD6FFC)]
 	[version(1.0)]
-	interface IApp : IInspectable
+	interface IApplication : IInspectable
 	{
 	};
 
@@ -20,8 +20,10 @@ namespace AutoLogin
 	[activatable(1.0)]
 	[marshaling_behavior(agile)]
 	[threading(both)]
-	runtimeclass App : Windows.UI.Xaml.Application
+	runtimeclass Application
 	{
-		[default] interface AutoLogin.IApp;
+		[default] interface AutoLogin.IApplication;
+		interface Windows.ApplicationModel.Core.IFrameworkViewSource;
+		interface Windows.ApplicationModel.Core.IFrameworkView;
 	};
 }

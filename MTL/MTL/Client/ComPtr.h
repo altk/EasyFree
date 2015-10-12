@@ -4,7 +4,9 @@
 #include <MTL\Internals\ComPtrRef.h>
 #include <MTL\Internals\RemoveIUnknown.h>
 #include <MTL\Internals\TypeAggregator.h>
+#ifdef _DEBUG
 #include <MTL\Internals\ConsistencyChecker.h>
+#endif
 
 namespace MTL
 {
@@ -78,10 +80,22 @@ namespace MTL
 				return r;
 			}
 
+			void Release() NOEXCEPT
+			{
+				InternalRelease();
+			}
+
 			Internals::ComPtrRef<T> ReleaseAndGetAddressOf() NOEXCEPT
 			{
 				InternalRelease();
 				return GetAddressOf();
+			}
+
+			void Attach(T* ptr) NOEXCEPT
+			{
+				InternalRelease();
+				_pointer = reinterpret_cast<Internals::TypeAggregator<T, Ts...>*>(ptr);
+				InternalAddRef();
 			}
 
 			T* Detach() NOEXCEPT
@@ -89,14 +103,7 @@ namespace MTL
 				Internals::TypeAggregator<T, Ts...>* temp = nullptr;
 				std::swap(temp, _pointer);
 				return static_cast<T*>(temp);
-			}
-
-			void Reset(T* ptr = nullptr) NOEXCEPT
-			{
-				InternalRelease();
-				_pointer = reinterpret_cast<Internals::TypeAggregator<T, Ts...>*>(ptr);
-				InternalAddRef();
-			}
+			}			
 
 			template <typename U>
 			STDMETHODIMP As(Internals::ComPtrRef<U> target) NOEXCEPT

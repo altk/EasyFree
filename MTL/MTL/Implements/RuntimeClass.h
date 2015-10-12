@@ -12,7 +12,7 @@ namespace MTL
 		class RuntimeClass abstract : public ComClass<T, Ts...>
 		{
 		public:
-			STDMETHODIMP GetIids(ULONG* count, GUID** array) NOEXCEPT override
+			STDMETHODIMP GetIids(ULONG* count, GUID** array) NOEXCEPT override final
 			{
 				using namespace Internals;
 
@@ -25,7 +25,7 @@ namespace MTL
 				return S_OK;
 			}
 
-			STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) NOEXCEPT override
+			STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) NOEXCEPT override final
 			{
 				*trustLevel = BaseTrust;
 				return S_OK;

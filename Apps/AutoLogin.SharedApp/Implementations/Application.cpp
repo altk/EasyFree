@@ -1,78 +1,71 @@
-#include "pch.h"
-#include "FrameworkView.h"
+﻿#include "pch.h"
+#include "Application.h"
+#include <memory>
 #include <d2d1_1.h>
 #include <d3d11_1.h>
-#include <MTL\Client\Async.h>
-#include <MTL\Client\ComPtr.h>
 #include <MTL\Wrappers\HString.h>
 #include <MTL\Wrappers\HStringReference.h>
+#include <MTL\Client\Async.h>
 
-using namespace ABI::Windows::Foundation;
-using namespace ABI::Windows::ApplicationModel::Core;
-using namespace ABI::Windows::ApplicationModel::Activation;
-using namespace ABI::Windows::UI::Core;
-using namespace AutoLogin::Implementations;
-using namespace MTL::Client;
-using namespace MTL::Wrappers;
-using namespace std;
-using namespace D2D1;
+using namespace AutoLogin;
 
-#pragma comment(lib, "d2d1")
-#pragma comment(lib, "d3d11")
-
-HRESULT FrameworkView::GetRuntimeClassName(HSTRING* result)
+HRESULT Application::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 {
-	*result = HString(L"AutoLogin.FrameworkView").Detach();
+	using namespace MTL::Wrappers;
+
+	*className = HString(L"AutoLogin.Application").Detach();
 	return S_OK;
 }
 
-HRESULT FrameworkView::Initialize(ICoreApplicationView* applicationView)
+HRESULT Application::CreateView(ABI::Windows::ApplicationModel::Core::IFrameworkView** viewProvider) NOEXCEPT
 {
+	*viewProvider = this;
+	return S_OK;
+}
+
+HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreApplicationView* applicationView) NOEXCEPT
+{
+	using namespace std;
+	using namespace ABI::Windows::Foundation;
+	using namespace ABI::Windows::ApplicationModel::Core;
+	using namespace ABI::Windows::ApplicationModel::Activation;
+	using namespace ABI::Windows::UI::Core;
+	using namespace MTL::Client;
+
 	auto token = make_shared<EventRegistrationToken>();
 	auto callback = CreateCallback<ITypedEventHandler<CoreApplicationView*, IActivatedEventArgs*>>([token](ICoreApplicationView* coreApplicationView, IActivatedEventArgs* args)-> HRESULT
 																								   {
 																									   coreApplicationView->remove_Activated(*token);
-
 																									   ComPtr<ICoreWindow> coreWindow;
 																									   coreApplicationView->get_CoreWindow(&coreWindow);
 																									   coreWindow->Activate();
-																									   /*
-																									   
-
-*/
 																									   return S_OK;
 																								   });
+
 	applicationView->add_Activated(callback.Get(), token.get());
 	return S_OK;
 }
 
-HRESULT FrameworkView::SetWindow(ICoreWindow* window)
+HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEXCEPT
 {
-	_coreWindow.Reset(window);
-
-	/*ComPtr<ICoreCursorFactory> coreCursorFactory;
-	GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Core_CoreCursor).Get(),
-						 &coreCursorFactory);
-
-	ComPtr<ICoreCursor> coreCursor;
-	coreCursorFactory->CreateCursor(CoreCursorType_Arrow,
-									0,
-									&coreCursor);
-
-	_coreWindow->put_PointerCursor(coreCursor.Get());*/
-
+	_coreWindow.Attach(window);
 	return S_OK;
 }
 
-HRESULT FrameworkView::Load(HSTRING entryPoint)
+HRESULT Application::Load(HSTRING) NOEXCEPT
 {
 	return S_OK;
 }
 
-HRESULT FrameworkView::Run()
+HRESULT Application::Run() NOEXCEPT
 {
-	ComPtr<ICoreDispatcher> dispatcher;
-	_coreWindow->get_Dispatcher(&dispatcher);
+	using namespace D2D1;
+	using namespace ABI::Windows::ApplicationModel::Core;
+	using namespace ABI::Windows::UI::Core;
+	using namespace MTL::Client;
+
+	ComPtr<ICoreDispatcher> coreDispatcher;
+	_coreWindow->get_Dispatcher(&coreDispatcher);
 
 	ComPtr<ID2D1Factory1> factory;
 	D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED,
@@ -100,13 +93,13 @@ HRESULT FrameworkView::Run()
 	dxgiAdapter->GetParent(__uuidof(dxgiFactory),
 						   &dxgiFactory);
 
-	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0 };
-	swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; // This is the most common swap chain format.
-	swapChainDesc.SampleDesc.Count = 1; // Don't use multi-sampling.
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
+	swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.SampleDesc.Quality = 0;
 	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.BufferCount = 2; // Use double-buffering to minimize latency.
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; // All Windows Store apps must use this SwapEffect.
+	swapChainDesc.BufferCount = 2;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
 	swapChainDesc.Flags = 0;
 	swapChainDesc.Scaling = DXGI_SCALING_NONE;
 	swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
@@ -140,32 +133,50 @@ HRESULT FrameworkView::Run()
 
 	d2dDeviceContext->SetDpi(332.0f, 332.0f);
 
+	D2D1_RECT_F rect = {};
+	rect.left = 0;
+	rect.top = 0;
+	rect.right = 100;
+	rect.bottom = 100;
+
+	ComPtr<ID2D1SolidColorBrush> brush;
+	d2dDeviceContext->CreateSolidColorBrush(ColorF(ColorF::Red),
+											&brush);
+
 	while (true)
 	{
-		dispatcher->ProcessEvents(CoreProcessEventsOption_ProcessAllIfPresent);
-
+		coreDispatcher->ProcessEvents(CoreProcessEventsOption_ProcessAllIfPresent);
+		
 		d2dDeviceContext->BeginDraw();
-		D2D1_RECT_F rect = {};
-		rect.left = 0;
-		rect.top = 0;
-		rect.right = 100;
-		rect.bottom = 100;
-
-		ComPtr<ID2D1SolidColorBrush> brush;
-		d2dDeviceContext->CreateSolidColorBrush(ColorF(ColorF::Red),
-												&brush);
-
 		d2dDeviceContext->DrawRectangle(rect, brush.Get());
 		d2dDeviceContext->EndDraw();
 
 		dxgiSwapChain->Present(1, 0);
 	}
 
-
 	return S_OK;
 }
 
-HRESULT FrameworkView::Uninitialize()
+HRESULT Application::Uninitialize() NOEXCEPT
 {
+	_coreWindow.Release();
 	return S_OK;
+}
+
+int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) NOEXCEPT
+{
+	using namespace ABI::Windows::Foundation;
+	using namespace ABI::Windows::ApplicationModel::Core;
+	using namespace ABI::Windows::ApplicationModel;
+	using namespace MTL::Client;
+	using namespace MTL::Wrappers;
+
+	RoInitialize(RO_INIT_MULTITHREADED);
+
+	ComPtr<ICoreApplication> coreApplication;
+	GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
+						 &coreApplication);
+
+	Application app;
+	coreApplication->Run(&app);
 }
