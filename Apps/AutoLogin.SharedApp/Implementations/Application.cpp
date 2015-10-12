@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "Application.h"
 #include <memory>
+#include <thread>
 #include <d2d1_1.h>
 #include <d3d11_1.h>
 #include <MTL\Wrappers\HString.h>
@@ -133,26 +134,28 @@ HRESULT Application::Run() NOEXCEPT
 
 	d2dDeviceContext->SetDpi(332.0f, 332.0f);
 
-	D2D1_RECT_F rect = {};
-	rect.left = 0;
-	rect.top = 0;
-	rect.right = 100;
-	rect.bottom = 100;
+	std::thread([d2dDeviceContext, dxgiSwapChain]()-> void
+			    {
+				    D2D1_RECT_F rect = {};
+				    rect.left = 0;
+				    rect.top = 0;
+				    rect.right = 100;
+				    rect.bottom = 100;
 
-	ComPtr<ID2D1SolidColorBrush> brush;
-	d2dDeviceContext->CreateSolidColorBrush(ColorF(ColorF::Red),
-											&brush);
+				    ComPtr<ID2D1SolidColorBrush> brush;
+				    d2dDeviceContext->CreateSolidColorBrush(ColorF(ColorF::Red),
+															&brush);
+				    while (true)
+				    {
+					    d2dDeviceContext->BeginDraw();
+					    d2dDeviceContext->DrawRectangle(rect, brush.Get());
+					    d2dDeviceContext->EndDraw();
 
-	while (true)
-	{
-		coreDispatcher->ProcessEvents(CoreProcessEventsOption_ProcessAllIfPresent);
-		
-		d2dDeviceContext->BeginDraw();
-		d2dDeviceContext->DrawRectangle(rect, brush.Get());
-		d2dDeviceContext->EndDraw();
+					    dxgiSwapChain->Present(1, 0);
+				    }
+			    }).detach();
 
-		dxgiSwapChain->Present(1, 0);
-	}
+	coreDispatcher->ProcessEvents(CoreProcessEventsOption_ProcessUntilQuit);
 
 	return S_OK;
 }
