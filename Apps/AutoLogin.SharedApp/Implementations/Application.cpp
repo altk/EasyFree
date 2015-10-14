@@ -9,6 +9,7 @@
 #include <MTL\Client\Async.h>
 
 #include <windows.web.http.h>
+#include <windows.storage.streams.h>
 
 using namespace AutoLogin;
 
@@ -220,6 +221,7 @@ void Application::Get() NOEXCEPT
 	using namespace ABI::Windows::Foundation;
 	using namespace ABI::Windows::Web::Http::Filters;
 	using namespace ABI::Windows::Web::Http;
+	using namespace ABI::Windows::Storage::Streams;
 	using namespace MTL::Client;
 	using namespace MTL::Wrappers;
 
@@ -254,7 +256,12 @@ void Application::Get() NOEXCEPT
 						   ComPtr<IHttpContent> httpContent;
 						   result->get_Content(&httpContent);
 
-						   auto a = 4;
+						   ComPtr<IAsyncOperationWithProgress<IBuffer*, ULONGLONG>> readAsBufferOperation;
+						   httpContent->ReadAsBufferAsync(&readAsBufferOperation);
+
+						   auto buffer = GetTask(readAsBufferOperation.Get()).get();
+						   UINT32 lenght;
+						   buffer->get_Length(&lenght);
 					   });
 }
 
