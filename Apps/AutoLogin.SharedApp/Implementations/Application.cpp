@@ -8,6 +8,8 @@
 #include <MTL\Wrappers\HStringReference.h>
 #include <MTL\Client\Async.h>
 
+#include <windows.web.http.h>
+
 using namespace AutoLogin;
 
 HRESULT Application::GetRuntimeClassName(HSTRING* className) NOEXCEPT
@@ -58,14 +60,16 @@ HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEX
 
 	_coreWindow.Attach(window);
 
+	InitContext();
+
 	auto visibilityChangedToken = make_shared<EventRegistrationToken>();
 	auto visibilityChangedCallback = CreateCallback<ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*>>([this, visibilityChangedToken](ICoreWindow* coreWindow, IVisibilityChangedEventArgs* args)-> HRESULT
 																												  {
 																													  coreWindow->remove_VisibilityChanged(*visibilityChangedToken);
 
-																													  InitContext();
-
 																													  Draw();
+
+																													  Get();
 
 																													  return S_OK;
 																												  });
@@ -209,6 +213,49 @@ void Application::Draw() NOEXCEPT
 	_deviceContext->EndDraw();
 
 	_swapChain->Present(1, 0);
+}
+
+void Application::Get() NOEXCEPT
+{
+	using namespace ABI::Windows::Foundation;
+	using namespace ABI::Windows::Web::Http::Filters;
+	using namespace ABI::Windows::Web::Http;
+	using namespace MTL::Client;
+	using namespace MTL::Wrappers;
+
+	ComPtr<IHttpClientFactory> httpClientFactory;
+	GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpClient).Get(),
+						 &httpClientFactory);
+
+	ComPtr<IHttpFilter> httpFilter;
+	ActivateInstance<IHttpFilter>(HStringReference(RuntimeClass_Windows_Web_Http_Filters_HttpBaseProtocolFilter).Get(),
+								  &httpFilter);
+
+	ComPtr<IHttpClient> httpClient;
+	httpClientFactory->Create(httpFilter.Get(),
+							  &httpClient);
+
+	ComPtr<IUriRuntimeClassFactory> uriFactory;
+	GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
+						 &uriFactory);
+
+	ComPtr<IUriRuntimeClass> uri;
+	uriFactory->CreateUri(HStringReference(L"https://login.wi-fi.ru/am/UI/Login?org=mac&service=coa&client_mac=c8-d1-0b-01-24-e1&ForceAuth=true").Get(),
+						  &uri);
+
+	ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> getAsyncOperation;
+	httpClient->GetAsync(uri.Get(),
+						 &getAsyncOperation);
+
+	auto getStringTask = GetTask(getAsyncOperation.Get());
+
+	getStringTask.then([](IHttpResponseMessage* result)-> void
+					   {
+						   ComPtr<IHttpContent> httpContent;
+						   result->get_Content(&httpContent);
+
+						   auto a = 4;
+					   });
 }
 
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) NOEXCEPT
