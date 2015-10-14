@@ -1,9 +1,9 @@
 ﻿#include "pch.h"
 #include "Application.h"
 #include <memory>
-#include <thread>
 #include <d2d1_1.h>
 #include <d3d11_1.h>
+#include <windows.graphics.display.h>
 #include <MTL\Wrappers\HString.h>
 #include <MTL\Wrappers\HStringReference.h>
 #include <MTL\Client\Async.h>
@@ -49,7 +49,28 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 
 HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEXCEPT
 {
+	using namespace std;
+	using namespace ABI::Windows::Foundation;
+	using namespace ABI::Windows::ApplicationModel::Core;
+	using namespace ABI::Windows::ApplicationModel::Activation;
+	using namespace ABI::Windows::UI::Core;
+	using namespace MTL::Client;
+
 	_coreWindow.Attach(window);
+
+	auto visibilityChangedToken = make_shared<EventRegistrationToken>();
+	auto visibilityChangedCallback = CreateCallback<ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*>>([this, visibilityChangedToken](ICoreWindow* coreWindow, IVisibilityChangedEventArgs* args)-> HRESULT
+																												  {
+																													  coreWindow->remove_VisibilityChanged(*visibilityChangedToken);
+
+																													  InitContext();
+
+																													  Draw();
+
+																													  return S_OK;
+																												  });
+	window->add_VisibilityChanged(visibilityChangedCallback.Get(), visibilityChangedToken.get());
+
 	return S_OK;
 }
 
@@ -60,13 +81,44 @@ HRESULT Application::Load(HSTRING) NOEXCEPT
 
 HRESULT Application::Run() NOEXCEPT
 {
-	using namespace D2D1;
-	using namespace ABI::Windows::ApplicationModel::Core;
 	using namespace ABI::Windows::UI::Core;
 	using namespace MTL::Client;
 
 	ComPtr<ICoreDispatcher> coreDispatcher;
 	_coreWindow->get_Dispatcher(&coreDispatcher);
+	coreDispatcher->ProcessEvents(CoreProcessEventsOption_ProcessUntilQuit);
+
+	return S_OK;
+}
+
+HRESULT Application::Uninitialize() NOEXCEPT
+{
+	_coreWindow.Release();
+	return S_OK;
+}
+
+void Application::InitContext() NOEXCEPT
+{
+	using namespace D2D1;
+	using namespace ABI::Windows::ApplicationModel::Core;
+	using namespace ABI::Windows::UI::Core;
+	using namespace ABI::Windows::Graphics::Display;
+	using namespace ABI::Windows::Foundation;
+	using namespace MTL::Client;
+	using namespace MTL::Wrappers;
+
+	ComPtr<IDisplayInformationStatics> displayInformationStatics;
+	GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(),
+						 &displayInformationStatics);
+
+	ComPtr<IDisplayInformation> displayInformation;
+	displayInformationStatics->GetForCurrentView(&displayInformation);
+
+	FLOAT dpiX,
+		  dpiY;
+
+	displayInformation->get_RawDpiX(&dpiX);
+	displayInformation->get_RawDpiY(&dpiY);
 
 	ComPtr<ID2D1Factory1> factory;
 	D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED,
@@ -95,6 +147,7 @@ HRESULT Application::Run() NOEXCEPT
 						   &dxgiFactory);
 
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
+	swapChainDesc.Stereo = false;
 	swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.SampleDesc.Quality = 0;
@@ -102,68 +155,60 @@ HRESULT Application::Run() NOEXCEPT
 	swapChainDesc.BufferCount = 2;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
 	swapChainDesc.Flags = 0;
+	swapChainDesc.Width = 0;
+	swapChainDesc.Height = 0;
 	swapChainDesc.Scaling = DXGI_SCALING_NONE;
 	swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 
-	ComPtr<IDXGISwapChain1> dxgiSwapChain;
 	dxgiFactory->CreateSwapChainForCoreWindow(dxgiDevice.Get(),
 											  _coreWindow.Get(),
 											  &swapChainDesc,
 											  nullptr,
-											  &dxgiSwapChain);
+											  &_swapChain);
 
 	ComPtr<ID2D1Device> d2dDevice;
 	factory->CreateDevice(dxgiDevice.Get(),
 						  &d2dDevice);
 
-	ComPtr<ID2D1DeviceContext> d2dDeviceContext;
 	d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE,
-								   &d2dDeviceContext);
+								   &_deviceContext);
 
 	ComPtr<IDXGISurface> dxgiSurface;
-	dxgiSwapChain->GetBuffer(0, __uuidof(dxgiSurface), &dxgiSurface);
+	_swapChain->GetBuffer(0, __uuidof(dxgiSurface), &dxgiSurface);
 
 	auto bitmapProperties = BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-											  PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE));
+											  PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE),
+											  dpiX,
+											  dpiY);
 
 	ComPtr<ID2D1Bitmap1> bitmap;
-	d2dDeviceContext->CreateBitmapFromDxgiSurface(dxgiSurface.Get(),
-												  bitmapProperties,
-												  bitmap.GetAddressOf());
-	d2dDeviceContext->SetTarget(bitmap.Get());
-
-	d2dDeviceContext->SetDpi(332.0f, 332.0f);
-
-	std::thread([d2dDeviceContext, dxgiSwapChain]()-> void
-			    {
-				    D2D1_RECT_F rect = {};
-				    rect.left = 0;
-				    rect.top = 0;
-				    rect.right = 100;
-				    rect.bottom = 100;
-
-				    ComPtr<ID2D1SolidColorBrush> brush;
-				    d2dDeviceContext->CreateSolidColorBrush(ColorF(ColorF::Red),
-															&brush);
-				    while (true)
-				    {
-					    d2dDeviceContext->BeginDraw();
-					    d2dDeviceContext->DrawRectangle(rect, brush.Get());
-					    d2dDeviceContext->EndDraw();
-
-					    dxgiSwapChain->Present(1, 0);
-				    }
-			    }).detach();
-
-	coreDispatcher->ProcessEvents(CoreProcessEventsOption_ProcessUntilQuit);
-
-	return S_OK;
+	_deviceContext->CreateBitmapFromDxgiSurface(dxgiSurface.Get(),
+												bitmapProperties,
+												bitmap.GetAddressOf());
+	_deviceContext->SetTarget(bitmap.Get());
+	_deviceContext->SetDpi(dpiX, dpiY);
 }
 
-HRESULT Application::Uninitialize() NOEXCEPT
+void Application::Draw() NOEXCEPT
 {
-	_coreWindow.Release();
-	return S_OK;
+	using namespace D2D1;
+	using namespace MTL::Client;
+
+	D2D1_RECT_F rect = {};
+	rect.left = 0;
+	rect.top = 0;
+	rect.right = 100;
+	rect.bottom = 100;
+
+	ComPtr<ID2D1SolidColorBrush> brush;
+	_deviceContext->CreateSolidColorBrush(ColorF(ColorF::Red),
+										  &brush);
+
+	_deviceContext->BeginDraw();
+	_deviceContext->DrawRectangle(rect, brush.Get());
+	_deviceContext->EndDraw();
+
+	_swapChain->Present(1, 0);
 }
 
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) NOEXCEPT

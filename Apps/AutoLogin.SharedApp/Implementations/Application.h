@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include <macro.h>
+#include <d2d1_1.h>
+#include <dxgi1_2.h>
 #include <windows.applicationmodel.h>
 #include <windows.applicationmodel.core.h>
 #include <MTL\Implements\RuntimeClass.h>
@@ -22,5 +24,10 @@ namespace AutoLogin
 		STDMETHODIMP Uninitialize() NOEXCEPT override final;
 	private:
 		MTL::Client::ComPtr<ABI::Windows::UI::Core::ICoreWindow> _coreWindow;
+		MTL::Client::ComPtr<ID2D1DeviceContext> _deviceContext;
+		MTL::Client::ComPtr<IDXGISwapChain1> _swapChain;
+
+		void InitContext() NOEXCEPT;
+		void Draw() NOEXCEPT;
 	};
 }
