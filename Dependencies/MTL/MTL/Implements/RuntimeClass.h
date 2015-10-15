@@ -12,6 +12,8 @@ namespace MTL
 		class RuntimeClass abstract : public ComClass<T, Ts...>
 		{
 		public:
+			virtual ~RuntimeClass() {}
+
 			STDMETHODIMP GetIids(ULONG* count, GUID** array) NOEXCEPT override final
 			{
 				using namespace Internals;

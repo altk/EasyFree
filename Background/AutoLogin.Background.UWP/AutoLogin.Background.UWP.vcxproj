@@ -26,6 +26,12 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="AutoLogin.Background.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="macro.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}</ProjectGuid>
     <Keyword>DynamicLibrary</Keyword>
@@ -141,67 +147,133 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+    </Midl>
+    <Midl>
+      <GenerateClientFiles>None</GenerateClientFiles>
+    </Midl>
+    <Midl>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+    </Midl>
+    <Midl>
+      <GenerateClientFiles>None</GenerateClientFiles>
+    </Midl>
+    <Midl>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+    </Midl>
+    <Midl>
+      <GenerateClientFiles>None</GenerateClientFiles>
+    </Midl>
+    <Midl>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+    </Midl>
+    <Midl>
+      <GenerateClientFiles>None</GenerateClientFiles>
+    </Midl>
+    <Midl>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+    </Midl>
+    <Midl>
+      <GenerateClientFiles>None</GenerateClientFiles>
+    </Midl>
+    <Midl>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+    </Midl>
+    <Midl>
+      <GenerateClientFiles>None</GenerateClientFiles>
+    </Midl>
+    <Midl>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

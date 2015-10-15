@@ -13,7 +13,7 @@
 #include <windows.web.http.h>
 #include <windows.storage.streams.h>
 
-using namespace AutoLogin;
+using namespace AutoLogin::Implementations;
 
 const GumboNode* findNodeByTag(const GumboNode* node, GumboTag tag) NOEXCEPT
 {

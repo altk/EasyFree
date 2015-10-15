@@ -18,6 +18,12 @@
       <Platform>ARM</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="AutoLogin.Background.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="macro.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{c4171d98-d049-453a-bad3-b2a409419126}</ProjectGuid>
     <Keyword>DynamicLibrary</Keyword>
@@ -96,49 +102,89 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <SDLCheck>true</SDLCheck>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+    </Midl>
+    <Midl>
+      <GenerateClientFiles>None</GenerateClientFiles>
+    </Midl>
+    <Midl>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <SDLCheck>true</SDLCheck>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+    </Midl>
+    <Midl>
+      <GenerateClientFiles>None</GenerateClientFiles>
+    </Midl>
+    <Midl>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <SDLCheck>true</SDLCheck>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+    </Midl>
+    <Midl>
+      <GenerateClientFiles>None</GenerateClientFiles>
+    </Midl>
+    <Midl>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <SDLCheck>true</SDLCheck>
+      <CompileAsManaged>false</CompileAsManaged>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
     </Link>
+    <Midl>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+    </Midl>
+    <Midl>
+      <GenerateClientFiles>None</GenerateClientFiles>
+    </Midl>
+    <Midl>
+      <GenerateServerFiles>None</GenerateServerFiles>
+    </Midl>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
