@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{A9F722C7-DFF7-43AD-A566-03F7406007AD}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)gumbo\attribute.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)gumbo\char_ref.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)gumbo\error.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)gumbo\parser.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)gumbo\string_buffer.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)gumbo\string_piece.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)gumbo\tag.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)gumbo\tokenizer.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)gumbo\utf8.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)gumbo\util.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)gumbo\vector.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\attribute.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\char_ref.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\error.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\gumbo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\insertion_mode.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\parser.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\strings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\string_buffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\string_piece.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\tag_enum.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\tag_gperf.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\tag_sizes.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\tag_strings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\tokenizer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\tokenizer_states.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\token_type.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\utf8.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\util.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo\vector.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)gumbo\char_ref.rl" />
+    <None Include="$(MSBuildThisFileDirectory)gumbo\tag.in" />
+  </ItemGroup>
+</Project>

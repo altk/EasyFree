@@ -8,10 +8,45 @@
 #include <MTL\Wrappers\HStringReference.h>
 #include <MTL\Client\Async.h>
 
+#include <gumbo\gumbo.h>
+#include <robuffer.h>
 #include <windows.web.http.h>
 #include <windows.storage.streams.h>
 
 using namespace AutoLogin;
+
+const GumboNode* findNodeByTag(const GumboNode* node, GumboTag tag) NOEXCEPT
+{
+	if(node->v.element.tag == tag)
+	{
+		return node;
+	}
+
+	auto children = &node->v.element.children;
+	for (auto i = 0; i < children->length; ++i)
+	{
+		auto child = static_cast<GumboNode*>(children->data[i]);
+		if (child->type == GUMBO_NODE_ELEMENT)
+		{
+			auto result = findNodeByTag(child, tag);
+			if(nullptr != result)
+			{
+				return result;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+void findFormNode(const char* source, size_t size) NOEXCEPT
+{
+	auto output = gumbo_parse_with_options(&kGumboDefaultOptions, source, size);
+
+	auto formNode = findNodeByTag(output->root, GUMBO_TAG_FORM);
+
+	gumbo_destroy_output(&kGumboDefaultOptions, output);
+}
 
 HRESULT Application::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 {
@@ -222,6 +257,7 @@ void Application::Get() NOEXCEPT
 	using namespace ABI::Windows::Web::Http::Filters;
 	using namespace ABI::Windows::Web::Http;
 	using namespace ABI::Windows::Storage::Streams;
+	using namespace Windows::Storage::Streams;
 	using namespace MTL::Client;
 	using namespace MTL::Wrappers;
 
@@ -253,17 +289,29 @@ void Application::Get() NOEXCEPT
 
 	getStringTask.then([](IHttpResponseMessage* result)-> void
 					   {
+						   ComPtr<IHttpResponseMessage> response(result);
+
 						   ComPtr<IHttpContent> httpContent;
-						   result->get_Content(&httpContent);
+						   response->get_Content(&httpContent);
 
 						   ComPtr<IAsyncOperationWithProgress<IBuffer*, ULONGLONG>> readAsBufferOperation;
 						   httpContent->ReadAsBufferAsync(&readAsBufferOperation);
 
-						   auto buffer = GetTask(readAsBufferOperation.Get()).get();
+						   ComPtr<IBuffer> buffer(GetTask(readAsBufferOperation.Get()).get());
+
+						   ComPtr<IBufferByteAccess> bufferByteAccess;
+						   buffer.As(&bufferByteAccess);
+
+						   byte* content;
+						   bufferByteAccess->Buffer(&content);
+
 						   UINT32 lenght;
 						   buffer->get_Length(&lenght);
+
+						   findFormNode(reinterpret_cast<const char*>(content), lenght);
 					   });
 }
+
 
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) NOEXCEPT
 {
