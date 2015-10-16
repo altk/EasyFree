@@ -104,10 +104,10 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
       <CompileAsManaged>false</CompileAsManaged>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
-      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
@@ -130,10 +130,10 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
       <CompileAsManaged>false</CompileAsManaged>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
-      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
@@ -156,10 +156,10 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
       <CompileAsManaged>false</CompileAsManaged>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
-      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
@@ -182,10 +182,10 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
       <CompileAsManaged>false</CompileAsManaged>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
-      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
