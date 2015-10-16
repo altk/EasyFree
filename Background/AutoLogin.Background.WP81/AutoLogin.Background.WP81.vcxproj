@@ -18,15 +18,8 @@
       <Platform>ARM</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="AutoLogin.Background.def" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="macro.h" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{c4171d98-d049-453a-bad3-b2a409419126}</ProjectGuid>
-    <Keyword>DynamicLibrary</Keyword>
     <ProjectName>AutoLogin.Background.WP81</ProjectName>
     <RootNamespace>AutoLogin.Background</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
@@ -79,45 +72,38 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <GenerateManifest>false</GenerateManifest>
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <CustomBuildAfterTargets>
-    </CustomBuildAfterTargets>
+    <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <GenerateManifest>false</GenerateManifest>
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <CustomBuildAfterTargets>
-    </CustomBuildAfterTargets>
+    <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <GenerateManifest>false</GenerateManifest>
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <CustomBuildAfterTargets>
-    </CustomBuildAfterTargets>
+    <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <GenerateManifest>false</GenerateManifest>
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <CustomBuildAfterTargets>
-    </CustomBuildAfterTargets>
+    <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
       <CompileAsManaged>false</CompileAsManaged>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
@@ -128,20 +114,16 @@
     <Midl>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
-    <CustomBuildStep />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
       <CompileAsManaged>false</CompileAsManaged>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
@@ -152,20 +134,16 @@
     <Midl>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
-    <CustomBuildStep />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
       <CompileAsManaged>false</CompileAsManaged>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
@@ -176,20 +154,16 @@
     <Midl>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
-    <CustomBuildStep />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <CompileAsWinRT>false</CompileAsWinRT>
       <CompileAsManaged>false</CompileAsManaged>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
       <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
@@ -200,8 +174,13 @@
     <Midl>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
-    <CustomBuildStep />
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="AutoLogin.Background.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="macro.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -189,6 +189,11 @@
     <Image Include="Assets\StoreLogo.scale-240.png" />
     <Image Include="Assets\WideLogo.scale-240.png" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Background\AutoLogin.Background.WP81\AutoLogin.Background.WP81.vcxproj">
+      <Project>{c4171d98-d049-453a-bad3-b2a409419126}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
