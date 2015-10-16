@@ -76,24 +76,28 @@
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <TargetName>$(RootNamespace)</TargetName>
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <GenerateManifest>false</GenerateManifest>
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <TargetName>$(RootNamespace)</TargetName>
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <GenerateManifest>false</GenerateManifest>
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <TargetName>$(RootNamespace)</TargetName>
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <GenerateManifest>false</GenerateManifest>
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
     <TargetName>$(RootNamespace)</TargetName>
+    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -114,6 +118,12 @@
     <Midl>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
+    <CustomBuildStep>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)" &amp;&amp; del "$(OutDir)*.winmd" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>%(TargetName).winmd</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -134,6 +144,12 @@
     <Midl>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
+    <CustomBuildStep>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)" &amp;&amp; del "$(OutDir)*.winmd" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>%(TargetName).winmd</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
@@ -154,6 +170,12 @@
     <Midl>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
+    <CustomBuildStep>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)" &amp;&amp; del "$(OutDir)*.winmd" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>%(TargetName).winmd</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
@@ -174,6 +196,12 @@
     <Midl>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
+    <CustomBuildStep>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)" &amp;&amp; del "$(OutDir)*.winmd" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>%(TargetName).winmd</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="AutoLogin.Background.def" />
