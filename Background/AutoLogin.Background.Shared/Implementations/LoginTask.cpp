@@ -1,8 +1,11 @@
 #include <pch.h>
 #include "LoginTask.h"
 #include <robuffer.h>
+#include <Windows.Data.Xml.Dom.h>
+#include <Windows.UI.Notifications.h>
 #include <windows.web.http.h>
 #include <windows.storage.streams.h>
+#include <windows.networking.connectivity.h>
 #include <gumbo\gumbo.h>
 #include <MTL\Client\ComPtr.h>
 #include <MTL\Client\Async.h>
@@ -104,6 +107,9 @@ HRESULT LoginTask::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 
 HRESULT LoginTask::Run(ABI::Windows::ApplicationModel::Background::IBackgroundTaskInstance* taskInstance) NOEXCEPT
 {
+	using namespace ABI::Windows::Data::Xml::Dom;
+	using namespace ABI::Windows::UI::Notifications;
+	using namespace ABI::Windows::Networking::Connectivity;
 	using namespace ABI::Windows::ApplicationModel::Background;
 	using namespace ABI::Windows::Foundation;
 	using namespace ABI::Windows::Web::Http::Filters;
@@ -116,51 +122,100 @@ HRESULT LoginTask::Run(ABI::Windows::ApplicationModel::Background::IBackgroundTa
 	ComPtr<IBackgroundTaskDeferral> taskDefferal;
 	taskInstance->GetDeferral(&taskDefferal);
 
-	ComPtr<IHttpClientFactory> httpClientFactory;
-	GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpClient).Get(),
-						 &httpClientFactory);
+	ComPtr<INetworkInformationStatics> networkInformationStatics;
+	GetActivationFactory(HStringReference(RuntimeClass_Windows_Networking_Connectivity_NetworkInformation).Get(),
+						 &networkInformationStatics);
 
-	ComPtr<IHttpFilter> httpFilter;
-	ActivateInstance<IHttpFilter>(HStringReference(RuntimeClass_Windows_Web_Http_Filters_HttpBaseProtocolFilter).Get(),
-								  &httpFilter);
+	ComPtr<IConnectionProfile> connectionProfile;
+	networkInformationStatics->GetInternetConnectionProfile(&connectionProfile);
 
-	ComPtr<IHttpClient> httpClient;
-	httpClientFactory->Create(httpFilter.Get(),
-							  &httpClient);
+	//TODO написать перегрузку оператора operator&
+	HString profileName;
+	connectionProfile->get_ProfileName(profileName.GetAddressOf());
 
-	ComPtr<IUriRuntimeClassFactory> uriFactory;
-	GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
-						 &uriFactory);
+	//if (wcscmp(profileName.GetRawBuffer(), L"MosMetro_Free") == 0)
+	{
+		ComPtr<IHttpClientFactory> httpClientFactory;
+		GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpClient).Get(),
+							 &httpClientFactory);
 
-	ComPtr<IUriRuntimeClass> uri;
-	uriFactory->CreateUri(HStringReference(L"https://login.wi-fi.ru/am/UI/Login?org=mac&service=coa&client_mac=c8-d1-0b-01-24-e1&ForceAuth=true").Get(),
-						  &uri);
+		ComPtr<IHttpFilter> httpFilter;
+		ActivateInstance<IHttpFilter>(HStringReference(RuntimeClass_Windows_Web_Http_Filters_HttpBaseProtocolFilter).Get(),
+									  &httpFilter);
 
-	ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> getAsyncOperation;
-	httpClient->GetAsync(uri.Get(),
-						 &getAsyncOperation);
+		ComPtr<IHttpClient> httpClient;
+		httpClientFactory->Create(httpFilter.Get(),
+								  &httpClient);
 
-	ComPtr<IHttpResponseMessage> response(GetTask(getAsyncOperation.Get()).get());
+		ComPtr<IUriRuntimeClassFactory> uriFactory;
+		GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
+							 &uriFactory);
 
-	ComPtr<IHttpContent> httpContent;
-	response->get_Content(&httpContent);
+		ComPtr<IUriRuntimeClass> uri;
+		uriFactory->CreateUri(HStringReference(L"https://login.wi-fi.ru/am/UI/Login?org=mac&service=coa&client_mac=c8-d1-0b-01-24-e1&ForceAuth=true").Get(),
+							  &uri);
 
-	ComPtr<IAsyncOperationWithProgress<IBuffer*, ULONGLONG>> readAsBufferOperation;
-	httpContent->ReadAsBufferAsync(&readAsBufferOperation);
+		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> getAsyncOperation;
+		httpClient->GetAsync(uri.Get(),
+							 &getAsyncOperation);
 
-	ComPtr<IBuffer> buffer(GetTask(readAsBufferOperation.Get()).get());
+		ComPtr<IHttpResponseMessage> response(GetTask(getAsyncOperation.Get()).get());
 
-	ComPtr<IBufferByteAccess> bufferByteAccess;
-	buffer.As(&bufferByteAccess);
+		ComPtr<IHttpContent> httpContent;
+		response->get_Content(&httpContent);
 
-	byte* content;
-	bufferByteAccess->Buffer(&content);
+		ComPtr<IAsyncOperationWithProgress<IBuffer*, ULONGLONG>> readAsBufferOperation;
+		httpContent->ReadAsBufferAsync(&readAsBufferOperation);
 
-	UINT32 lenght;
-	buffer->get_Length(&lenght);
+		ComPtr<IBuffer> buffer(GetTask(readAsBufferOperation.Get()).get());
 
-	auto t = getPostContent(reinterpret_cast<const char*>(content));
-	OutputDebugStringA(t.data());
+		ComPtr<IBufferByteAccess> bufferByteAccess;
+		buffer.As(&bufferByteAccess);
+
+		byte* content;
+		bufferByteAccess->Buffer(&content);
+
+		UINT32 lenght;
+		buffer->get_Length(&lenght);
+
+		auto postContent = getPostContent(reinterpret_cast<const char*>(content));
+
+		ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
+		GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
+							 &toastNotificationManagerStatics);
+
+		ComPtr<IXmlDocument> xmlDocument;
+		toastNotificationManagerStatics->GetTemplateContent(ToastTemplateType_ToastText01,
+															&xmlDocument);
+
+		ComPtr<IXmlNodeList> xmlNodeList;
+		xmlDocument->GetElementsByTagName(HStringReference(L"text").Get(),
+										  &xmlNodeList);
+
+		ComPtr<IXmlNode> xmlNode;
+		xmlNodeList->Item(0, &xmlNode);
+
+		ComPtr<IXmlNodeSerializer> xmlNodeSerializer;
+		xmlNode.As(&xmlNodeSerializer);
+
+		xmlNodeSerializer->put_InnerText(HStringReference(L"Connection completed").Get());
+
+		ComPtr<IToastNotificationFactory> toastNotificationFactory;
+		GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
+							 &toastNotificationFactory);
+
+		SYSTEMTIME TodaySystemTime;
+		GetSystemTime(&TodaySystemTime);
+
+		ComPtr<IToastNotification> toastNotification;
+		auto t = toastNotificationFactory->CreateToastNotification(xmlDocument.Get(),
+																   &toastNotification);
+
+		ComPtr<IToastNotifier> toastNotifier;
+		toastNotificationManagerStatics->CreateToastNotifier(&toastNotifier);
+
+		toastNotifier->Show(toastNotification.Get());
+	}
 
 	taskDefferal->Complete();
 
