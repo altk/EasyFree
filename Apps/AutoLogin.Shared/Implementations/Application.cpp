@@ -3,9 +3,9 @@
 #include <memory>
 #include <d2d1_1.h>
 #include <d3d11_1.h>
-#include <weakreference.h>
 #include <windows.graphics.display.h>
 #include <windows.applicationmodel.background.h>
+#include <windows.foundation.collections.h>
 #include <MTL\Wrappers\HString.h>
 #include <MTL\Wrappers\HStringReference.h>
 #include <MTL\Client\Async.h>
@@ -218,14 +218,44 @@ void Application::Draw() NOEXCEPT
 void Application::RegisterBackgroundTask() NOEXCEPT
 {
 	using namespace ABI::Windows::ApplicationModel::Background;
+	using namespace ABI::Windows::Foundation::Collections;
 	using namespace ABI::Windows::Foundation;
 	using namespace MTL::Client;
 	using namespace MTL::Wrappers;
 
+	ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
+	GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
+						 &backgroundTaskRegistrationStatics);
+
+	ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
+	backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations);
+
+	ComPtr<IIterable<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterable;
+	taskRegistrations.As(&registrationsIterable);
+
+	ComPtr<IIterator<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterator;
+	registrationsIterable->First(&registrationsIterator);
+
+	boolean hasCurrent;
+	registrationsIterator->get_HasCurrent(&hasCurrent);
+
+	while (hasCurrent)
+	{
+		ComPtr<IKeyValuePair<GUID, IBackgroundTaskRegistration*>> current;
+		registrationsIterator->get_Current(&current);
+
+		ComPtr<IBackgroundTaskRegistration> taskRegistration;
+		current->get_Value(&taskRegistration);
+
+		taskRegistration->Unregister(true);
+
+		registrationsIterator->MoveNext(&hasCurrent);
+	}
+
 	ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
 	ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
 											 &backgroundTaskBuilder);
-	
+
 	backgroundTaskBuilder->put_Name(HString(L"AutoLogin Wi-Fi Background task").Detach());
 	backgroundTaskBuilder->put_TaskEntryPoint(HString(L"AutoLogin.Background.LoginTask").Detach());
 
@@ -237,14 +267,14 @@ void Application::RegisterBackgroundTask() NOEXCEPT
 	systemTriggerActivationFactory->Create(SystemTriggerType_TimeZoneChange,
 										   false,
 										   &systemTrigger);
-	
+
 	ComPtr<IBackgroundTrigger> backgroundTrigger;
 	systemTrigger.As(&backgroundTrigger);
 
 	backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get());
 
 	ComPtr<IBackgroundTaskRegistration> taskRegistration;
-	auto hr = backgroundTaskBuilder->Register(&taskRegistration);
+	backgroundTaskBuilder->Register(&taskRegistration);
 }
 
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) NOEXCEPT
