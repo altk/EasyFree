@@ -1,4 +1,3 @@
-import "inspectable.idl";
 import "Windows.ApplicationModel.Background.idl";
 
 namespace AutoLogin

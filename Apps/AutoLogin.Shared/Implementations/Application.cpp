@@ -3,7 +3,9 @@
 #include <memory>
 #include <d2d1_1.h>
 #include <d3d11_1.h>
+#include <weakreference.h>
 #include <windows.graphics.display.h>
+#include <windows.applicationmodel.background.h>
 #include <MTL\Wrappers\HString.h>
 #include <MTL\Wrappers\HStringReference.h>
 #include <MTL\Client\Async.h>
@@ -83,6 +85,8 @@ HRESULT Application::Run() NOEXCEPT
 {
 	using namespace ABI::Windows::UI::Core;
 	using namespace MTL::Client;
+
+	RegisterBackgroundTask();
 
 	ComPtr<ICoreDispatcher> coreDispatcher;
 	_coreWindow->get_Dispatcher(&coreDispatcher);
@@ -209,6 +213,38 @@ void Application::Draw() NOEXCEPT
 	_deviceContext->EndDraw();
 
 	_swapChain->Present(1, 0);
+}
+
+void Application::RegisterBackgroundTask() NOEXCEPT
+{
+	using namespace ABI::Windows::ApplicationModel::Background;
+	using namespace ABI::Windows::Foundation;
+	using namespace MTL::Client;
+	using namespace MTL::Wrappers;
+
+	ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
+	ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
+											 &backgroundTaskBuilder);
+	
+	backgroundTaskBuilder->put_Name(HString(L"AutoLogin Wi-Fi Background task").Detach());
+	backgroundTaskBuilder->put_TaskEntryPoint(HString(L"AutoLogin.Background.LoginTask").Detach());
+
+	ComPtr<ISystemTriggerFactory> systemTriggerActivationFactory;
+	GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_SystemTrigger).Get(),
+						 &systemTriggerActivationFactory);
+
+	ComPtr<ISystemTrigger> systemTrigger;
+	systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
+										   false,
+										   &systemTrigger);
+	
+	ComPtr<IBackgroundTrigger> backgroundTrigger;
+	systemTrigger.As(&backgroundTrigger);
+
+	backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get());
+
+	ComPtr<IBackgroundTaskRegistration> taskRegistration;
+	auto hr = backgroundTaskBuilder->Register(&taskRegistration);
 }
 
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) NOEXCEPT

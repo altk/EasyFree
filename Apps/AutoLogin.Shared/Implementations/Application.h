@@ -31,6 +31,7 @@ namespace AutoLogin
 
 			void InitContext() NOEXCEPT;
 			void Draw() NOEXCEPT;
+			void RegisterBackgroundTask() NOEXCEPT;
 		};
 	}
 }

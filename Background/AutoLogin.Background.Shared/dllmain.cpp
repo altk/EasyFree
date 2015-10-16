@@ -13,7 +13,7 @@ BOOL APIENTRY DllMain(HMODULE, DWORD, LPVOID) NOEXCEPT
 HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId,
 									   IActivationFactory** factory) NOEXCEPT
 {
-	using namespace ABI::AutoLogin::Background;
+	using namespace ABI::AutoLogin;
 	using namespace AutoLogin::Background::Implementations;
 	using namespace MTL::Wrappers;
 
