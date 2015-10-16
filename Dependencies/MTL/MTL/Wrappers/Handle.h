@@ -14,24 +14,20 @@ namespace MTL
 			using Pointer = typename Traits::Pointer;
 
 			explicit Handle(Pointer value = Traits::Invalid()) NOEXCEPT
-				: _pointer(value)
-			{
-			}
+				: _pointer(value) { }
 
 			Handle(const Handle&) = delete;
 
 			Handle& operator=(const Handle&) = delete;
-			
+
 			Handle(Handle&& other) NOEXCEPT
-				: _pointer(other.Detach())
-			{
-			}
+				: _pointer(other.Detach()) { }
 
 			Handle& operator=(Handle&& other) NOEXCEPT
 			{
 				if (this != &other)
 				{
-					Reset(other.Detach());
+					Attach(other.Detach());
 				}
 
 				return *this;
@@ -39,7 +35,7 @@ namespace MTL
 
 			~Handle() NOEXCEPT
 			{
-				Close();
+				ReleaseInternal();
 			}
 
 			explicit operator bool() const NOEXCEPT
@@ -54,15 +50,24 @@ namespace MTL
 
 			Pointer* GetAddressOf() NOEXCEPT
 			{
-				ASSERT(!*this);
-
 				return &_pointer;
+			}
+			
+			void Release() NOEXCEPT
+			{
+				ReleaseInternal();
 			}
 
 			Pointer* ReleaseAndGetAddressOf() NOEXCEPT
 			{
-				Close();
+				ReleaseInternal();
 				return GetAddressOf();
+			}
+
+			void Attach(Pointer pointer) NOEXCEPT
+			{
+				ReleaseInternal();
+				_pointer = pointer;
 			}
 
 			Pointer Detach() NOEXCEPT
@@ -72,36 +77,29 @@ namespace MTL
 				return value;
 			}
 
-			void Reset(Pointer ptr = Traits::Invalid()) NOEXCEPT
-			{
-				Close();
-				_pointer = ptr;
-			}
-
 			void Swap(Handle& other) NOEXCEPT
 			{
 				std::swap(_pointer, other._pointer);
 			}
-		
+
 		protected:
 
-			void Close() NOEXCEPT
+			void ReleaseInternal() NOEXCEPT
 			{
-				Traits::Close(_pointer);
+				Traits::Release(_pointer);
 			}
 
 		private:
 
 			Pointer _pointer;
-
 		};
 	}
 }
 
 namespace std
 {
-	template<typename Traits>
-	inline void swap(MTL::Wrappers::Handle<Traits> & left, MTL::Wrappers::Handle<Traits> & right) NOEXCEPT
+	template <typename Traits>
+	inline void swap(MTL::Wrappers::Handle<Traits>& left, MTL::Wrappers::Handle<Traits>& right) NOEXCEPT
 	{
 		left.Swap(right);
 	}

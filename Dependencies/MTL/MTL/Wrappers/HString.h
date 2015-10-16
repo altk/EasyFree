@@ -6,7 +6,7 @@
 namespace MTL
 {
 	namespace Wrappers
-	{		
+	{
 		struct HStringTraits final
 		{
 			using Pointer = HSTRING;
@@ -16,7 +16,7 @@ namespace MTL
 				return nullptr;
 			}
 
-			static void Close(Pointer value) NOEXCEPT
+			static void Release(Pointer value) NOEXCEPT
 			{
 				VERIFY_SUCCEEDED(WindowsDeleteString(value));
 			}
@@ -26,9 +26,7 @@ namespace MTL
 		{
 		public:
 			explicit HString(Pointer pointer = HStringTraits::Invalid()) NOEXCEPT
-				: Handle<HStringTraits>(pointer)
-			{
-			}
+				: Handle<HStringTraits>(pointer) { }
 
 			HString(const wchar_t* const string, unsigned const length) NOEXCEPT
 			{
@@ -36,10 +34,8 @@ namespace MTL
 			}
 
 			template <unsigned Length>
-			explicit HString(const wchar_t(&string)[Length]) NOEXCEPT
-				: HString(string, Length-1)
-			{
-			}
+			explicit HString(const wchar_t (&string)[Length]) NOEXCEPT
+				: HString(string, Length - 1) { }
 
 			HString(const HString& other) NOEXCEPT
 			{
@@ -47,15 +43,13 @@ namespace MTL
 			}
 
 			HString(HString&& other) NOEXCEPT
-				: Handle<HStringTraits>(other.Detach())
-			{
-			}
+				: Handle<HStringTraits>(other.Detach()) { }
 
 			HString& operator=(const HString& other) NOEXCEPT
 			{
 				if (this != &other)
 				{
-					Close();
+					ReleaseInternal();
 					VERIFY_SUCCEEDED(WindowsDuplicateString(other.Get(), GetAddressOf()));
 				}
 				return *this;
@@ -63,11 +57,23 @@ namespace MTL
 
 			HString& operator=(HString&& other) NOEXCEPT
 			{
-				if(this != &other)
+				if (this != &other)
 				{
 					Handle<HStringTraits>::operator=(std::move(other));
 				}
 				return *this;
+			}
+
+			friend bool operator==(const HString& lhs, const HString& rhs) NOEXCEPT
+			{
+				INT32 compareResult;
+				WindowsCompareStringOrdinal(lhs.Get(), rhs.Get(), &compareResult);
+				return compareResult == 0;
+			}
+
+			friend bool operator!=(const HString& lhs, const HString& rhs) NOEXCEPT
+			{
+				return !(lhs == rhs);
 			}
 
 			HString Substring(unsigned start) const NOEXCEPT

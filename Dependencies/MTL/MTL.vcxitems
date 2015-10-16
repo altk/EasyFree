@@ -20,6 +20,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)mtl\client\ComPtr.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MTL\collections\IterableAdapter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MTL\collections\IteratorAdapter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)MTL\Implements\ActivationFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MTL\implements\ComClass.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MTL\implements\RuntimeClass.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)mtl\internals\ComPtrRef.h" />

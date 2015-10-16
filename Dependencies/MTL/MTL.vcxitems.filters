@@ -46,6 +46,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)mtl\internals\utility.h">
       <Filter>Internals</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)MTL\Implements\ActivationFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Client">

@@ -3,11 +3,15 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)dllmain.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)pch.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.cpp">
+      <Filter>Implementations</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.h">
+      <Filter>Implementations</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)AutoLogin.Background.idl" />
