@@ -1,4 +1,5 @@
 #include <pch.h>
+#include <chrono>
 #include "LoginTask.h"
 #include <robuffer.h>
 #include <Windows.Data.Xml.Dom.h>
@@ -118,6 +119,7 @@ HRESULT LoginTask::Run(ABI::Windows::ApplicationModel::Background::IBackgroundTa
 	using namespace Windows::Storage::Streams;
 	using namespace MTL::Client;
 	using namespace MTL::Wrappers;
+	using namespace std::chrono;
 
 	ComPtr<IBackgroundTaskDeferral> taskDefferal;
 	taskInstance->GetDeferral(&taskDefferal);
@@ -129,13 +131,12 @@ HRESULT LoginTask::Run(ABI::Windows::ApplicationModel::Background::IBackgroundTa
 	ComPtr<IConnectionProfile> connectionProfile;
 	networkInformationStatics->GetInternetConnectionProfile(&connectionProfile);
 
-	//TODO написать перегрузку оператора operator&
 	HString profileName;
 	connectionProfile->get_ProfileName(profileName.GetAddressOf());
 
-	//if (wcscmp(profileName.GetRawBuffer(), L"MosMetro_Free") == 0)
+	//if (wcscmp(profileName.GetRawBuffer(), L"MR_Dev") == 0)
 	{
-		ComPtr<IHttpClientFactory> httpClientFactory;
+		/*ComPtr<IHttpClientFactory> httpClientFactory;
 		GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpClient).Get(),
 							 &httpClientFactory);
 
@@ -179,6 +180,24 @@ HRESULT LoginTask::Run(ABI::Windows::ApplicationModel::Background::IBackgroundTa
 		buffer->get_Length(&lenght);
 
 		auto postContent = getPostContent(reinterpret_cast<const char*>(content));
+		auto wPostContent = std::wstring(postContent.begin(), postContent.end());
+
+		ComPtr<IHttpStringContentFactory> stringContentFactory;
+		GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
+							 &stringContentFactory);
+
+		ComPtr<IHttpContent> postHttpContent;
+		stringContentFactory->CreateFromString(HString(wPostContent.data(), wPostContent.size()).Get(),
+											   &postHttpContent);
+
+		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> postAsyncOperation;
+		httpClient->PostAsync(uri.Get(),
+							  postHttpContent.Get(),
+							  &postAsyncOperation);
+
+		GetTask(postAsyncOperation.Get()).wait();*/
+
+#pragma region notification
 
 		ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
 		GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
@@ -204,17 +223,16 @@ HRESULT LoginTask::Run(ABI::Windows::ApplicationModel::Background::IBackgroundTa
 		GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
 							 &toastNotificationFactory);
 
-		SYSTEMTIME TodaySystemTime;
-		GetSystemTime(&TodaySystemTime);
-
 		ComPtr<IToastNotification> toastNotification;
-		auto t = toastNotificationFactory->CreateToastNotification(xmlDocument.Get(),
-																   &toastNotification);
+		toastNotificationFactory->CreateToastNotification(xmlDocument.Get(),
+														  &toastNotification);
 
 		ComPtr<IToastNotifier> toastNotifier;
 		toastNotificationManagerStatics->CreateToastNotifier(&toastNotifier);
 
 		toastNotifier->Show(toastNotification.Get());
+
+#pragma endregion
 	}
 
 	taskDefferal->Complete();

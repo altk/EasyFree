@@ -22,6 +22,7 @@ namespace MTL
 			}
 		};
 
+		//TODO написать перегрузку оператора operator&
 		class HString final : public Handle<HStringTraits>
 		{
 		public:

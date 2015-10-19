@@ -12,6 +12,8 @@ namespace MTL
 {
 	namespace Client
 	{
+		//TODO удалить реализацию в виде variadic template
+		//TODO сделать ComPtrRef friend классом
 		template <typename T, typename ... Ts>
 		class ComPtr final
 		{

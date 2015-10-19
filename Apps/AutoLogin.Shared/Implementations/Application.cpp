@@ -264,7 +264,7 @@ void Application::RegisterBackgroundTask() NOEXCEPT
 						 &systemTriggerActivationFactory);
 
 	ComPtr<ISystemTrigger> systemTrigger;
-	systemTriggerActivationFactory->Create(SystemTriggerType_TimeZoneChange,
+	systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
 										   false,
 										   &systemTrigger);
 

@@ -7,9 +7,9 @@ namespace MTL
 {
 	namespace Implements
 	{
+		//TODO вынести поддержку подсчета ссылок в отдельный класс
 		template <typename T, typename ... Ts>
-		class
-				NOVTABLE ComClass : public T, public Ts...
+		class NOVTABLE ComClass : public T, public Ts...
 		{
 			static_assert(Internals::variadic_is_base_of<IUnknown, T, Ts...>::value, "Not all interfaces inherit IUnknown.");
 			static_assert(Internals::is_type_set<T, Ts...>::value, "Found duplicate types. You must specify unique types.");
