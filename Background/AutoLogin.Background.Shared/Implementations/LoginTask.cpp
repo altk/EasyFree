@@ -131,108 +131,119 @@ HRESULT LoginTask::Run(ABI::Windows::ApplicationModel::Background::IBackgroundTa
 	ComPtr<IConnectionProfile> connectionProfile;
 	networkInformationStatics->GetInternetConnectionProfile(&connectionProfile);
 
-	HString profileName;
-	connectionProfile->get_ProfileName(profileName.GetAddressOf());
-
-	//if (wcscmp(profileName.GetRawBuffer(), L"MR_Dev") == 0)
+	if (connectionProfile)
 	{
-		/*ComPtr<IHttpClientFactory> httpClientFactory;
-		GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpClient).Get(),
-							 &httpClientFactory);
+		HString profileName;
+		connectionProfile->get_ProfileName(profileName.GetAddressOf());
 
-		ComPtr<IHttpFilter> httpFilter;
-		ActivateInstance<IHttpFilter>(HStringReference(RuntimeClass_Windows_Web_Http_Filters_HttpBaseProtocolFilter).Get(),
-									  &httpFilter);
+		if (wcscmp(profileName.GetRawBuffer(), L"MosMetro_Free") == 0)
+		{
+			ComPtr<IHttpClientFactory> httpClientFactory;
+			GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpClient).Get(),
+								 &httpClientFactory);
 
-		ComPtr<IHttpClient> httpClient;
-		httpClientFactory->Create(httpFilter.Get(),
-								  &httpClient);
+			ComPtr<IHttpFilter> httpFilter;
+			ActivateInstance<IHttpFilter>(HStringReference(RuntimeClass_Windows_Web_Http_Filters_HttpBaseProtocolFilter).Get(),
+										  &httpFilter);
 
-		ComPtr<IUriRuntimeClassFactory> uriFactory;
-		GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
-							 &uriFactory);
+			ComPtr<IHttpClient> httpClient;
+			httpClientFactory->Create(httpFilter.Get(),
+									  &httpClient);
 
-		ComPtr<IUriRuntimeClass> uri;
-		uriFactory->CreateUri(HStringReference(L"https://login.wi-fi.ru/am/UI/Login?org=mac&service=coa&client_mac=c8-d1-0b-01-24-e1&ForceAuth=true").Get(),
-							  &uri);
+			ComPtr<IUriRuntimeClassFactory> uriFactory;
+			GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
+								 &uriFactory);
 
-		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> getAsyncOperation;
-		httpClient->GetAsync(uri.Get(),
-							 &getAsyncOperation);
+			ComPtr<IUriRuntimeClass> uri;
+			uriFactory->CreateUri(HStringReference(L"https://login.wi-fi.ru/am/UI/Login?org=mac&service=coa&client_mac=c8-d1-0b-01-24-e1&ForceAuth=true").Get(),
+								  &uri);
 
-		ComPtr<IHttpResponseMessage> response(GetTask(getAsyncOperation.Get()).get());
+			ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> getAsyncOperation;
+			httpClient->GetAsync(uri.Get(),
+								 &getAsyncOperation);
 
-		ComPtr<IHttpContent> httpContent;
-		response->get_Content(&httpContent);
+			ComPtr<IHttpResponseMessage> response(GetTask(getAsyncOperation.Get()).get());
 
-		ComPtr<IAsyncOperationWithProgress<IBuffer*, ULONGLONG>> readAsBufferOperation;
-		httpContent->ReadAsBufferAsync(&readAsBufferOperation);
+			ComPtr<IHttpContent> httpContent;
+			response->get_Content(&httpContent);
 
-		ComPtr<IBuffer> buffer(GetTask(readAsBufferOperation.Get()).get());
+			ComPtr<IAsyncOperationWithProgress<IBuffer*, ULONGLONG>> readAsBufferOperation;
+			httpContent->ReadAsBufferAsync(&readAsBufferOperation);
 
-		ComPtr<IBufferByteAccess> bufferByteAccess;
-		buffer.As(&bufferByteAccess);
+			ComPtr<IBuffer> buffer(GetTask(readAsBufferOperation.Get()).get());
 
-		byte* content;
-		bufferByteAccess->Buffer(&content);
+			ComPtr<IBufferByteAccess> bufferByteAccess;
+			buffer.As(&bufferByteAccess);
 
-		UINT32 lenght;
-		buffer->get_Length(&lenght);
+			byte* content;
+			bufferByteAccess->Buffer(&content);
 
-		auto postContent = getPostContent(reinterpret_cast<const char*>(content));
-		auto wPostContent = std::wstring(postContent.begin(), postContent.end());
+			UINT32 lenght;
+			buffer->get_Length(&lenght);
 
-		ComPtr<IHttpStringContentFactory> stringContentFactory;
-		GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
-							 &stringContentFactory);
+			auto postContent = getPostContent(reinterpret_cast<const char*>(content));
+			auto wPostContent = std::wstring(postContent.begin(), postContent.end());
 
-		ComPtr<IHttpContent> postHttpContent;
-		stringContentFactory->CreateFromString(HString(wPostContent.data(), wPostContent.size()).Get(),
-											   &postHttpContent);
+			ComPtr<IHttpStringContentFactory> stringContentFactory;
+			GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
+								 &stringContentFactory);
 
-		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> postAsyncOperation;
-		httpClient->PostAsync(uri.Get(),
-							  postHttpContent.Get(),
-							  &postAsyncOperation);
+			ComPtr<IHttpContent> postHttpContent;
+			stringContentFactory->CreateFromString(HString(wPostContent.data(), wPostContent.size()).Get(),
+												   &postHttpContent);
 
-		GetTask(postAsyncOperation.Get()).wait();*/
+			ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> postAsyncOperation;
+			httpClient->PostAsync(uri.Get(),
+								  postHttpContent.Get(),
+								  &postAsyncOperation);
+
+			GetTask(postAsyncOperation.Get()).wait();
 
 #pragma region notification
 
-		ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
-		GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
-							 &toastNotificationManagerStatics);
+			ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
+			GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
+								 &toastNotificationManagerStatics);
 
-		ComPtr<IXmlDocument> xmlDocument;
-		toastNotificationManagerStatics->GetTemplateContent(ToastTemplateType_ToastText01,
-															&xmlDocument);
+			ComPtr<IXmlDocument> xmlDocument;
+			toastNotificationManagerStatics->GetTemplateContent(ToastTemplateType_ToastText02,
+																&xmlDocument);
 
-		ComPtr<IXmlNodeList> xmlNodeList;
-		xmlDocument->GetElementsByTagName(HStringReference(L"text").Get(),
-										  &xmlNodeList);
+			ComPtr<IXmlNodeList> xmlNodeList;
+			xmlDocument->GetElementsByTagName(HStringReference(L"text").Get(),
+											  &xmlNodeList);
 
-		ComPtr<IXmlNode> xmlNode;
-		xmlNodeList->Item(0, &xmlNode);
+			ComPtr<IXmlNode> xmlNode0;
+			xmlNodeList->Item(0, &xmlNode0);
 
-		ComPtr<IXmlNodeSerializer> xmlNodeSerializer;
-		xmlNode.As(&xmlNodeSerializer);
+			ComPtr<IXmlNodeSerializer> xmlNodeSerializer0;
+			xmlNode0.As(&xmlNodeSerializer0);
 
-		xmlNodeSerializer->put_InnerText(HStringReference(L"Connection completed").Get());
+			xmlNodeSerializer0->put_InnerText(HStringReference(L"AutoLogin").Get());
 
-		ComPtr<IToastNotificationFactory> toastNotificationFactory;
-		GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
-							 &toastNotificationFactory);
+			ComPtr<IXmlNode> xmlNode1;
+			xmlNodeList->Item(1, &xmlNode1);
 
-		ComPtr<IToastNotification> toastNotification;
-		toastNotificationFactory->CreateToastNotification(xmlDocument.Get(),
-														  &toastNotification);
+			ComPtr<IXmlNodeSerializer> xmlNodeSerializer1;
+			xmlNode1.As(&xmlNodeSerializer1);
 
-		ComPtr<IToastNotifier> toastNotifier;
-		toastNotificationManagerStatics->CreateToastNotifier(&toastNotifier);
+			xmlNodeSerializer1->put_InnerText(HStringReference(L"Connection completed").Get());
 
-		toastNotifier->Show(toastNotification.Get());
+			ComPtr<IToastNotificationFactory> toastNotificationFactory;
+			GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
+								 &toastNotificationFactory);
+
+			ComPtr<IToastNotification> toastNotification;
+			toastNotificationFactory->CreateToastNotification(xmlDocument.Get(),
+															  &toastNotification);
+
+			ComPtr<IToastNotifier> toastNotifier;
+			toastNotificationManagerStatics->CreateToastNotifier(&toastNotifier);
+
+			toastNotifier->Show(toastNotification.Get());
 
 #pragma endregion
+		}
 	}
 
 	taskDefferal->Complete();

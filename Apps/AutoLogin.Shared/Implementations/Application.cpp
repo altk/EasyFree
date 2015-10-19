@@ -223,58 +223,68 @@ void Application::RegisterBackgroundTask() NOEXCEPT
 	using namespace MTL::Client;
 	using namespace MTL::Wrappers;
 
-	ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
-	GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
-						 &backgroundTaskRegistrationStatics);
+	ComPtr<IBackgroundExecutionManagerStatics> backgroundExecutionManagerStatics;
+	GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundExecutionManager).Get(),
+						 &backgroundExecutionManagerStatics);
 
-	ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
-	backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations);
+	ComPtr<IAsyncOperation<BackgroundAccessStatus>> backgroundAccessStatusAsyncOperation;
+	backgroundExecutionManagerStatics->RequestAccessAsync(&backgroundAccessStatusAsyncOperation);
 
-	ComPtr<IIterable<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterable;
-	taskRegistrations.As(&registrationsIterable);
+	GetTask(backgroundAccessStatusAsyncOperation.Get()).then([](BackgroundAccessStatus) -> void
+															 {
+																 ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
+																 GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
+																					  &backgroundTaskRegistrationStatics);
 
-	ComPtr<IIterator<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterator;
-	registrationsIterable->First(&registrationsIterator);
+																 ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
+																 backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations);
 
-	boolean hasCurrent;
-	registrationsIterator->get_HasCurrent(&hasCurrent);
+																 ComPtr<IIterable<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterable;
+																 taskRegistrations.As(&registrationsIterable);
 
-	while (hasCurrent)
-	{
-		ComPtr<IKeyValuePair<GUID, IBackgroundTaskRegistration*>> current;
-		registrationsIterator->get_Current(&current);
+																 ComPtr<IIterator<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterator;
+																 registrationsIterable->First(&registrationsIterator);
 
-		ComPtr<IBackgroundTaskRegistration> taskRegistration;
-		current->get_Value(&taskRegistration);
+																 boolean hasCurrent;
+																 registrationsIterator->get_HasCurrent(&hasCurrent);
 
-		taskRegistration->Unregister(true);
+																 while (hasCurrent)
+																 {
+																	 ComPtr<IKeyValuePair<GUID, IBackgroundTaskRegistration*>> current;
+																	 registrationsIterator->get_Current(&current);
 
-		registrationsIterator->MoveNext(&hasCurrent);
-	}
+																	 ComPtr<IBackgroundTaskRegistration> taskRegistration;
+																	 current->get_Value(&taskRegistration);
 
-	ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
-	ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
-											 &backgroundTaskBuilder);
+																	 taskRegistration->Unregister(true);
 
-	backgroundTaskBuilder->put_Name(HString(L"AutoLogin Wi-Fi Background task").Detach());
-	backgroundTaskBuilder->put_TaskEntryPoint(HString(L"AutoLogin.Background.LoginTask").Detach());
+																	 registrationsIterator->MoveNext(&hasCurrent);
+																 }
 
-	ComPtr<ISystemTriggerFactory> systemTriggerActivationFactory;
-	GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_SystemTrigger).Get(),
-						 &systemTriggerActivationFactory);
+																 ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
+																 ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
+																										  &backgroundTaskBuilder);
 
-	ComPtr<ISystemTrigger> systemTrigger;
-	systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
-										   false,
-										   &systemTrigger);
+																 backgroundTaskBuilder->put_Name(HString(L"AutoLoginTask").Detach());
+																 backgroundTaskBuilder->put_TaskEntryPoint(HString(L"AutoLogin.Background.LoginTask").Detach());
 
-	ComPtr<IBackgroundTrigger> backgroundTrigger;
-	systemTrigger.As(&backgroundTrigger);
+																 ComPtr<ISystemTriggerFactory> systemTriggerActivationFactory;
+																 GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_SystemTrigger).Get(),
+																					  &systemTriggerActivationFactory);
 
-	backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get());
+																 ComPtr<ISystemTrigger> systemTrigger;
+																 systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
+																										false,
+																										&systemTrigger);
 
-	ComPtr<IBackgroundTaskRegistration> taskRegistration;
-	backgroundTaskBuilder->Register(&taskRegistration);
+																 ComPtr<IBackgroundTrigger> backgroundTrigger;
+																 systemTrigger.As(&backgroundTrigger);
+
+																 backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get());
+
+																 ComPtr<IBackgroundTaskRegistration> taskRegistration;
+																 backgroundTaskBuilder->Register(&taskRegistration);
+															 });
 }
 
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) NOEXCEPT
