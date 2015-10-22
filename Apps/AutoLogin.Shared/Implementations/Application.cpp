@@ -1,20 +1,19 @@
 ﻿#include "pch.h"
 #include "Application.h"
+#include <roapi.h>
 #include <memory>
 #include <d2d1_1.h>
 #include <d3d11_1.h>
 #include <windows.graphics.display.h>
 #include <windows.applicationmodel.background.h>
 #include <windows.foundation.collections.h>
-#include <MTL\Wrappers\HString.h>
-#include <MTL\Wrappers\HStringReference.h>
-#include <MTL\Client\Async.h>
+#include <MTL.h>
 
 using namespace AutoLogin::Implementations;
 
 HRESULT Application::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 {
-	using namespace MTL::Wrappers;
+	using namespace MTL;
 
 	*className = HString(L"AutoLogin.Application").Detach();
 	return S_OK;
@@ -33,7 +32,7 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 	using namespace ABI::Windows::ApplicationModel::Core;
 	using namespace ABI::Windows::ApplicationModel::Activation;
 	using namespace ABI::Windows::UI::Core;
-	using namespace MTL::Client;
+	using namespace MTL;
 
 	auto token = make_shared<EventRegistrationToken>();
 	auto callback = CreateCallback<ITypedEventHandler<CoreApplicationView*, IActivatedEventArgs*>>([token](ICoreApplicationView* coreApplicationView, IActivatedEventArgs* args)-> HRESULT
@@ -56,7 +55,7 @@ HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEX
 	using namespace ABI::Windows::ApplicationModel::Core;
 	using namespace ABI::Windows::ApplicationModel::Activation;
 	using namespace ABI::Windows::UI::Core;
-	using namespace MTL::Client;
+	using namespace MTL;
 
 	_coreWindow.Attach(window);
 
@@ -84,7 +83,7 @@ HRESULT Application::Load(HSTRING) NOEXCEPT
 HRESULT Application::Run() NOEXCEPT
 {
 	using namespace ABI::Windows::UI::Core;
-	using namespace MTL::Client;
+	using namespace MTL;
 
 	RegisterBackgroundTask();
 
@@ -108,8 +107,8 @@ void Application::InitContext() NOEXCEPT
 	using namespace ABI::Windows::UI::Core;
 	using namespace ABI::Windows::Graphics::Display;
 	using namespace ABI::Windows::Foundation;
-	using namespace MTL::Client;
-	using namespace MTL::Wrappers;
+	using namespace MTL;
+	using namespace MTL;
 
 	ComPtr<IDisplayInformationStatics> displayInformationStatics;
 	GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(),
@@ -196,7 +195,7 @@ void Application::InitContext() NOEXCEPT
 void Application::Draw() NOEXCEPT
 {
 	using namespace D2D1;
-	using namespace MTL::Client;
+	using namespace MTL;
 
 	D2D1_RECT_F rect = {};
 	rect.left = 0;
@@ -220,8 +219,8 @@ void Application::RegisterBackgroundTask() NOEXCEPT
 	using namespace ABI::Windows::ApplicationModel::Background;
 	using namespace ABI::Windows::Foundation::Collections;
 	using namespace ABI::Windows::Foundation;
-	using namespace MTL::Client;
-	using namespace MTL::Wrappers;
+	using namespace MTL;
+	using namespace MTL;
 
 	ComPtr<IBackgroundExecutionManagerStatics> backgroundExecutionManagerStatics;
 	GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundExecutionManager).Get(),
@@ -261,6 +260,8 @@ void Application::RegisterBackgroundTask() NOEXCEPT
 																	 registrationsIterator->MoveNext(&hasCurrent);
 																 }
 
+																 //ComPtr<IActionvationFactory>
+
 																 ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
 																 ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
 																										  &backgroundTaskBuilder);
@@ -292,8 +293,8 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) NOEXCEPT
 	using namespace ABI::Windows::Foundation;
 	using namespace ABI::Windows::ApplicationModel::Core;
 	using namespace ABI::Windows::ApplicationModel;
-	using namespace MTL::Client;
-	using namespace MTL::Wrappers;
+	using namespace MTL;
+	using namespace MTL;
 
 	RoInitialize(RO_INIT_MULTITHREADED);
 

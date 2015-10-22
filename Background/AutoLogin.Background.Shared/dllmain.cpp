@@ -2,7 +2,7 @@
 #include <activation.h>
 #include <AutoLogin.Background_h.h>
 #include <macro.h>
-#include <MTL\Wrappers\HString.h>
+#include <MTL.h>
 #include <Implementations\LoginTask.h>
 
 BOOL APIENTRY DllMain(HMODULE, DWORD, LPVOID) NOEXCEPT
@@ -15,7 +15,7 @@ HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId,
 {
 	using namespace ABI::AutoLogin;
 	using namespace AutoLogin::Background::Implementations;
-	using namespace MTL::Wrappers;
+	using namespace MTL;
 
 	if (nullptr == activatableClassId || nullptr == factory)
 	{
@@ -27,7 +27,7 @@ HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId,
 		return E_NOINTERFACE;
 	}
 
-	if (nullptr == (*factory = new(std::nothrow) LoginTaskFactory()))
+	if (nullptr == (*factory = new(std::nothrow) ActivationFactory<LoginTask>()))
 	{
 		return E_OUTOFMEMORY;
 	}

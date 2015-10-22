@@ -8,10 +8,7 @@
 #include <windows.storage.streams.h>
 #include <windows.networking.connectivity.h>
 #include <gumbo\gumbo.h>
-#include <MTL\Client\ComPtr.h>
-#include <MTL\Client\Async.h>
-#include <MTL\Wrappers\HString.h>
-#include <MTL\Wrappers\HStringReference.h>
+#include <MTL.h>
 
 using namespace AutoLogin::Background::Implementations;
 
@@ -99,7 +96,7 @@ std::string getPostContent(const char* source)
 
 HRESULT LoginTask::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 {
-	using namespace MTL::Wrappers;
+	using namespace MTL;
 
 	*className = HString(RuntimeClass_AutoLogin_Background_LoginTask).Detach();
 
@@ -117,8 +114,7 @@ HRESULT LoginTask::Run(ABI::Windows::ApplicationModel::Background::IBackgroundTa
 	using namespace ABI::Windows::Web::Http;
 	using namespace ABI::Windows::Storage::Streams;
 	using namespace Windows::Storage::Streams;
-	using namespace MTL::Client;
-	using namespace MTL::Wrappers;
+	using namespace MTL;
 	using namespace std::chrono;
 
 	ComPtr<IBackgroundTaskDeferral> taskDefferal;

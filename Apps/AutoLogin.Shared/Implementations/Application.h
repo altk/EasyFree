@@ -4,17 +4,16 @@
 #include <dxgi1_2.h>
 #include <windows.applicationmodel.h>
 #include <windows.applicationmodel.core.h>
-#include <MTL\Implements\RuntimeClass.h>
-#include <MTL\Client\ComPtr.h>
+#include <MTL.h>
 #include <AutoLogin_h.h>
 
 namespace AutoLogin
 {
 	namespace Implementations
 	{
-		class Application final : public MTL::Implements::RuntimeClass<ABI::AutoLogin::IApplication,
-																	   ABI::Windows::ApplicationModel::Core::IFrameworkViewSource,
-																	   ABI::Windows::ApplicationModel::Core::IFrameworkView>
+		class Application final : public MTL::RuntimeClass<ABI::AutoLogin::IApplication,
+														   ABI::Windows::ApplicationModel::Core::IFrameworkViewSource,
+														   ABI::Windows::ApplicationModel::Core::IFrameworkView>
 		{
 		public:
 			STDMETHODIMP GetRuntimeClassName(HSTRING* className) NOEXCEPT override final;
@@ -25,9 +24,9 @@ namespace AutoLogin
 			STDMETHODIMP Run() NOEXCEPT override final;
 			STDMETHODIMP Uninitialize() NOEXCEPT override final;
 		private:
-			MTL::Client::ComPtr<ABI::Windows::UI::Core::ICoreWindow> _coreWindow;
-			MTL::Client::ComPtr<ID2D1DeviceContext> _deviceContext;
-			MTL::Client::ComPtr<IDXGISwapChain1> _swapChain;
+			MTL::ComPtr<ABI::Windows::UI::Core::ICoreWindow> _coreWindow;
+			MTL::ComPtr<ID2D1DeviceContext> _deviceContext;
+			MTL::ComPtr<IDXGISwapChain1> _swapChain;
 
 			void InitContext() NOEXCEPT;
 			void Draw() NOEXCEPT;
