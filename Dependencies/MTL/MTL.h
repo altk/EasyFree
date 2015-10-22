@@ -15,8 +15,15 @@ namespace MTL
 
 	namespace Internals
 	{
+		template <typename Traits>
+		class Handle;
+
+#pragma region Cloaked
+
 		template <typename Interface>
 		struct Cloaked : Interface {};
+
+#pragma endregion
 
 #pragma region IsCloaked
 
@@ -74,6 +81,8 @@ namespace MTL
 
 #pragma endregion
 
+#pragma region IidsHolder
+
 		template <typename ... Ts>
 		struct IidsHolder
 		{
@@ -82,6 +91,10 @@ namespace MTL
 				return (new std::array<GUID, sizeof...(Ts)>{__uuidof(Ts)...})->data();
 			}
 		};
+
+#pragma endregion
+
+#pragma region CloakedFilter
 
 		template <unsigned Counter, typename ... Ts>
 		struct CloakedFilter;
@@ -95,8 +108,14 @@ namespace MTL
 								 IidsHolder<T, Ts...>,
 								 typename std::conditional<IsCloaked<T>::value, CloakedFilter<Counter, Ts...>, CloakedFilter<Counter + 1, Ts..., T>>::type>::type { };
 
+#pragma endregion
+
+#pragma region IidsExtractor
+
 		template <typename T, typename ... Ts>
 		struct IidsExtractor : CloakedFilter<0, T, Ts...> { };
+
+#pragma endregion
 
 #pragma region FunctionTraits
 
@@ -150,44 +169,81 @@ namespace MTL
 #pragma region ComPtrRef
 
 		template <typename TClass>
-		struct ComPtrRef final
+		class ComPtrRef final
 		{
-			ComPtrRef() = delete;
-			ComPtrRef& operator=(const ComPtrRef&) = delete;
-			ComPtrRef& operator=(ComPtrRef&& other) = delete;
+		public:
+			explicit ComPtrRef(ComPtr<TClass>& reference) NOEXCEPT
+				: _reference(reference) { }
 
 			ComPtrRef(const ComPtrRef& other) NOEXCEPT
-				: _pointer(other._pointer) {}
+				: _reference(other._reference) {}
 
 			ComPtrRef(ComPtrRef&& other) NOEXCEPT
-				: _pointer(std::move(other._pointer)) {}
+				: _reference(std::move(other._reference)) {}
 
-			explicit ComPtrRef(ComPtr<TClass>& pointer) NOEXCEPT
-				: _pointer(pointer) { }
+			ComPtrRef& operator=(const ComPtrRef&) = delete;
+
+			ComPtrRef& operator=(ComPtrRef&& other) = delete;
 
 			operator IUnknown**() NOEXCEPT
 			{
-				return reinterpret_cast<IUnknown**>(&_pointer._pointer);
+				return reinterpret_cast<IUnknown**>(&_reference._pointer);
 			}
 
 			operator IInspectable**() NOEXCEPT
 			{
-				return reinterpret_cast<IInspectable**>(&_pointer._pointer);
+				return reinterpret_cast<IInspectable**>(&_reference._pointer);
 			}
 
 			operator TClass**() NOEXCEPT
 			{
-				return &_pointer._pointer;
+				return &_reference._pointer;
 			}
 
 			operator void**() NOEXCEPT
 			{
-				return reinterpret_cast<void**>(&_pointer._pointer);
+				return reinterpret_cast<void**>(&_reference._pointer);
 			}
 
 		private:
 
-			ComPtr<TClass>& _pointer;
+			ComPtr<TClass>& _reference;
+		};
+
+#pragma endregion
+
+#pragma region HandleRef
+
+		template<typename Traits>
+		class HandleRef final
+		{
+		public:
+			using Pointer = typename Traits::Pointer;
+
+			explicit HandleRef(Handle<Traits>& reference) NOEXCEPT
+				: _reference(reference) {}
+
+			HandleRef(const HandleRef& other) NOEXCEPT
+				: _reference(other._reference) {}
+
+			HandleRef(HandleRef&& other) NOEXCEPT
+				: _reference(std::move(other._reference)) { }
+
+			HandleRef& operator=(const HandleRef&) = delete;
+
+			HandleRef& operator=(HandleRef&&) = delete;
+
+			operator Pointer*() NOEXCEPT
+			{
+				return &_reference._pointer;
+			}
+
+			operator Handle<Traits>*() NOEXCEPT
+			{
+				return &_reference;
+			}
+		private:
+			Handle<Traits>& _reference;
 		};
 
 #pragma endregion
@@ -197,8 +253,8 @@ namespace MTL
 		template <typename Traits>
 		class Handle
 		{
+			friend class HandleRef<Traits>;
 		public:
-
 			using Pointer = typename Traits::Pointer;
 
 			explicit Handle(Pointer value = Traits::Invalid()) NOEXCEPT
@@ -239,6 +295,11 @@ namespace MTL
 			Pointer* GetAddressOf() NOEXCEPT
 			{
 				return &_pointer;
+			}
+
+			HandleRef<Traits> operator&() NOEXCEPT
+			{
+				return HandleRef<Traits>(*this);
 			}
 
 			void Release() NOEXCEPT
@@ -462,7 +523,7 @@ namespace MTL
 
 		Internals::ComPtrRef<TClass> operator&() NOEXCEPT
 		{
-			return GetAddressOf();
+			return Internals::ComPtrRef<TClass>(*this);
 		}
 
 		Internals::RemoveIUnknown<TClass>* Get() const NOEXCEPT
@@ -472,10 +533,9 @@ namespace MTL
 			return static_cast<RemoveIUnknown<TClass>*>(_pointer);
 		}
 
-		Internals::ComPtrRef<TClass> GetAddressOf() NOEXCEPT
+		TClass** GetAddressOf() NOEXCEPT
 		{
-			ASSERT(!*this);
-			return Internals::ComPtrRef<TClass>(*this);
+			return &_pointer;
 		}
 
 		void Release() NOEXCEPT
@@ -582,7 +642,6 @@ namespace MTL
 
 #pragma region HString
 
-	// TODO написать перегрузку оператора operator&
 	class HString final : public Internals::Handle<HStringTraits>
 	{
 	public:
@@ -714,9 +773,7 @@ namespace MTL
 
 		IteratorAdapter(TIterator&& begin, TIterator&& end) NOEXCEPT
 			: _begin(std::forward<TIterator>(begin))
-			, _end(std::forward<TIterator>(end))
-		{
-		}
+			  , _end(std::forward<TIterator>(end)) { }
 
 		STDMETHODIMP GetRuntimeClassName(HSTRING* className) NOEXCEPT override
 		{
@@ -765,9 +822,7 @@ namespace MTL
 	public:
 
 		explicit IterableAdapter(TCollection&& collection) NOEXCEPT
-			: _collection(std::forward<TCollection>(collection))
-		{
-		}
+			: _collection(std::forward<TCollection>(collection)) { }
 
 		STDMETHODIMP GetRuntimeClassName(HSTRING* className) NOEXCEPT override
 		{
@@ -777,7 +832,7 @@ namespace MTL
 
 		STDMETHODIMP First(ABI::Windows::Foundation::Collections::IIterator<typename TCollection::value_type>** first) override
 		{
-			*first = new (std::nothrow) IteratorAdapter<typename TCollection::iterator>(_collection.begin(), _collection.end());
+			*first = new(std::nothrow) IteratorAdapter<typename TCollection::iterator>(_collection.begin(), _collection.end());
 			if (nullptr == *first)
 			{
 				return E_OUTOFMEMORY;
@@ -793,6 +848,8 @@ namespace MTL
 
 	namespace Internals
 	{
+#pragma region InvokeHelper
+
 		template <typename TDelegateInterface,
 				  typename TCallback,
 				  typename ... TArgs>
@@ -834,6 +891,8 @@ namespace MTL
 		private:
 			TCallback _callback;
 		};
+
+#pragma endregion
 
 		template <typename TDelegateInterface,
 				  typename TCallback,

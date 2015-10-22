@@ -130,7 +130,7 @@ HRESULT LoginTask::Run(ABI::Windows::ApplicationModel::Background::IBackgroundTa
 	if (connectionProfile)
 	{
 		HString profileName;
-		connectionProfile->get_ProfileName(profileName.GetAddressOf());
+		connectionProfile->get_ProfileName(&profileName);
 
 		if (wcscmp(profileName.GetRawBuffer(), L"MosMetro_Free") == 0)
 		{
