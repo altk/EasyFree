@@ -13,6 +13,10 @@ namespace MTL
 	template <typename>
 	class ComPtr;
 
+	template <typename TDefaultInterface,
+			  typename ... TInterfaces>
+	class ComClass;
+
 	namespace Internals
 	{
 		template <typename Traits>
@@ -214,7 +218,7 @@ namespace MTL
 
 #pragma region HandleRef
 
-		template<typename Traits>
+		template <typename Traits>
 		class HandleRef final
 		{
 		public:
@@ -242,6 +246,7 @@ namespace MTL
 			{
 				return &_reference;
 			}
+
 		private:
 			Handle<Traits>& _reference;
 		};
@@ -344,6 +349,61 @@ namespace MTL
 		};
 
 #pragma endregion
+
+#pragma region InvokeHelper
+
+		template <typename TDelegateInterface,
+				  typename TCallback,
+				  typename ... TArgs>
+		class InvokeHelper final : public ComClass<TDelegateInterface>
+		{
+		public:
+			explicit InvokeHelper(TCallback&& callback) NOEXCEPT
+				: _callback(std::forward<TCallback>(callback)) { }
+
+			InvokeHelper(const InvokeHelper& other) NOEXCEPT
+				: _callback(other._callback) { }
+
+			InvokeHelper(InvokeHelper&& other) NOEXCEPT
+				: _callback(std::move(other._callback)) { }
+
+			InvokeHelper& operator=(const InvokeHelper& other) NOEXCEPT
+			{
+				if (this != &other)
+				{
+					_callback = other._callback;
+				}
+				return *this;
+			}
+
+			InvokeHelper& operator=(InvokeHelper&& other) NOEXCEPT
+			{
+				if (this != &other)
+				{
+					_callback = std::move(other._callback);
+				}
+				return *this;
+			}
+
+			STDMETHODIMP Invoke(TArgs ... args) NOEXCEPT override
+			{
+				return _callback(std::forward<TArgs>(args)...);
+			}
+
+		private:
+			TCallback _callback;
+		};
+
+#pragma endregion
+
+		template <typename TDelegateInterface,
+				  typename TCallback,
+				  typename ... TArgs>
+		inline InvokeHelper<TDelegateInterface, TCallback, TArgs...> ÑreateInvokeHelper(TCallback&& callback,
+																						std::tuple<TArgs...>) NOEXCEPT
+		{
+			return InvokeHelper<TDelegateInterface, TCallback, TArgs...>(std::forward<TCallback>(callback));
+		}
 	}
 
 #pragma region ComClass
@@ -769,6 +829,8 @@ namespace MTL
 	template <class TIterator>
 	class IteratorAdapter final : public RuntimeClass<ABI::Windows::Foundation::Collections::IIterator<typename TIterator::value_type>>
 	{
+		using IteratorType = ABI::Windows::Foundation::Collections::IIterator<typename TIterator::value_type>;
+
 	public:
 
 		IteratorAdapter(TIterator&& begin, TIterator&& end) NOEXCEPT
@@ -777,7 +839,7 @@ namespace MTL
 
 		STDMETHODIMP GetRuntimeClassName(HSTRING* className) NOEXCEPT override
 		{
-			*className = HString(L"mytarget.IteratorAdapter<`1>").Detach();
+			*className = HString(IteratorType::z_get_rc_name_impl()).Detach();
 			return S_OK;
 		}
 
@@ -819,6 +881,8 @@ namespace MTL
 	template <class TCollection>
 	class IterableAdapter final : public RuntimeClass<ABI::Windows::Foundation::Collections::IIterable<typename TCollection::value_type>>
 	{
+		using IterableType = ABI::Windows::Foundation::Collections::IIterable<typename TCollection::value_type>;
+
 	public:
 
 		explicit IterableAdapter(TCollection&& collection) NOEXCEPT
@@ -826,13 +890,13 @@ namespace MTL
 
 		STDMETHODIMP GetRuntimeClassName(HSTRING* className) NOEXCEPT override
 		{
-			*className = HString(L"MTL.IterableAdapter<`1>").Detach();
+			*className = HString(IterableType::z_get_rc_name_impl()).Detach();
 			return S_OK;
 		}
 
 		STDMETHODIMP First(ABI::Windows::Foundation::Collections::IIterator<typename TCollection::value_type>** first) override
 		{
-			*first = new(std::nothrow) IteratorAdapter<typename TCollection::iterator>(_collection.begin(), _collection.end());
+			*first = new(std::nothrow) IteratorAdapter<typename TCollection::iterator>(std::begin(_collection), std::end(_collection));
 			if (nullptr == *first)
 			{
 				return E_OUTOFMEMORY;
@@ -845,64 +909,6 @@ namespace MTL
 	};
 
 #pragma endregion
-
-	namespace Internals
-	{
-#pragma region InvokeHelper
-
-		template <typename TDelegateInterface,
-				  typename TCallback,
-				  typename ... TArgs>
-		class InvokeHelper final : public ComClass<TDelegateInterface>
-		{
-		public:
-			explicit InvokeHelper(TCallback&& callback) NOEXCEPT
-				: _callback(std::forward<TCallback>(callback)) { }
-
-			InvokeHelper(const InvokeHelper& other) NOEXCEPT
-				: _callback(other._callback) { }
-
-			InvokeHelper(InvokeHelper&& other) NOEXCEPT
-				: _callback(std::move(other._callback)) { }
-
-			InvokeHelper& operator=(const InvokeHelper& other) NOEXCEPT
-			{
-				if (this != &other)
-				{
-					_callback = other._callback;
-				}
-				return *this;
-			}
-
-			InvokeHelper& operator=(InvokeHelper&& other) NOEXCEPT
-			{
-				if (this != &other)
-				{
-					_callback = std::move(other._callback);
-				}
-				return *this;
-			}
-
-			STDMETHODIMP Invoke(TArgs ... args) NOEXCEPT override
-			{
-				return _callback(std::forward<TArgs>(args)...);
-			}
-
-		private:
-			TCallback _callback;
-		};
-
-#pragma endregion
-
-		template <typename TDelegateInterface,
-				  typename TCallback,
-				  typename ... TArgs>
-		inline InvokeHelper<TDelegateInterface, TCallback, TArgs...> ÑreateInvokeHelper(TCallback&& callback,
-																						std::tuple<TArgs...>) NOEXCEPT
-		{
-			return InvokeHelper<TDelegateInterface, TCallback, TArgs...>(std::forward<TCallback>(callback));
-		}
-	}
 
 	template <typename TClass>
 	inline ComPtr<TClass> CreateComPtr(TClass* ptr) NOEXCEPT
