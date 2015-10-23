@@ -1,11 +1,10 @@
 ﻿#pragma once
-#include <macro.h>
+#include <AutoLogin_h.h>
 #include <d2d1_1.h>
 #include <dxgi1_2.h>
-#include <windows.applicationmodel.h>
 #include <windows.applicationmodel.core.h>
+#include <macro.h>
 #include <MTL.h>
-#include <AutoLogin_h.h>
 
 namespace AutoLogin
 {
@@ -27,6 +26,7 @@ namespace AutoLogin
 			MTL::ComPtr<ABI::Windows::UI::Core::ICoreWindow> _coreWindow;
 			MTL::ComPtr<ID2D1DeviceContext> _deviceContext;
 			MTL::ComPtr<IDXGISwapChain1> _swapChain;
+			MTL::ComPtr<IDWriteFactory> _dwriteFactory;
 
 			void InitContext() NOEXCEPT;
 			void Draw() NOEXCEPT;

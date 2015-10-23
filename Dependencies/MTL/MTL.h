@@ -3,6 +3,7 @@
 #include <inspectable.h>
 #include <array>
 #include <utility>
+#include <tuple>
 #include <ppltasks.h>
 #include <windows.foundation.h>
 #include <windows.foundation.collections.h>
@@ -12,11 +13,7 @@ namespace MTL
 {
 	template <typename>
 	class ComPtr;
-
-	template <typename TDefaultInterface,
-			  typename ... TInterfaces>
-	class ComClass;
-
+	
 	namespace Internals
 	{
 		template <typename Traits>
@@ -123,13 +120,10 @@ namespace MTL
 
 #pragma region FunctionTraits
 
-		template <class>
+		template <typename TFunction>
 		struct FunctionTraits;
 
-		template <class TResult, class... TArgs>
-		struct FunctionTraits<TResult(*)(TArgs ...)> : FunctionTraits<TResult(TArgs ...)> {};
-
-		template <class TResult, class... TArgs>
+		template <typename TResult, typename... TArgs>
 		struct FunctionTraits<TResult(TArgs ...)>
 		{
 			using ReturnType = TResult;
@@ -145,14 +139,23 @@ namespace MTL
 			};
 		};
 
-		template <class TClass, class TResult, class... TArgs>
+		template <typename TResult, typename... TArgs>
+		struct FunctionTraits<TResult(*)(TArgs ...)> : FunctionTraits<TResult(TArgs ...)> {};
+
+		template <typename TClass, typename TResult, typename... TArgs>
 		struct FunctionTraits<TResult(TClass::*)(TArgs ...)> : FunctionTraits<TResult(TArgs ...)> {};
 
-		template <class TClass, class TResult, class... TArgs>
+		template <typename TClass, typename TResult, typename... TArgs>
 		struct FunctionTraits<TResult(TClass::*)(TArgs ...) const> : FunctionTraits<TResult(TArgs ...)> {};
 
-		template <class TClass, class TResult>
-		struct FunctionTraits<TResult(TClass::*)> : FunctionTraits<TResult()> {};
+		template <typename TResult, typename... TArgs>
+		struct FunctionTraits<TResult(__stdcall *)(TArgs ...)> : FunctionTraits<TResult(TArgs ...)> {};
+
+		template <typename TClass, typename TResult, typename... TArgs>
+		struct FunctionTraits<TResult(__stdcall TClass::*)(TArgs ...)> : FunctionTraits<TResult(TArgs ...)> {};
+
+		template <typename TClass, typename TResult, typename... TArgs>
+		struct FunctionTraits<TResult(__stdcall TClass::*)(TArgs ...) const> : FunctionTraits<TResult(TArgs ...)> {};
 
 #pragma endregion 
 
@@ -349,61 +352,6 @@ namespace MTL
 		};
 
 #pragma endregion
-
-#pragma region InvokeHelper
-
-		template <typename TDelegateInterface,
-				  typename TCallback,
-				  typename ... TArgs>
-		class InvokeHelper final : public ComClass<TDelegateInterface>
-		{
-		public:
-			explicit InvokeHelper(TCallback&& callback) NOEXCEPT
-				: _callback(std::forward<TCallback>(callback)) { }
-
-			InvokeHelper(const InvokeHelper& other) NOEXCEPT
-				: _callback(other._callback) { }
-
-			InvokeHelper(InvokeHelper&& other) NOEXCEPT
-				: _callback(std::move(other._callback)) { }
-
-			InvokeHelper& operator=(const InvokeHelper& other) NOEXCEPT
-			{
-				if (this != &other)
-				{
-					_callback = other._callback;
-				}
-				return *this;
-			}
-
-			InvokeHelper& operator=(InvokeHelper&& other) NOEXCEPT
-			{
-				if (this != &other)
-				{
-					_callback = std::move(other._callback);
-				}
-				return *this;
-			}
-
-			STDMETHODIMP Invoke(TArgs ... args) NOEXCEPT override
-			{
-				return _callback(std::forward<TArgs>(args)...);
-			}
-
-		private:
-			TCallback _callback;
-		};
-
-#pragma endregion
-
-		template <typename TDelegateInterface,
-				  typename TCallback,
-				  typename ... TArgs>
-		inline InvokeHelper<TDelegateInterface, TCallback, TArgs...> ÑreateInvokeHelper(TCallback&& callback,
-																						std::tuple<TArgs...>) NOEXCEPT
-		{
-			return InvokeHelper<TDelegateInterface, TCallback, TArgs...>(std::forward<TCallback>(callback));
-		}
 	}
 
 #pragma region ComClass
@@ -537,7 +485,7 @@ namespace MTL
 		static_assert(std::is_base_of<IUnknown, TClass>::value, "Not all interfaces inherit IUnknown.");
 
 		friend void swap(ComPtr&, ComPtr&) NOEXCEPT;
-		friend struct Internals::ComPtrRef<TClass>;
+		friend class Internals::ComPtrRef<TClass>;
 
 	public:
 
@@ -910,6 +858,61 @@ namespace MTL
 
 #pragma endregion
 
+#pragma region Delegate
+
+	template <typename TDelegateInterface,
+			  typename TCallback,
+			  typename ... TArgs>
+	class Delegate final : public ComClass<TDelegateInterface>
+	{
+	public:
+		explicit Delegate(TCallback&& callback) NOEXCEPT
+			: _callback(std::forward<TCallback>(callback)) { }
+
+		Delegate(const Delegate& other) NOEXCEPT
+			: _callback(other._callback) { }
+
+		Delegate(Delegate&& other) NOEXCEPT
+			: _callback(std::move(other._callback)) { }
+
+		Delegate& operator=(const Delegate& other) NOEXCEPT
+		{
+			if (this != &other)
+			{
+				_callback = other._callback;
+			}
+			return *this;
+		}
+
+		Delegate& operator=(Delegate&& other) NOEXCEPT
+		{
+			if (this != &other)
+			{
+				_callback = std::move(other._callback);
+			}
+			return *this;
+		}
+
+		STDMETHODIMP Invoke(TArgs ... args) NOEXCEPT override
+		{
+			return _callback(std::forward<TArgs>(args)...);
+		}
+
+	private:
+		TCallback _callback;
+	};
+
+#pragma endregion
+
+	template <typename TDelegateInterface,
+			  typename TCallback,
+			  typename ... TArgs>
+	inline Delegate<TDelegateInterface, TCallback, TArgs...> ÑreateDelegate(TCallback&& callback,
+																			std::tuple<TArgs...>) NOEXCEPT
+	{
+		return Delegate<TDelegateInterface, TCallback, TArgs...>(std::forward<TCallback>(callback));
+	}
+
 	template <typename TClass>
 	inline ComPtr<TClass> CreateComPtr(TClass* ptr) NOEXCEPT
 	{
@@ -935,7 +938,7 @@ namespace MTL
 
 		using tuple = typename FunctionTraits<decltype(&TDelegateInterface::Invoke)>::TypesTuple;
 
-		auto helper = ÑreateInvokeHelper<TDelegateInterface>(std::forward<TCallback>(callback), tuple());
+		auto helper = ÑreateDelegate<TDelegateInterface>(std::forward<TCallback>(callback), tuple());
 
 		using helperType = decltype(helper);
 

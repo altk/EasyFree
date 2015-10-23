@@ -4,6 +4,7 @@
 #include <memory>
 #include <d2d1_1.h>
 #include <d3d11_1.h>
+#include <dwrite.h>
 #include <windows.graphics.display.h>
 #include <windows.applicationmodel.background.h>
 #include <windows.foundation.collections.h>
@@ -108,7 +109,6 @@ void Application::InitContext() NOEXCEPT
 	using namespace ABI::Windows::Graphics::Display;
 	using namespace ABI::Windows::Foundation;
 	using namespace MTL;
-	using namespace MTL;
 
 	ComPtr<IDisplayInformationStatics> displayInformationStatics;
 	GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(),
@@ -190,25 +190,40 @@ void Application::InitContext() NOEXCEPT
 												bitmap.GetAddressOf());
 	_deviceContext->SetTarget(bitmap.Get());
 	_deviceContext->SetDpi(dpiX, dpiY);
+
+	DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
+						__uuidof(IDWriteFactory),
+						&_dwriteFactory);
 }
 
 void Application::Draw() NOEXCEPT
 {
 	using namespace D2D1;
 	using namespace MTL;
+	using namespace std;
 
-	D2D1_RECT_F rect = {};
-	rect.left = 0;
-	rect.top = 0;
-	rect.right = 100;
-	rect.bottom = 100;
+	ComPtr<IDWriteTextFormat> textFormat;
+
+	_dwriteFactory->CreateTextFormat(L"Segoe UI",
+									 nullptr,
+									 DWRITE_FONT_WEIGHT_NORMAL,
+									 DWRITE_FONT_STYLE_NORMAL,
+									 DWRITE_FONT_STRETCH_NORMAL,
+									 10.0f * 96.0f / 72.0f,
+									 L"en-US",
+									 &textFormat);
+
+	auto rect = RectF(0.0f, 0.0f, 100.0f, 100.0f);
 
 	ComPtr<ID2D1SolidColorBrush> brush;
 	_deviceContext->CreateSolidColorBrush(ColorF(ColorF::Red),
 										  &brush);
-
-	_deviceContext->BeginDraw();
-	_deviceContext->DrawRectangle(rect, brush.Get());
+	auto title = wstring(L"AutoLogin");
+	_deviceContext->DrawText(title.data(),
+							 title.size(),
+							 textFormat.Get(),
+							 &rect,
+							 brush.Get());
 	_deviceContext->EndDraw();
 
 	_swapChain->Present(1, 0);
