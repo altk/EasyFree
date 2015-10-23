@@ -2,6 +2,7 @@
 #include <AutoLogin_h.h>
 #include <d2d1_1.h>
 #include <dxgi1_2.h>
+#include <dwrite.h>
 #include <windows.applicationmodel.core.h>
 #include <macro.h>
 #include <MTL.h>

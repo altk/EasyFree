@@ -202,28 +202,70 @@ void Application::Draw() NOEXCEPT
 	using namespace MTL;
 	using namespace std;
 
-	ComPtr<IDWriteTextFormat> textFormat;
+	auto title = wstring(L"AutoLogin");
+	auto description = wstring(L"Соединение с интернетом работает в автоматическом режиме. Вам осталось только дождаться соедиения с поддерживаемой WiFi сетью и уведомления об успешном соединении.");
 
+	auto size = _deviceContext->GetPixelSize();
+
+	FLOAT dpiX,
+		  dpiY;
+	_deviceContext->GetDpi(&dpiX, &dpiY);
+
+	auto scaleFactor = 96.0 / dpiX;
+	auto margin = scaleFactor * 12.0f;
+
+	ComPtr<IDWriteTextFormat> titleTextFormat;
 	_dwriteFactory->CreateTextFormat(L"Segoe UI",
 									 nullptr,
 									 DWRITE_FONT_WEIGHT_NORMAL,
 									 DWRITE_FONT_STYLE_NORMAL,
 									 DWRITE_FONT_STRETCH_NORMAL,
-									 10.0f * 96.0f / 72.0f,
+									 14.0f,
 									 L"en-US",
-									 &textFormat);
+									 &titleTextFormat);
 
-	auto rect = RectF(0.0f, 0.0f, 100.0f, 100.0f);
+	ComPtr<IDWriteTextFormat> descriptionTextFormat;
+	_dwriteFactory->CreateTextFormat(L"Segoe UI",
+									 nullptr,
+									 DWRITE_FONT_WEIGHT_NORMAL,
+									 DWRITE_FONT_STYLE_NORMAL,
+									 DWRITE_FONT_STRETCH_NORMAL,
+									 10.0f,
+									 L"ru-RU",
+									 &descriptionTextFormat);
+
+	ComPtr<IDWriteTextLayout> titleTextLayout;
+	_dwriteFactory->CreateTextLayout(title.data(),
+									 title.size(),
+									 titleTextFormat.Get(),
+									 size.width / 2 - margin,
+									 0.0f,
+									 &titleTextLayout);
+
+	ComPtr<IDWriteTextLayout> descriptionTextLayout;
+	_dwriteFactory->CreateTextLayout(description.data(),
+									 description.size(),
+									 descriptionTextFormat.Get(),
+									 scaleFactor * size.width - margin - margin,
+									 size.height,
+									 &descriptionTextLayout);
+
+	DWRITE_TEXT_METRICS titleMetrics = {};
+	titleTextLayout->GetMetrics(&titleMetrics);
 
 	ComPtr<ID2D1SolidColorBrush> brush;
-	_deviceContext->CreateSolidColorBrush(ColorF(ColorF::Red),
+	_deviceContext->CreateSolidColorBrush(ColorF(ColorF::White),
 										  &brush);
-	auto title = wstring(L"AutoLogin");
-	_deviceContext->DrawText(title.data(),
-							 title.size(),
-							 textFormat.Get(),
-							 &rect,
-							 brush.Get());
+
+	_deviceContext->BeginDraw();
+
+	_deviceContext->DrawTextLayout(Point2F(margin, margin),
+								   titleTextLayout.Get(),
+								   brush.Get());
+
+	_deviceContext->DrawTextLayout(Point2F(margin, margin + titleMetrics.height),
+								   descriptionTextLayout.Get(),
+								   brush.Get());
 	_deviceContext->EndDraw();
 
 	_swapChain->Present(1, 0);
