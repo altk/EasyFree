@@ -148,6 +148,7 @@ namespace MTL
 		template <typename TClass, typename TResult, typename... TArgs>
 		struct FunctionTraits<TResult(TClass::*)(TArgs ...) const> : FunctionTraits<TResult(TArgs ...)> {};
 
+#ifndef _M_ARM
 		template <typename TResult, typename... TArgs>
 		struct FunctionTraits<TResult(__stdcall *)(TArgs ...)> : FunctionTraits<TResult(TArgs ...)> {};
 
@@ -156,6 +157,7 @@ namespace MTL
 
 		template <typename TClass, typename TResult, typename... TArgs>
 		struct FunctionTraits<TResult(__stdcall TClass::*)(TArgs ...) const> : FunctionTraits<TResult(TArgs ...)> {};
+#endif
 
 #pragma endregion 
 

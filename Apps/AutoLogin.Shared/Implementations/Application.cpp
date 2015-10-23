@@ -60,18 +60,29 @@ HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEX
 
 	_coreWindow.Attach(window);
 
-	InitContext();
-
-	auto visibilityChangedToken = make_shared<EventRegistrationToken>();
-	auto visibilityChangedCallback = CreateCallback<ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*>>([this, visibilityChangedToken](ICoreWindow* coreWindow, IVisibilityChangedEventArgs* args)-> HRESULT
+	auto visibilityChangedCallback = CreateCallback<ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*>>([this](ICoreWindow* coreWindow, IVisibilityChangedEventArgs* args)-> HRESULT
 																												  {
-																													  coreWindow->remove_VisibilityChanged(*visibilityChangedToken);
+																													  boolean isVisible;
+																													  args->get_Visible(&isVisible);
+
+																													  if (!isVisible)
+																													  {
+																														  _deviceContext.Release();
+																														  _swapChain.Release();
+																														  _dwriteFactory.Release();
+																													  }
+																													  if (!_deviceContext)
+																													  {
+																														  InitContext();
+																													  }
 
 																													  Draw();
 
 																													  return S_OK;
 																												  });
-	window->add_VisibilityChanged(visibilityChangedCallback.Get(), visibilityChangedToken.get());
+	EventRegistrationToken tempToken;
+	window->add_VisibilityChanged(visibilityChangedCallback.Get(),
+								  &tempToken);
 
 	return S_OK;
 }
@@ -259,7 +270,7 @@ void Application::Draw() NOEXCEPT
 
 	_deviceContext->BeginDraw();
 
-	_deviceContext->DrawTextLayout(Point2F(margin, margin),
+	_deviceContext->DrawTextLayout(Point2F(margin, margin + margin),
 								   titleTextLayout.Get(),
 								   brush.Get());
 
