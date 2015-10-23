@@ -222,7 +222,7 @@ void Application::Draw() NOEXCEPT
 		  dpiY;
 	_deviceContext->GetDpi(&dpiX, &dpiY);
 
-	auto scaleFactor = 96.0 / dpiX;
+	auto scaleFactor = 96.0f / dpiX;
 	auto margin = scaleFactor * 12.0f;
 
 	ComPtr<IDWriteTextFormat> titleTextFormat;

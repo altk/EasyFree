@@ -110,37 +110,31 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
     <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
     <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
     <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
     <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
     <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
     <IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
-    <CustomBuildAfterTargets>Midl</CustomBuildAfterTargets>
     <TargetName>$(RootNamespace)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
@@ -157,10 +151,9 @@
       <GenerateClientFiles>None</GenerateClientFiles>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
-    <CustomBuildStep>
-      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
-      <Outputs>$(OutDir)%(TargetName).winmd</Outputs>
-    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;amp;&amp;amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;amp;&amp;amp; rd /q /s "$(OutDir)Output"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
@@ -176,10 +169,9 @@
       <GenerateClientFiles>None</GenerateClientFiles>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
-    <CustomBuildStep>
-      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
-      <Outputs>$(OutDir)%(TargetName).winmd</Outputs>
-    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;amp;&amp;amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;amp;&amp;amp; rd /q /s "$(OutDir)Output"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -195,10 +187,9 @@
       <GenerateClientFiles>None</GenerateClientFiles>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
-    <CustomBuildStep>
-      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
-      <Outputs>$(OutDir)%(TargetName).winmd</Outputs>
-    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;amp;&amp;amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;amp;&amp;amp; rd /q /s "$(OutDir)Output"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -214,10 +205,9 @@
       <GenerateClientFiles>None</GenerateClientFiles>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
-    <CustomBuildStep>
-      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
-      <Outputs>$(OutDir)%(TargetName).winmd</Outputs>
-    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;amp;&amp;amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;amp;&amp;amp; rd /q /s "$(OutDir)Output"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -233,10 +223,9 @@
       <GenerateClientFiles>None</GenerateClientFiles>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
-    <CustomBuildStep>
-      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
-      <Outputs>$(OutDir)%(TargetName).winmd</Outputs>
-    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;amp;&amp;amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;amp;&amp;amp; rd /q /s "$(OutDir)Output"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -252,10 +241,9 @@
       <GenerateClientFiles>None</GenerateClientFiles>
       <GenerateServerFiles>None</GenerateServerFiles>
     </Midl>
-    <CustomBuildStep>
-      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
-      <Outputs>$(OutDir)%(TargetName).winmd</Outputs>
-    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;amp;&amp;amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;amp;&amp;amp; rd /q /s "$(OutDir)Output"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="macro.h" />
