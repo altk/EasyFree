@@ -1,10 +1,11 @@
 #pragma once
-#include <roapi.h>
-#include <inspectable.h>
 #include <array>
 #include <utility>
 #include <tuple>
 #include <ppltasks.h>
+#include <inspectable.h>
+#include <roapi.h>
+#include <comdef.h>
 #include <windows.foundation.h>
 #include <windows.foundation.collections.h>
 #include <macro.h>
@@ -13,7 +14,7 @@ namespace MTL
 {
 	template <typename>
 	class ComPtr;
-	
+
 	namespace Internals
 	{
 		template <typename Traits>
@@ -906,6 +907,56 @@ namespace MTL
 
 #pragma endregion
 
+#pragma region ComException
+
+	class ComException final
+	{
+	public:
+		explicit ComException(HRESULT hr) NOEXCEPT
+			: _hr(hr) { }
+
+		ComException(const ComException& other) NOEXCEPT
+			: _hr(other._hr) {}
+
+		ComException& operator=(const ComException& other) NOEXCEPT
+		{
+			if (this != &other)
+			{
+				_hr = other._hr;
+			}
+
+			return *this;
+		}
+
+		std::wstring GetErrorMessage() const NOEXCEPT
+		{
+			using namespace std;
+
+			wstring result;
+			auto langId = MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT);
+			auto hr = _hr;
+			wchar_t* errorMessage = nullptr;
+
+			if (FACILITY_WINDOWS == HRESULT_FACILITY(hr))
+			{
+				hr = HRESULT_CODE(hr);
+			}
+
+			if (FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, hr, langId, errorMessage, 0, nullptr) != 0)
+			{
+				result.append(errorMessage);
+				HeapFree(GetProcessHeap(), 0, errorMessage);
+			}
+
+			return result;
+		}
+
+	private:
+		HRESULT _hr;
+	};
+
+#pragma endregion
+
 	template <typename TDelegateInterface,
 			  typename TCallback,
 			  typename ... TArgs>
@@ -989,6 +1040,11 @@ namespace MTL
 																										  });
 		asyncOperation->put_Completed(callback.Get());
 		return task<TResult>(taskCompletitionEvent);
+	}
+
+	inline void Check(HRESULT hr)
+	{
+		if (IS_ERROR(hr)) throw ComException(hr);
 	}
 }
 

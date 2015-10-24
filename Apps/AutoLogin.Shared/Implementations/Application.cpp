@@ -274,7 +274,7 @@ void Application::Draw() NOEXCEPT
 								   titleTextLayout.Get(),
 								   brush.Get());
 
-	_deviceContext->DrawTextLayout(Point2F(margin, margin + titleMetrics.height),
+	_deviceContext->DrawTextLayout(Point2F(margin, margin + margin + titleMetrics.height),
 								   descriptionTextLayout.Get(),
 								   brush.Get());
 	_deviceContext->EndDraw();
