@@ -15,6 +15,8 @@ namespace MTL
 	template <typename>
 	class ComPtr;
 
+	inline void Check(HRESULT hr);
+
 	namespace Internals
 	{
 		template <typename Traits>
@@ -656,32 +658,40 @@ namespace MTL
 	class HString final : public Internals::Handle<HStringTraits>
 	{
 	public:
-		explicit HString(Pointer pointer = HStringTraits::Invalid()) NOEXCEPT
+		explicit HString(Pointer pointer = HStringTraits::Invalid())
 			: Handle<HStringTraits>(pointer) { }
 
-		HString(const wchar_t* const string, unsigned const length) NOEXCEPT
+		HString(const wchar_t* const string,
+				unsigned const length)
 		{
-			VERIFY_SUCCEEDED(WindowsCreateString(string, length, GetAddressOf()));
+			Check(WindowsCreateString(string,
+									  length,
+									  GetAddressOf()));
 		}
 
 		template <unsigned Length>
-		explicit HString(const wchar_t (&string)[Length]) NOEXCEPT
+		explicit HString(const wchar_t (&string)[Length])
 			: HString(string, Length - 1) { }
 
-		HString(const HString& other) NOEXCEPT
+		HString(const HString& other)
 		{
-			VERIFY_SUCCEEDED(WindowsDuplicateString(other.Get(), GetAddressOf()));
+			if (HStringTraits::Invalid() != other.Get())
+			{
+				Check(WindowsDuplicateString(other.Get(),
+											 GetAddressOf()));
+			}
 		}
 
 		HString(HString&& other) NOEXCEPT
 			: Handle<HStringTraits>(other.Detach()) { }
 
-		HString& operator=(const HString& other) NOEXCEPT
+		HString& operator=(const HString& other)
 		{
 			if (this != &other)
 			{
 				ReleaseInternal();
-				VERIFY_SUCCEEDED(WindowsDuplicateString(other.Get(), GetAddressOf()));
+				Check(WindowsDuplicateString(other.Get(),
+											 GetAddressOf()));
 			}
 			return *this;
 		}
@@ -690,42 +700,61 @@ namespace MTL
 		{
 			if (this != &other)
 			{
-				Handle<HStringTraits>::operator=(std::move(other));
+				Attach(other.Detach());
 			}
 			return *this;
 		}
 
-		friend bool operator==(const HString& lhs, const HString& rhs) NOEXCEPT
+		friend bool operator==(const HString& lhs, const HString& rhs)
 		{
 			INT32 compareResult;
-			WindowsCompareStringOrdinal(lhs.Get(), rhs.Get(), &compareResult);
+			Check(WindowsCompareStringOrdinal(lhs.Get(),
+											  rhs.Get(),
+											  &compareResult));
 			return compareResult == 0;
 		}
 
-		friend bool operator!=(const HString& lhs, const HString& rhs) NOEXCEPT
+		friend bool operator!=(const HString& lhs, const HString& rhs)
 		{
 			return !(lhs == rhs);
 		}
 
-		HString Substring(unsigned start) const NOEXCEPT
+		HString Substring(unsigned start) const
 		{
 			HString result;
-			VERIFY_SUCCEEDED(WindowsSubstring(Get(), start, result.GetAddressOf()));
+			if (HStringTraits::Invalid() == Get())
+			{
+				Check(WindowsSubstring(Get(),
+									   start,
+									   result.GetAddressOf()));
+			}
 			return result;
 		}
 
 		const wchar_t* GetRawBuffer() const NOEXCEPT
 		{
+			if (HStringTraits::Invalid() == Get())
+			{
+				return nullptr;
+			}
 			return WindowsGetStringRawBuffer(Get(), nullptr);
 		}
 
 		const wchar_t* GetRawBuffer(unsigned* length) const NOEXCEPT
 		{
+			if (HStringTraits::Invalid() == Get())
+			{
+				return nullptr;
+			}
 			return WindowsGetStringRawBuffer(Get(), length);
 		}
 
 		unsigned Size() const NOEXCEPT
 		{
+			if (HStringTraits::Invalid() == Get())
+			{
+				return 0;
+			}
 			return WindowsGetStringLen(Get());
 		}
 
@@ -742,13 +771,17 @@ namespace MTL
 	class HStringReference final
 	{
 	public:
-		HStringReference(const wchar_t* const value, unsigned length) NOEXCEPT
+		HStringReference(const wchar_t* const value,
+						 unsigned length)
 		{
-			VERIFY_SUCCEEDED(WindowsCreateStringReference(value, length, &_stringHeader, &_string));
+			Check(WindowsCreateStringReference(value,
+											   length,
+											   &_stringHeader,
+											   &_string));
 		}
 
 		template <unsigned Length>
-		explicit HStringReference(const wchar_t (&string)[Length]) NOEXCEPT
+		explicit HStringReference(const wchar_t (&string)[Length])
 			: HStringReference(string, Length - 1) { }
 
 		HStringReference(const HStringReference&) = delete;
@@ -769,8 +802,8 @@ namespace MTL
 		}
 
 	private:
-		HSTRING _string;
-		HSTRING_HEADER _stringHeader;
+		HSTRING _string = nullptr;
+		HSTRING_HEADER _stringHeader = {};
 	};
 
 #pragma endregion
@@ -1009,12 +1042,23 @@ namespace MTL
 		using TResult = typename GetAbiType<typename IAsyncOperation<TArgument>::TResult_complex>::type;
 
 		task_completion_event<TResult> taskCompletitionEvent;
-		auto callback = CreateCallback<IAsyncOperationCompletedHandler<TArgument>>([taskCompletitionEvent](IAsyncOperation<TArgument>* operation, AsyncStatus status)-> HRESULT
+		auto callback = CreateCallback<IAsyncOperationCompletedHandler<TArgument>>([taskCompletitionEvent]
+																				   (IAsyncOperation<TArgument>* operation, AsyncStatus status)->
+																				   HRESULT
 																				   {
-																					   TResult result;
-																					   operation->GetResults(&result);
-																					   taskCompletitionEvent.set(result);
-																					   return S_OK;
+																					   HRESULT hr;
+																					   try
+																					   {
+																						   TResult result;
+																						   hr = operation->GetResults(&result);
+																						   Check(hr);
+																						   taskCompletitionEvent.set(result);
+																					   }
+																					   catch (const ComException& exception)
+																					   {
+																						   taskCompletitionEvent.set_exception(exception);
+																					   }
+																					   return hr;
 																				   });
 		asyncOperation->put_Completed(callback.Get());
 		return task<TResult>(taskCompletitionEvent);
@@ -1031,12 +1075,23 @@ namespace MTL
 		using TResult = typename GetAbiType<typename IAsyncOperationWithProgress<TArgument, TProgress>::TResult_complex>::type;
 
 		task_completion_event<TResult> taskCompletitionEvent;
-		auto callback = CreateCallback<IAsyncOperationWithProgressCompletedHandler<TArgument, TProgress>>([taskCompletitionEvent](IAsyncOperationWithProgress<TArgument, TProgress>* operation, AsyncStatus status)-> HRESULT
+		auto callback = CreateCallback<IAsyncOperationWithProgressCompletedHandler<TArgument, TProgress>>([taskCompletitionEvent]
+																										  (IAsyncOperationWithProgress<TArgument, TProgress>* operation, AsyncStatus status)->
+																										  HRESULT
 																										  {
-																											  TResult result;
-																											  operation->GetResults(&result);
-																											  taskCompletitionEvent.set(result);
-																											  return S_OK;
+																											  HRESULT hr;
+																											  try
+																											  {
+																												  TResult result;
+																												  hr = operation->GetResults(&result);
+																												  Check(hr);
+																												  taskCompletitionEvent.set(result);
+																											  }
+																											  catch (const ComException& exception)
+																											  {
+																												  taskCompletitionEvent.set_exception(exception);
+																											  }
+																											  return hr;
 																										  });
 		asyncOperation->put_Completed(callback.Get());
 		return task<TResult>(taskCompletitionEvent);
