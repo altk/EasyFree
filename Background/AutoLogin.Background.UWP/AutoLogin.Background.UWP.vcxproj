@@ -160,7 +160,7 @@
       <GenerateStublessProxies>false</GenerateStublessProxies>
     </Midl>
     <PostBuildEvent>
-      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;amp;&amp;amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;amp;&amp;amp; rd /q /s "$(OutDir)Output"</Command>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -180,7 +180,7 @@
       <GenerateStublessProxies>false</GenerateStublessProxies>
     </Midl>
     <PostBuildEvent>
-      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;amp;&amp;amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;amp;&amp;amp; rd /q /s "$(OutDir)Output"</Command>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|arm'">
@@ -200,7 +200,7 @@
       <GenerateStublessProxies>false</GenerateStublessProxies>
     </Midl>
     <PostBuildEvent>
-      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;amp;&amp;amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;amp;&amp;amp; rd /q /s "$(OutDir)Output"</Command>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|arm'">
@@ -220,7 +220,7 @@
       <GenerateStublessProxies>false</GenerateStublessProxies>
     </Midl>
     <PostBuildEvent>
-      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;amp;&amp;amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;amp;&amp;amp; rd /q /s "$(OutDir)Output"</Command>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -240,7 +240,7 @@
       <GenerateStublessProxies>false</GenerateStublessProxies>
     </Midl>
     <PostBuildEvent>
-      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;amp;&amp;amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;amp;&amp;amp; rd /q /s "$(OutDir)Output"</Command>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -260,7 +260,7 @@
       <GenerateStublessProxies>false</GenerateStublessProxies>
     </Midl>
     <PostBuildEvent>
-      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;amp;&amp;amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;amp;&amp;amp; rd /q /s "$(OutDir)Output"</Command>
+      <Command>mdmerge -partial -i "$(OutDir)." -o "$(OutDir)Output" -metadata_dir "$(WindowsSDK_MetadataPath)\..\UnionMetadata" &amp;&amp; copy /y "$(OutDir)Output\*" "$(OutDir)" &amp;&amp; rd /q /s "$(OutDir)Output"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -5,7 +5,6 @@
 #include <ppltasks.h>
 #include <inspectable.h>
 #include <roapi.h>
-#include <comdef.h>
 #include <windows.foundation.h>
 #include <windows.foundation.collections.h>
 #include <macro.h>
@@ -359,6 +358,238 @@ namespace MTL
 #pragma endregion
 	}
 
+#pragma region ComException
+
+	class ComException final
+	{
+	public:
+		explicit ComException(HRESULT hr) NOEXCEPT
+			: _hr(hr) { }
+
+		ComException(const ComException& other) NOEXCEPT
+			: _hr(other._hr) {}
+
+		ComException& operator=(const ComException& other) NOEXCEPT
+		{
+			if (this != &other)
+			{
+				_hr = other._hr;
+			}
+
+			return *this;
+		}
+
+		std::wstring GetErrorMessage() const NOEXCEPT
+		{
+			using namespace std;
+
+			wstring result;
+			auto langId = MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT);
+			auto hr = _hr;
+			wchar_t* errorMessage = nullptr;
+
+			if (FACILITY_WINDOWS == HRESULT_FACILITY(hr))
+			{
+				hr = HRESULT_CODE(hr);
+			}
+
+			if (FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, hr, langId, errorMessage, 0, nullptr) != 0)
+			{
+				result.append(errorMessage);
+				HeapFree(GetProcessHeap(), 0, errorMessage);
+			}
+
+			return result;
+		}
+
+		HRESULT GetResult() const NOEXCEPT
+		{
+			return _hr;
+		}
+
+	private:
+		HRESULT _hr;
+	};
+
+#pragma endregion
+
+#pragma region HStringTraits
+
+	struct HStringTraits final
+	{
+		using Pointer = HSTRING;
+
+		static Pointer Invalid() NOEXCEPT
+		{
+			return nullptr;
+		}
+
+		static void Release(Pointer value) NOEXCEPT
+		{
+			VERIFY_SUCCEEDED(WindowsDeleteString(value));
+		}
+	};
+
+#pragma endregion
+
+#pragma region HString
+
+	class HString final : public Internals::Handle<HStringTraits>
+	{
+	public:
+		explicit HString(Pointer pointer = HStringTraits::Invalid())
+			: Handle<HStringTraits>(pointer) { }
+
+		HString(const wchar_t* const string,
+				unsigned const length)
+		{
+			Check(WindowsCreateString(string,
+									  length,
+									  GetAddressOf()));
+		}
+
+		explicit HString(const wchar_t* const string)
+			: HString(string, wcslen(string)) { }
+
+		template <unsigned Length>
+		explicit HString(const wchar_t (&string)[Length])
+			: HString(string, Length - 1) { }
+
+		HString(const HString& other)
+		{
+			if (HStringTraits::Invalid() != other.Get())
+			{
+				Check(WindowsDuplicateString(other.Get(),
+											 GetAddressOf()));
+			}
+		}
+
+		HString(HString&& other) NOEXCEPT
+			: Handle<HStringTraits>(other.Detach()) { }
+
+		HString& operator=(const HString& other)
+		{
+			if (this != &other)
+			{
+				ReleaseInternal();
+				Check(WindowsDuplicateString(other.Get(),
+											 GetAddressOf()));
+			}
+			return *this;
+		}
+
+		HString& operator=(HString&& other) NOEXCEPT
+		{
+			if (this != &other)
+			{
+				Attach(other.Detach());
+			}
+			return *this;
+		}
+
+		friend bool operator==(const HString& lhs, const HString& rhs)
+		{
+			INT32 compareResult;
+			Check(WindowsCompareStringOrdinal(lhs.Get(),
+											  rhs.Get(),
+											  &compareResult));
+			return compareResult == 0;
+		}
+
+		friend bool operator!=(const HString& lhs, const HString& rhs)
+		{
+			return !(lhs == rhs);
+		}
+
+		HString Substring(unsigned start) const
+		{
+			HString result;
+			if (HStringTraits::Invalid() == Get())
+			{
+				Check(WindowsSubstring(Get(),
+									   start,
+									   result.GetAddressOf()));
+			}
+			return result;
+		}
+
+		const wchar_t* GetRawBuffer() const NOEXCEPT
+		{
+			if (HStringTraits::Invalid() == Get())
+			{
+				return nullptr;
+			}
+			return WindowsGetStringRawBuffer(Get(), nullptr);
+		}
+
+		const wchar_t* GetRawBuffer(unsigned* length) const NOEXCEPT
+		{
+			if (HStringTraits::Invalid() == Get())
+			{
+				return nullptr;
+			}
+			return WindowsGetStringRawBuffer(Get(), length);
+		}
+
+		unsigned Size() const NOEXCEPT
+		{
+			if (HStringTraits::Invalid() == Get())
+			{
+				return 0;
+			}
+			return WindowsGetStringLen(Get());
+		}
+
+		bool Empty() const NOEXCEPT
+		{
+			return 0 == WindowsIsStringEmpty(Get());
+		}
+	};
+
+#pragma endregion
+
+#pragma region HStringReference
+
+	class HStringReference final
+	{
+	public:
+		HStringReference(const wchar_t* const value,
+						 unsigned length)
+		{
+			Check(WindowsCreateStringReference(value,
+											   length,
+											   &_stringHeader,
+											   &_string));
+		}
+
+		template <unsigned Length>
+		explicit HStringReference(const wchar_t (&string)[Length])
+			: HStringReference(string, Length - 1) { }
+
+		HStringReference(const HStringReference&) = delete;
+
+		HStringReference& operator=(const HStringReference&) = delete;
+
+		void* operator new(size_t) = delete;
+
+		void* operator new[](size_t) = delete;
+
+		void operator delete(void*) = delete;
+
+		void operator delete[](void*) = delete;
+
+		HSTRING Get() const NOEXCEPT
+		{
+			return _string;
+		}
+
+	private:
+		HSTRING _string = nullptr;
+		HSTRING_HEADER _stringHeader = {};
+	};
+
+#pragma endregion
+
 #pragma region ComClass
 
 	//TODO вынести поддержку подсчета ссылок в отдельный класс
@@ -432,8 +663,10 @@ namespace MTL
 
 #pragma region RuntimeClass
 
-	template <typename TDefaultInterface, typename ... TInterfaces>
-	class RuntimeClass abstract : public ComClass<TDefaultInterface, TInterfaces...>
+	template <typename TDefaultInterface,
+			  typename ... TInterfaces>
+	class RuntimeClass abstract : public ComClass<TDefaultInterface,
+												  TInterfaces...>
 	{
 	public:
 		STDMETHODIMP GetIids(ULONG* count, GUID** array) NOEXCEPT override final
@@ -634,180 +867,6 @@ namespace MTL
 
 #pragma endregion
 
-#pragma region HStringTraits
-
-	struct HStringTraits final
-	{
-		using Pointer = HSTRING;
-
-		static Pointer Invalid() NOEXCEPT
-		{
-			return nullptr;
-		}
-
-		static void Release(Pointer value) NOEXCEPT
-		{
-			VERIFY_SUCCEEDED(WindowsDeleteString(value));
-		}
-	};
-
-#pragma endregion
-
-#pragma region HString
-
-	class HString final : public Internals::Handle<HStringTraits>
-	{
-	public:
-		explicit HString(Pointer pointer = HStringTraits::Invalid())
-			: Handle<HStringTraits>(pointer) { }
-
-		HString(const wchar_t* const string,
-				unsigned const length)
-		{
-			Check(WindowsCreateString(string,
-									  length,
-									  GetAddressOf()));
-		}
-
-		template <unsigned Length>
-		explicit HString(const wchar_t (&string)[Length])
-			: HString(string, Length - 1) { }
-
-		HString(const HString& other)
-		{
-			if (HStringTraits::Invalid() != other.Get())
-			{
-				Check(WindowsDuplicateString(other.Get(),
-											 GetAddressOf()));
-			}
-		}
-
-		HString(HString&& other) NOEXCEPT
-			: Handle<HStringTraits>(other.Detach()) { }
-
-		HString& operator=(const HString& other)
-		{
-			if (this != &other)
-			{
-				ReleaseInternal();
-				Check(WindowsDuplicateString(other.Get(),
-											 GetAddressOf()));
-			}
-			return *this;
-		}
-
-		HString& operator=(HString&& other) NOEXCEPT
-		{
-			if (this != &other)
-			{
-				Attach(other.Detach());
-			}
-			return *this;
-		}
-
-		friend bool operator==(const HString& lhs, const HString& rhs)
-		{
-			INT32 compareResult;
-			Check(WindowsCompareStringOrdinal(lhs.Get(),
-											  rhs.Get(),
-											  &compareResult));
-			return compareResult == 0;
-		}
-
-		friend bool operator!=(const HString& lhs, const HString& rhs)
-		{
-			return !(lhs == rhs);
-		}
-
-		HString Substring(unsigned start) const
-		{
-			HString result;
-			if (HStringTraits::Invalid() == Get())
-			{
-				Check(WindowsSubstring(Get(),
-									   start,
-									   result.GetAddressOf()));
-			}
-			return result;
-		}
-
-		const wchar_t* GetRawBuffer() const NOEXCEPT
-		{
-			if (HStringTraits::Invalid() == Get())
-			{
-				return nullptr;
-			}
-			return WindowsGetStringRawBuffer(Get(), nullptr);
-		}
-
-		const wchar_t* GetRawBuffer(unsigned* length) const NOEXCEPT
-		{
-			if (HStringTraits::Invalid() == Get())
-			{
-				return nullptr;
-			}
-			return WindowsGetStringRawBuffer(Get(), length);
-		}
-
-		unsigned Size() const NOEXCEPT
-		{
-			if (HStringTraits::Invalid() == Get())
-			{
-				return 0;
-			}
-			return WindowsGetStringLen(Get());
-		}
-
-		bool Empty() const NOEXCEPT
-		{
-			return 0 == WindowsIsStringEmpty(Get());
-		}
-	};
-
-#pragma endregion
-
-#pragma region HStringReference
-
-	class HStringReference final
-	{
-	public:
-		HStringReference(const wchar_t* const value,
-						 unsigned length)
-		{
-			Check(WindowsCreateStringReference(value,
-											   length,
-											   &_stringHeader,
-											   &_string));
-		}
-
-		template <unsigned Length>
-		explicit HStringReference(const wchar_t (&string)[Length])
-			: HStringReference(string, Length - 1) { }
-
-		HStringReference(const HStringReference&) = delete;
-
-		HStringReference& operator=(const HStringReference&) = delete;
-
-		void* operator new(size_t) = delete;
-
-		void* operator new[](size_t) = delete;
-
-		void operator delete(void*) = delete;
-
-		void operator delete[](void*) = delete;
-
-		HSTRING Get() const NOEXCEPT
-		{
-			return _string;
-		}
-
-	private:
-		HSTRING _string = nullptr;
-		HSTRING_HEADER _stringHeader = {};
-	};
-
-#pragma endregion
-
 #pragma region IteratorAdapter
 
 	template <class TIterator>
@@ -936,56 +995,6 @@ namespace MTL
 
 	private:
 		TCallback _callback;
-	};
-
-#pragma endregion
-
-#pragma region ComException
-
-	class ComException final
-	{
-	public:
-		explicit ComException(HRESULT hr) NOEXCEPT
-			: _hr(hr) { }
-
-		ComException(const ComException& other) NOEXCEPT
-			: _hr(other._hr) {}
-
-		ComException& operator=(const ComException& other) NOEXCEPT
-		{
-			if (this != &other)
-			{
-				_hr = other._hr;
-			}
-
-			return *this;
-		}
-
-		std::wstring GetErrorMessage() const NOEXCEPT
-		{
-			using namespace std;
-
-			wstring result;
-			auto langId = MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT);
-			auto hr = _hr;
-			wchar_t* errorMessage = nullptr;
-
-			if (FACILITY_WINDOWS == HRESULT_FACILITY(hr))
-			{
-				hr = HRESULT_CODE(hr);
-			}
-
-			if (FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, hr, langId, errorMessage, 0, nullptr) != 0)
-			{
-				result.append(errorMessage);
-				HeapFree(GetProcessHeap(), 0, errorMessage);
-			}
-
-			return result;
-		}
-
-	private:
-		HRESULT _hr;
 	};
 
 #pragma endregion

@@ -16,7 +16,7 @@ HRESULT Application::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 {
 	using namespace MTL;
 
-	*className = HString(L"AutoLogin.Application").Detach();
+	*className = HString(RuntimeClass_AutoLogin_Application).Detach();
 	return S_OK;
 }
 
