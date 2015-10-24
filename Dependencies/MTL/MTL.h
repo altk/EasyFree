@@ -364,7 +364,12 @@ namespace MTL
 	{
 	public:
 		explicit ComException(HRESULT hr) NOEXCEPT
-			: _hr(hr) { }
+			: _hr(hr)
+		{
+#ifdef _DEBUG
+			OutputDebugStringW(GetErrorMessage().data());
+#endif
+		}
 
 		ComException(const ComException& other) NOEXCEPT
 			: _hr(other._hr) {}

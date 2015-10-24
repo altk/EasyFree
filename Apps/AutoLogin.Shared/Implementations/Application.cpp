@@ -16,8 +16,15 @@ HRESULT Application::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 {
 	using namespace MTL;
 
-	*className = HString(RuntimeClass_AutoLogin_Application).Detach();
-	return S_OK;
+	try
+	{
+		*className = HString(RuntimeClass_AutoLogin_Application).Detach();
+		return S_OK;
+	}
+	catch (const ComException& exception)
+	{
+		return exception.GetResult();
+	}
 }
 
 HRESULT Application::CreateView(ABI::Windows::ApplicationModel::Core::IFrameworkView** viewProvider) NOEXCEPT
