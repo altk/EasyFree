@@ -273,8 +273,8 @@ void Application::Draw() NOEXCEPT
 	auto title = wstring(L"AutoLogin");
 	auto description = wstring(
 		L"Приложение работает в автоматическом режиме.\r\n"
-		"Как только будет установлено соединение с WiFi сетью, будет запущен процесс автоматической авторизации.\r\n"
-		"Вам останется только дождаться уведомления об успешном соединении.");
+		L"Как только будет установлено соединение с WiFi сетью, будет запущен процесс автоматической авторизации.\r\n"
+		L"Вам останется только дождаться уведомления об успешном соединении.");
 
 	auto size = _deviceContext->GetPixelSize();
 
@@ -358,7 +358,10 @@ void Application::RegisterBackgroundTask() NOEXCEPT
 	ComPtr<IAsyncOperation<BackgroundAccessStatus>> backgroundAccessStatusAsyncOperation;
 	backgroundExecutionManagerStatics->RequestAccessAsync(&backgroundAccessStatusAsyncOperation);
 
-	GetTask(backgroundAccessStatusAsyncOperation.Get()).then([](BackgroundAccessStatus) -> void
+	GetTask(backgroundAccessStatusAsyncOperation.Get()).then(
+		[]
+		(BackgroundAccessStatus) ->
+		void
 		{
 			ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
 			GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
@@ -415,7 +418,10 @@ void Application::RegisterBackgroundTask() NOEXCEPT
 		});
 }
 
-int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) NOEXCEPT
+int CALLBACK WinMain(HINSTANCE,
+					 HINSTANCE,
+					 LPSTR,
+					 int) NOEXCEPT
 {
 	using namespace ABI::Windows::Foundation;
 	using namespace ABI::Windows::ApplicationModel::Core;
