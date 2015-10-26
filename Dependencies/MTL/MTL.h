@@ -1036,17 +1036,18 @@ namespace MTL
 
 		static_assert(std::is_base_of<IUnknown, TDelegateInterface>::value && !std::is_base_of<IInspectable, TDelegateInterface>::value, "Delegates objects must be 'IUnknown' base and not 'IInspectable'");
 
-		using tuple = typename FunctionTraits<decltype(&TDelegateInterface::Invoke)>::TypesTuple;
+		using TTuple = typename FunctionTraits<decltype(&TDelegateInterface::Invoke)>::TypesTuple;
 
-		auto helper = ÑreateDelegate<TDelegateInterface>(std::forward<TCallback>(callback), tuple());
+		auto delegate = ÑreateDelegate<TDelegateInterface>(std::forward<TCallback>(callback),
+														   TTuple());
 
-		using helperType = decltype(helper);
+		using TDelegateType = decltype(delegate);
 
-		return ComPtr<TDelegateInterface>(new helperType(std::move(helper)));
+		return ComPtr<TDelegateInterface>(new TDelegateType(std::move(delegate)));
 	};
 
 	template <typename TAsyncOperation>
-	static auto GetTask(TAsyncOperation* asyncOperation) NOEXCEPT ->
+	static auto GetTask(TAsyncOperation* asyncOperation) ->
 	concurrency::task<typename ABI::Windows::Foundation::Internal::GetAbiType<typename TAsyncOperation::TResult_complex>::type>
 	{
 		using namespace concurrency;
@@ -1068,30 +1069,35 @@ namespace MTL
 
 		task_completion_event<TResult> taskCompletitionEvent;
 		auto callback = CreateCallback<THandler>([taskCompletitionEvent]
-												 (TOperation* operation, AsyncStatus status)->
-												 HRESULT
-												 {
-													 HRESULT hr;
-													 try
-													 {
-														 TResult result;
-														 hr = operation->GetResults(&result);
-														 Check(hr);
-														 taskCompletitionEvent.set(result);
-													 }
-													 catch (const ComException& exception)
-													 {
-														 taskCompletitionEvent.set_exception(exception);
-													 }
-													 return hr;
-												 });
-		asyncOperation->put_Completed(callback.Get());
+			(TOperation* operation, AsyncStatus status)->
+			HRESULT
+			{
+				HRESULT hr;
+				try
+				{
+					TResult result;
+					hr = operation->GetResults(&result);
+					Check(hr);
+					taskCompletitionEvent.set(result);
+				}
+				catch (const ComException& exception)
+				{
+					taskCompletitionEvent.set_exception(exception);
+				}
+				return hr;
+			});
+		Check(asyncOperation->put_Completed(callback.Get()));
 		return task<TResult>(taskCompletitionEvent);
 	}
 
 	inline void Check(HRESULT hr)
 	{
-		if (IS_ERROR(hr)) throw ComException(hr);
+		if (IS_ERROR(hr))
+		{
+			auto exception = ComException(hr);
+			OutputDebugStringW(exception.GetErrorMessage().data());
+			throw exception;
+		}
 	}
 }
 

@@ -43,17 +43,38 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 	using namespace MTL;
 
 	auto token = make_shared<EventRegistrationToken>();
-	auto callback = CreateCallback<ITypedEventHandler<CoreApplicationView*, IActivatedEventArgs*>>([token](ICoreApplicationView* coreApplicationView, IActivatedEventArgs* args)-> HRESULT
-																								   {
-																									   coreApplicationView->remove_Activated(*token);
-																									   ComPtr<ICoreWindow> coreWindow;
-																									   coreApplicationView->get_CoreWindow(&coreWindow);
-																									   coreWindow->Activate();
-																									   return S_OK;
-																								   });
+	auto callback = CreateCallback<ITypedEventHandler<CoreApplicationView*, IActivatedEventArgs*>>(
+		[token]
+		(ICoreApplicationView* coreApplicationView, IActivatedEventArgs* args)->
+		HRESULT
+		{
+			try
+			{
+				Check(coreApplicationView->remove_Activated(*token));
 
-	applicationView->add_Activated(callback.Get(), token.get());
-	return S_OK;
+				ComPtr<ICoreWindow> coreWindow;
+				Check(coreApplicationView->get_CoreWindow(&coreWindow));
+				Check(coreWindow->Activate());
+
+				return S_OK;
+			}
+			catch (const ComException& comException)
+			{
+				return comException.GetResult();
+			}
+		});
+
+	try
+	{
+		Check(applicationView->add_Activated(callback.Get(),
+											 token.get()));
+
+		return S_OK;
+	}
+	catch (const ComException& comException)
+	{
+		return comException.GetResult();
+	}
 }
 
 HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEXCEPT
@@ -67,31 +88,49 @@ HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEX
 
 	_coreWindow.Attach(window);
 
-	auto visibilityChangedCallback = CreateCallback<ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*>>([this](ICoreWindow* coreWindow, IVisibilityChangedEventArgs* args)-> HRESULT
-																												  {
-																													  boolean isVisible;
-																													  args->get_Visible(&isVisible);
+	auto visibilityChangedCallback = CreateCallback<ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*>>(
+		[this]
+		(ICoreWindow* coreWindow, IVisibilityChangedEventArgs* args)->
+		HRESULT
+		{
+			try
+			{
+				boolean isVisible;
+				Check(args->get_Visible(&isVisible));
 
-																													  if (!isVisible)
-																													  {
-																														  _deviceContext.Release();
-																														  _swapChain.Release();
-																														  _dwriteFactory.Release();
-																													  }
-																													  if (!_deviceContext)
-																													  {
-																														  InitContext();
-																													  }
+				if (!isVisible)
+				{
+					_deviceContext.Release();
+					_swapChain.Release();
+					_dwriteFactory.Release();
+				}
+				if (!_deviceContext)
+				{
+					InitContext();
+				}
 
-																													  Draw();
+				Draw();
 
-																													  return S_OK;
-																												  });
-	EventRegistrationToken tempToken;
-	window->add_VisibilityChanged(visibilityChangedCallback.Get(),
-								  &tempToken);
+				return S_OK;
+			}
+			catch (const ComException& comException)
+			{
+				return comException.GetResult();
+			}
+		});
 
-	return S_OK;
+	try
+	{
+		EventRegistrationToken tempToken;
+		Check(window->add_VisibilityChanged(visibilityChangedCallback.Get(),
+											&tempToken));
+
+		return S_OK;
+	}
+	catch (const ComException& comException)
+	{
+		return S_OK;
+	}
 }
 
 HRESULT Application::Load(HSTRING) NOEXCEPT
@@ -106,11 +145,18 @@ HRESULT Application::Run() NOEXCEPT
 
 	RegisterBackgroundTask();
 
-	ComPtr<ICoreDispatcher> coreDispatcher;
-	_coreWindow->get_Dispatcher(&coreDispatcher);
-	coreDispatcher->ProcessEvents(CoreProcessEventsOption_ProcessUntilQuit);
+	try
+	{
+		ComPtr<ICoreDispatcher> coreDispatcher;
+		Check(_coreWindow->get_Dispatcher(&coreDispatcher));
+		Check(coreDispatcher->ProcessEvents(CoreProcessEventsOption_ProcessUntilQuit));
 
-	return S_OK;
+		return S_OK;
+	}
+	catch (const ComException& comException)
+	{
+		return comException.GetResult();
+	}
 }
 
 HRESULT Application::Uninitialize() NOEXCEPT
@@ -128,90 +174,94 @@ void Application::InitContext() NOEXCEPT
 	using namespace ABI::Windows::Foundation;
 	using namespace MTL;
 
-	ComPtr<IDisplayInformationStatics> displayInformationStatics;
-	GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(),
-						 &displayInformationStatics);
+	try
+	{
+		ComPtr<IDisplayInformationStatics> displayInformationStatics;
+		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Graphics_Display_DisplayInformation).Get(),
+								   &displayInformationStatics));
 
-	ComPtr<IDisplayInformation> displayInformation;
-	displayInformationStatics->GetForCurrentView(&displayInformation);
+		ComPtr<IDisplayInformation> displayInformation;
+		Check(displayInformationStatics->GetForCurrentView(&displayInformation));
 
-	FLOAT dpiX,
-		  dpiY;
+		FLOAT dpiX,
+			  dpiY;
 
-	displayInformation->get_RawDpiX(&dpiX);
-	displayInformation->get_RawDpiY(&dpiY);
+		Check(displayInformation->get_RawDpiX(&dpiX));
+		Check(displayInformation->get_RawDpiY(&dpiY));
 
-	ComPtr<ID2D1Factory1> factory;
-	D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED,
-					  D2D1_FACTORY_OPTIONS{},
-					  static_cast<ID2D1Factory1**>(&factory));
+		ComPtr<ID2D1Factory1> factory;
+		Check(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED,
+								D2D1_FACTORY_OPTIONS{},
+								static_cast<ID2D1Factory1**>(&factory)));
 
-	ComPtr<ID3D11Device> device;
-	D3D11CreateDevice(nullptr,
-					  D3D_DRIVER_TYPE_HARDWARE,
-					  nullptr,
-					  D3D11_CREATE_DEVICE_BGRA_SUPPORT,
-					  nullptr, 0,
-					  D3D11_SDK_VERSION,
-					  device.GetAddressOf(),
-					  nullptr,
-					  nullptr);
+		ComPtr<ID3D11Device> device;
+		Check(D3D11CreateDevice(nullptr,
+								D3D_DRIVER_TYPE_HARDWARE,
+								nullptr,
+								D3D11_CREATE_DEVICE_BGRA_SUPPORT,
+								nullptr, 0,
+								D3D11_SDK_VERSION,
+								device.GetAddressOf(),
+								nullptr,
+								nullptr));
 
-	ComPtr<IDXGIDevice> dxgiDevice;
-	device.As(&dxgiDevice);
+		ComPtr<IDXGIDevice> dxgiDevice;
+		Check(device.As(&dxgiDevice));
 
-	ComPtr<IDXGIAdapter> dxgiAdapter;
-	dxgiDevice->GetAdapter(&dxgiAdapter);
+		ComPtr<IDXGIAdapter> dxgiAdapter;
+		Check(dxgiDevice->GetAdapter(&dxgiAdapter));
 
-	ComPtr<IDXGIFactory2> dxgiFactory;
-	dxgiAdapter->GetParent(__uuidof(dxgiFactory),
-						   &dxgiFactory);
+		ComPtr<IDXGIFactory2> dxgiFactory;
+		Check(dxgiAdapter->GetParent(__uuidof(dxgiFactory),
+									 &dxgiFactory));
 
-	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
-	swapChainDesc.Stereo = false;
-	swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-	swapChainDesc.SampleDesc.Count = 1;
-	swapChainDesc.SampleDesc.Quality = 0;
-	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	swapChainDesc.BufferCount = 2;
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-	swapChainDesc.Flags = 0;
-	swapChainDesc.Width = 0;
-	swapChainDesc.Height = 0;
-	swapChainDesc.Scaling = DXGI_SCALING_NONE;
-	swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
+		swapChainDesc.Stereo = false;
+		swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+		swapChainDesc.SampleDesc.Count = 1;
+		swapChainDesc.SampleDesc.Quality = 0;
+		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		swapChainDesc.BufferCount = 2;
+		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+		swapChainDesc.Flags = 0;
+		swapChainDesc.Width = 0;
+		swapChainDesc.Height = 0;
+		swapChainDesc.Scaling = DXGI_SCALING_NONE;
+		swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
 
-	dxgiFactory->CreateSwapChainForCoreWindow(dxgiDevice.Get(),
-											  _coreWindow.Get(),
-											  &swapChainDesc,
-											  nullptr,
-											  &_swapChain);
+		Check(dxgiFactory->CreateSwapChainForCoreWindow(dxgiDevice.Get(),
+														_coreWindow.Get(),
+														&swapChainDesc,
+														nullptr,
+														&_swapChain));
 
-	ComPtr<ID2D1Device> d2dDevice;
-	factory->CreateDevice(dxgiDevice.Get(),
-						  &d2dDevice);
+		ComPtr<ID2D1Device> d2dDevice;
+		Check(factory->CreateDevice(dxgiDevice.Get(),
+									&d2dDevice));
 
-	d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE,
-								   &_deviceContext);
+		Check(d2dDevice->CreateDeviceContext(D2D1_DEVICE_CONTEXT_OPTIONS_NONE,
+											 &_deviceContext));
 
-	ComPtr<IDXGISurface> dxgiSurface;
-	_swapChain->GetBuffer(0, __uuidof(dxgiSurface), &dxgiSurface);
+		ComPtr<IDXGISurface> dxgiSurface;
+		Check(_swapChain->GetBuffer(0, __uuidof(dxgiSurface), &dxgiSurface));
 
-	auto bitmapProperties = BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
-											  PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE),
-											  dpiX,
-											  dpiY);
+		auto bitmapProperties = BitmapProperties1(D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+												  PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE),
+												  dpiX,
+												  dpiY);
 
-	ComPtr<ID2D1Bitmap1> bitmap;
-	_deviceContext->CreateBitmapFromDxgiSurface(dxgiSurface.Get(),
-												bitmapProperties,
-												bitmap.GetAddressOf());
-	_deviceContext->SetTarget(bitmap.Get());
-	_deviceContext->SetDpi(dpiX, dpiY);
+		ComPtr<ID2D1Bitmap1> bitmap;
+		Check(_deviceContext->CreateBitmapFromDxgiSurface(dxgiSurface.Get(),
+														  bitmapProperties,
+														  bitmap.GetAddressOf()));
+		_deviceContext->SetTarget(bitmap.Get());
+		_deviceContext->SetDpi(dpiX, dpiY);
 
-	DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
-						__uuidof(IDWriteFactory),
-						&_dwriteFactory);
+		Check(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,
+								  __uuidof(IDWriteFactory),
+								  &_dwriteFactory));
+	}
+	catch (...) { }
 }
 
 void Application::Draw() NOEXCEPT
@@ -221,14 +271,16 @@ void Application::Draw() NOEXCEPT
 	using namespace std;
 
 	auto title = wstring(L"AutoLogin");
-	auto description = wstring(L"Приложение работает в автоматическом режиме.\r\n"
-							   "Как только будет установлено соединение с WiFi сетью, будет запущен процесс автоматической авторизации.\r\n"
-							   "Вам останется только дождаться уведомления об успешном соединении.");
+	auto description = wstring(
+		L"Приложение работает в автоматическом режиме.\r\n"
+		"Как только будет установлено соединение с WiFi сетью, будет запущен процесс автоматической авторизации.\r\n"
+		"Вам останется только дождаться уведомления об успешном соединении.");
 
 	auto size = _deviceContext->GetPixelSize();
 
 	FLOAT dpiX,
 		  dpiY;
+
 	_deviceContext->GetDpi(&dpiX, &dpiY);
 
 	auto scaleFactor = 96.0f / dpiX;
@@ -307,60 +359,60 @@ void Application::RegisterBackgroundTask() NOEXCEPT
 	backgroundExecutionManagerStatics->RequestAccessAsync(&backgroundAccessStatusAsyncOperation);
 
 	GetTask(backgroundAccessStatusAsyncOperation.Get()).then([](BackgroundAccessStatus) -> void
-															 {
-																 ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
-																 GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
-																					  &backgroundTaskRegistrationStatics);
+		{
+			ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
+			GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
+								 &backgroundTaskRegistrationStatics);
 
-																 ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
-																 backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations);
+			ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
+			backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations);
 
-																 ComPtr<IIterable<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterable;
-																 taskRegistrations.As(&registrationsIterable);
+			ComPtr<IIterable<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterable;
+			taskRegistrations.As(&registrationsIterable);
 
-																 ComPtr<IIterator<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterator;
-																 registrationsIterable->First(&registrationsIterator);
+			ComPtr<IIterator<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterator;
+			registrationsIterable->First(&registrationsIterator);
 
-																 boolean hasCurrent;
-																 registrationsIterator->get_HasCurrent(&hasCurrent);
+			boolean hasCurrent;
+			registrationsIterator->get_HasCurrent(&hasCurrent);
 
-																 while (hasCurrent)
-																 {
-																	 ComPtr<IKeyValuePair<GUID, IBackgroundTaskRegistration*>> current;
-																	 registrationsIterator->get_Current(&current);
+			while (hasCurrent)
+			{
+				ComPtr<IKeyValuePair<GUID, IBackgroundTaskRegistration*>> current;
+				registrationsIterator->get_Current(&current);
 
-																	 ComPtr<IBackgroundTaskRegistration> taskRegistration;
-																	 current->get_Value(&taskRegistration);
+				ComPtr<IBackgroundTaskRegistration> taskRegistration;
+				current->get_Value(&taskRegistration);
 
-																	 taskRegistration->Unregister(true);
+				taskRegistration->Unregister(true);
 
-																	 registrationsIterator->MoveNext(&hasCurrent);
-																 }
+				registrationsIterator->MoveNext(&hasCurrent);
+			}
 
-																 ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
-																 ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
-																										  &backgroundTaskBuilder);
+			ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
+			ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
+													 &backgroundTaskBuilder);
 
-																 backgroundTaskBuilder->put_Name(HString(L"AutoLoginTask").Detach());
-																 backgroundTaskBuilder->put_TaskEntryPoint(HString(L"AutoLogin.Background.LoginTask").Detach());
+			backgroundTaskBuilder->put_Name(HString(L"AutoLoginTask").Detach());
+			backgroundTaskBuilder->put_TaskEntryPoint(HString(L"AutoLogin.Background.LoginTask").Detach());
 
-																 ComPtr<ISystemTriggerFactory> systemTriggerActivationFactory;
-																 GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_SystemTrigger).Get(),
-																					  &systemTriggerActivationFactory);
+			ComPtr<ISystemTriggerFactory> systemTriggerActivationFactory;
+			GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_SystemTrigger).Get(),
+								 &systemTriggerActivationFactory);
 
-																 ComPtr<ISystemTrigger> systemTrigger;
-																 systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
-																										false,
-																										&systemTrigger);
+			ComPtr<ISystemTrigger> systemTrigger;
+			systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
+												   false,
+												   &systemTrigger);
 
-																 ComPtr<IBackgroundTrigger> backgroundTrigger;
-																 systemTrigger.As(&backgroundTrigger);
+			ComPtr<IBackgroundTrigger> backgroundTrigger;
+			systemTrigger.As(&backgroundTrigger);
 
-																 backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get());
+			backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get());
 
-																 ComPtr<IBackgroundTaskRegistration> taskRegistration;
-																 backgroundTaskBuilder->Register(&taskRegistration);
-															 });
+			ComPtr<IBackgroundTaskRegistration> taskRegistration;
+			backgroundTaskBuilder->Register(&taskRegistration);
+		});
 }
 
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) NOEXCEPT
@@ -371,12 +423,22 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int) NOEXCEPT
 	using namespace MTL;
 	using namespace MTL;
 
-	RoInitialize(RO_INIT_MULTITHREADED);
+	try
+	{
+		Check(RoInitialize(RO_INIT_MULTITHREADED));
 
-	ComPtr<ICoreApplication> coreApplication;
-	GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
-						 &coreApplication);
+		ComPtr<ICoreApplication> coreApplication;
+		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Core_CoreApplication).Get(),
+								   &coreApplication));
 
-	Application app;
-	coreApplication->Run(&app);
+		Check(coreApplication->Run(new Application()));
+	}
+	catch (const ComException& comException)
+	{
+		//TODO WriteLog
+	}
+	catch (const std::bad_alloc& badAlloc)
+	{
+		//TODO WriteLog
+	}
 }
