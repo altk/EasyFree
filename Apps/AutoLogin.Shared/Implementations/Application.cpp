@@ -439,11 +439,11 @@ int CALLBACK WinMain(HINSTANCE,
 
 		Check(coreApplication->Run(new Application()));
 	}
-	catch (const ComException& comException)
+	catch (const ComException&)
 	{
 		//TODO WriteLog
 	}
-	catch (const std::bad_alloc& badAlloc)
+	catch (const std::bad_alloc&)
 	{
 		//TODO WriteLog
 	}
