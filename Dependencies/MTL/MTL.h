@@ -1046,30 +1046,21 @@ namespace MTL
 		return ComPtr<TDelegateInterface>(new TDelegateType(std::move(delegate)));
 	};
 
-	template <typename TAsyncOperation>
-	static auto GetTask(TAsyncOperation* asyncOperation) ->
-	concurrency::task<typename ABI::Windows::Foundation::Internal::GetAbiType<typename TAsyncOperation::TResult_complex>::type>
+	template <typename TArgument>
+	static auto GetTask(ABI::Windows::Foundation::IAsyncOperation<TArgument>* asyncOperation) ->
+	concurrency::task<typename ABI::Windows::Foundation::Internal::GetAbiType<typename ABI::Windows::Foundation::IAsyncOperation<TArgument>::TResult_complex>::type>
 	{
 		using namespace concurrency;
 		using namespace ABI::Windows::Foundation::Internal;
 		using namespace ABI::Windows::Foundation;
 
-		using TResult = typename GetAbiType<typename TAsyncOperation::TResult_complex>::type;
-		using TLogicalResult = typename GetLogicalType<typename TAsyncOperation::TResult_complex>::type;
-
-		using TOperation = typename std::conditional<std::is_base_of<IAsyncOperation<TLogicalResult>, TAsyncOperation>::value,
-													 IAsyncOperation<TLogicalResult>,
-													 IAsyncOperationWithProgress<TLogicalResult,
-																				 typename GetLogicalType<typename TAsyncOperation::TProgress_complex>::type>>::type;
-
-		using THandler = typename std::conditional<std::is_base_of<IAsyncOperation<TLogicalResult>, TAsyncOperation>::value,
-												   IAsyncOperationCompletedHandler<TLogicalResult>,
-												   IAsyncOperationWithProgressCompletedHandler<TLogicalResult,
-																							   typename GetLogicalType<typename TAsyncOperation::TProgress_complex>::type>>::type;
+		using TResult = typename GetAbiType<typename IAsyncOperation<TArgument>::TResult_complex>::type;
 
 		task_completion_event<TResult> taskCompletitionEvent;
-		auto callback = CreateCallback<THandler>([taskCompletitionEvent]
-			(TOperation* operation, AsyncStatus status)->
+		
+		auto callback = CreateCallback<IAsyncOperationCompletedHandler<TArgument>>(
+			[taskCompletitionEvent]
+			(IAsyncOperation<TArgument>* operation, AsyncStatus status)->
 			HRESULT
 			{
 				HRESULT hr;
@@ -1086,7 +1077,46 @@ namespace MTL
 				}
 				return hr;
 			});
+		
 		Check(asyncOperation->put_Completed(callback.Get()));
+		
+		return task<TResult>(taskCompletitionEvent);
+	}
+
+	template <typename TArgument, typename TProgress>
+	static auto GetTask(ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>* asyncOperation) ->
+	concurrency::task<typename ABI::Windows::Foundation::Internal::GetAbiType<typename ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>::TResult_complex>::type>
+	{
+		using namespace concurrency;
+		using namespace ABI::Windows::Foundation::Internal;
+		using namespace ABI::Windows::Foundation;
+
+		using TResult = typename GetAbiType<typename IAsyncOperationWithProgress<TArgument, TProgress>::TResult_complex>::type;
+
+		task_completion_event<TResult> taskCompletitionEvent;
+
+		auto callback = CreateCallback<IAsyncOperationWithProgressCompletedHandler<TArgument, TProgress>>(
+			[taskCompletitionEvent]
+			(IAsyncOperationWithProgress<TArgument, TProgress>* operation, AsyncStatus status)->
+			HRESULT
+			{
+				HRESULT hr;
+				try
+				{
+					TResult result;
+					hr = operation->GetResults(&result);
+					Check(hr);
+					taskCompletitionEvent.set(result);
+				}
+				catch (const ComException& exception)
+				{
+					taskCompletitionEvent.set_exception(exception);
+				}
+				return hr;
+			});
+		
+		Check(asyncOperation->put_Completed(callback.Get()));
+		
 		return task<TResult>(taskCompletitionEvent);
 	}
 

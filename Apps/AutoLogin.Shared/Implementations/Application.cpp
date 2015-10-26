@@ -129,7 +129,7 @@ HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEX
 	}
 	catch (const ComException& comException)
 	{
-		return S_OK;
+		return comException.GetResult();
 	}
 }
 
