@@ -221,7 +221,9 @@ void Application::Draw() NOEXCEPT
 	using namespace std;
 
 	auto title = wstring(L"AutoLogin");
-	auto description = wstring(L"Соединение с интернетом работает в автоматическом режиме. Вам осталось только дождаться соедиения с поддерживаемой WiFi сетью и уведомления об успешном соединении.");
+	auto description = wstring(L"Приложение работает в автоматическом режиме.\r\n"
+							   "Как только будет установлено соединение с WiFi сетью, будет запущен процесс автоматической авторизации.\r\n"
+							   "Вам останется только дождаться уведомления об успешном соединении.");
 
 	auto size = _deviceContext->GetPixelSize();
 
@@ -334,8 +336,6 @@ void Application::RegisterBackgroundTask() NOEXCEPT
 
 																	 registrationsIterator->MoveNext(&hasCurrent);
 																 }
-
-																 //ComPtr<IActionvationFactory>
 
 																 ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
 																 ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),

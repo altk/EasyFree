@@ -223,7 +223,7 @@ HRESULT LoginTask::Run(ABI::Windows::ApplicationModel::Background::IBackgroundTa
 			ComPtr<IXmlNodeSerializer> xmlNodeSerializer1;
 			xmlNode1.As(&xmlNodeSerializer1);
 
-			xmlNodeSerializer1->put_InnerText(HStringReference(L"Connection completed").Get());
+			xmlNodeSerializer1->put_InnerText(HStringReference(L"Соединение установлено").Get());
 
 			ComPtr<IToastNotificationFactory> toastNotificationFactory;
 			GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
