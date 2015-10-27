@@ -794,7 +794,7 @@ namespace MTL
 			InternalRelease();
 		}
 
-		Internals::ComPtrRef<TClass> ReleaseAndGetAddressOf() NOEXCEPT
+		TClass** ReleaseAndGetAddressOf() NOEXCEPT
 		{
 			InternalRelease();
 			return GetAddressOf();
