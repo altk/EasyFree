@@ -12,87 +12,118 @@
 
 using namespace AutoLogin::Background::Implementations;
 
-const GumboNode* findNodeByTag(const GumboNode* node, GumboTag tag) NOEXCEPT
+class ResponseParser final
 {
-	if (node->v.element.tag == tag)
+public:
+	static std::string GetPostString(const char* source) NOEXCEPT
 	{
-		return node;
+		return ParseHTML(source);
 	}
 
-	auto children = &node->v.element.children;
-	for (unsigned i = 0; i < children->length; ++i)
+private:
+	static std::string ParseHTML(const char* source) NOEXCEPT
 	{
-		auto child = static_cast<GumboNode*>(children->data[i]);
-		if (GUMBO_NODE_ELEMENT == child->type)
+		using namespace std;
+
+		string result;
+
+		if (!source) return result;
+
+		auto output = gumbo_parse(source);
+
+		if (!output) return result;
+
+		auto formNode = FindNodeByTag(output->root,
+									  GUMBO_TAG_FORM);
+
+		if (!formNode) return result;
+
+		result = ParseFormElement(formNode);
+
+		gumbo_destroy_output(&kGumboDefaultOptions,
+							 output);
+
+		return result;
+	}
+
+	static const GumboNode* FindNodeByTag(const GumboNode* node,
+										  GumboTag tag) NOEXCEPT
+	{
+		if (node->v.element.tag == tag)
 		{
-			auto result = findNodeByTag(child, tag);
-			if (nullptr != result)
+			return node;
+		}
+
+		auto children = &node->v.element.children;
+		for (unsigned i = 0; i < children->length; ++i)
+		{
+			auto child = static_cast<GumboNode*>(children->data[i]);
+			if (GUMBO_NODE_ELEMENT == child->type)
 			{
-				return result;
+				auto result = FindNodeByTag(child, tag);
+				if (nullptr != result)
+				{
+					return result;
+				}
 			}
 		}
+
+		return nullptr;
 	}
 
-	return nullptr;
-}
-
-std::string getPostContent(const char* source)
-{
-	using namespace std;
-
-	auto output = gumbo_parse(source);
-
-	auto formNode = findNodeByTag(output->root, GUMBO_TAG_FORM);
-
-	vector<tuple<const char*, const char*>> params;
-
-	auto children = &formNode->v.element.children;
-	for (unsigned i = 0; i < children->length; ++i)
+	static std::string ParseFormElement(const GumboNode* formNode) NOEXCEPT
 	{
-		auto child = static_cast<GumboNode*>(children->data[i]);
-		if (GUMBO_TAG_INPUT == child->v.element.tag)
+		using namespace std;
+
+		vector<tuple<const char*, const char*>> params;
+
+		auto children = &formNode->v.element.children;
+		for (unsigned i = 0; i < children->length; ++i)
 		{
-			tuple<const char*, const char*> idValueTuple;
-			auto attributes = &child->v.element.attributes;
-			for (unsigned j = 0; j < attributes->length; ++j)
+			auto child = static_cast<GumboNode*>(children->data[i]);
+			if (GUMBO_TAG_INPUT == child->v.element.tag)
 			{
-				auto attribute = static_cast<GumboAttribute*>(attributes->data[j]);
-				if (strcmp(attribute->name, "name") == 0)
+				tuple<const char*, const char*> idValueTuple;
+				auto attributes = &child->v.element.attributes;
+				for (unsigned j = 0; j < attributes->length; ++j)
 				{
-					get<0>(idValueTuple) = attribute->value;
+					auto attribute = static_cast<GumboAttribute*>(attributes->data[j]);
+					if (strcmp(attribute->name, "name") == 0)
+					{
+						get<0>(idValueTuple) = attribute->value;
+					}
+					if (strcmp(attribute->name, "value") == 0)
+					{
+						get<1>(idValueTuple) = attribute->value;
+					}
+					//Ключ и значение найдены, можно прерывать цикл
+					if (!get<0>(idValueTuple) && !get<1>(idValueTuple))
+					{
+						break;
+					}
 				}
-				if (strcmp(attribute->name, "value") == 0)
-				{
-					get<1>(idValueTuple) = attribute->value;
-				}
-				if (nullptr != get<0>(idValueTuple) && nullptr != get<1>(idValueTuple))
-				{
-					break;
-				}
+				params.emplace_back(move(idValueTuple));
 			}
-			params.push_back(idValueTuple);
 		}
-	}
 
-	string result;
+		string result;
 
-	if (!params.empty())
-	{
-		for (auto& t : params)
+		if (!params.empty())
 		{
-			result = result.append(get<0>(t))
-						   .append("=")
-						   .append(get<1>(t))
-						   .append("&");
+			for (auto& t : params)
+			{
+				result = result.append(get<0>(t))
+							   .append("=")
+							   .append(get<1>(t))
+							   .append("&");
+			}
+
+			result = result.substr(0, result.size() - 1);
 		}
 
-		result = result.substr(0, result.size() - 1);
+		return result;
 	}
-
-	gumbo_destroy_output(&kGumboDefaultOptions, output);
-
-	return result;
-}
+};
 
 HRESULT LoginTask::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 {
@@ -177,8 +208,9 @@ HRESULT LoginTask::Run(ABI::Windows::ApplicationModel::Background::IBackgroundTa
 			UINT32 lenght;
 			buffer->get_Length(&lenght);
 
-			auto postContent = getPostContent(reinterpret_cast<const char*>(content));
-			auto wPostContent = std::wstring(postContent.begin(), postContent.end());
+			auto postContent = ResponseParser::GetPostString(reinterpret_cast<const char*>(content));
+			auto wPostContent = std::wstring(begin(postContent),
+											 end(postContent));
 
 			ComPtr<IHttpStringContentFactory> stringContentFactory;
 			GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
