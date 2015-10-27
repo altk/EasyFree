@@ -28,10 +28,15 @@ namespace AutoLogin
 			MTL::ComPtr<ID2D1DeviceContext> _deviceContext;
 			MTL::ComPtr<IDXGISwapChain1> _swapChain;
 			MTL::ComPtr<IDWriteFactory> _dwriteFactory;
+			MTL::ComPtr<IDWriteTextFormat> _titleTextFormat;
+			MTL::ComPtr<IDWriteTextFormat> _descriptionTextFormat;
 
 			void InitContext() NOEXCEPT;
 			void Draw() NOEXCEPT;
 			void RegisterBackgroundTask() NOEXCEPT;
+			
+			MTL::ComPtr<IDWriteTextLayout> GetTitleLayout(D2D1_SIZE_F size);
+			MTL::ComPtr<IDWriteTextLayout> GetDescriptionLayout(D2D1_SIZE_F size);
 		};
 	}
 }

@@ -90,7 +90,7 @@ HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEX
 
 	auto visibilityChangedCallback = CreateCallback<ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*>>(
 		[this]
-		(ICoreWindow* coreWindow, IVisibilityChangedEventArgs* args)->
+		(ICoreWindow*, IVisibilityChangedEventArgs* args)->
 		HRESULT
 		{
 			try
@@ -270,12 +270,6 @@ void Application::Draw() NOEXCEPT
 	using namespace MTL;
 	using namespace std;
 
-	auto title = wstring(L"AutoLogin");
-	auto description = wstring(
-		L"Приложение работает в автоматическом режиме.\r\n"
-		L"Как только будет установлено соединение с WiFi сетью, будет запущен процесс автоматической авторизации.\r\n"
-		L"Вам останется только дождаться уведомления об успешном соединении.");
-
 	auto size = _deviceContext->GetPixelSize();
 
 	FLOAT dpiX,
@@ -284,50 +278,18 @@ void Application::Draw() NOEXCEPT
 	_deviceContext->GetDpi(&dpiX, &dpiY);
 
 	auto scaleFactor = 96.0f / dpiX;
-	auto margin = scaleFactor * 12.0f;
+	auto margin = 16.0f * scaleFactor;
+	auto width = size.width * scaleFactor - margin * 2;
 
-	ComPtr<IDWriteTextFormat> titleTextFormat;
-	_dwriteFactory->CreateTextFormat(L"Segoe UI",
-									 nullptr,
-									 DWRITE_FONT_WEIGHT_NORMAL,
-									 DWRITE_FONT_STYLE_NORMAL,
-									 DWRITE_FONT_STRETCH_NORMAL,
-									 14.0f,
-									 L"en-US",
-									 &titleTextFormat);
-
-	ComPtr<IDWriteTextFormat> descriptionTextFormat;
-	_dwriteFactory->CreateTextFormat(L"Segoe UI",
-									 nullptr,
-									 DWRITE_FONT_WEIGHT_NORMAL,
-									 DWRITE_FONT_STYLE_NORMAL,
-									 DWRITE_FONT_STRETCH_NORMAL,
-									 10.0f,
-									 L"ru-RU",
-									 &descriptionTextFormat);
-
-	ComPtr<IDWriteTextLayout> titleTextLayout;
-	_dwriteFactory->CreateTextLayout(title.data(),
-									 title.size(),
-									 titleTextFormat.Get(),
-									 size.width / 2 - margin,
-									 0.0f,
-									 &titleTextLayout);
-
-	ComPtr<IDWriteTextLayout> descriptionTextLayout;
-	_dwriteFactory->CreateTextLayout(description.data(),
-									 description.size(),
-									 descriptionTextFormat.Get(),
-									 scaleFactor * size.width - margin - margin,
-									 size.height,
-									 &descriptionTextLayout);
-
-	DWRITE_TEXT_METRICS titleMetrics = {};
-	titleTextLayout->GetMetrics(&titleMetrics);
+	auto titleTextLayout = GetTitleLayout(SizeF(width));
+	auto descriptionTextLayout = GetDescriptionLayout(SizeF(width));
 
 	ComPtr<ID2D1SolidColorBrush> brush;
-	_deviceContext->CreateSolidColorBrush(ColorF(ColorF::White),
-										  &brush);
+	Check(_deviceContext->CreateSolidColorBrush(ColorF(ColorF::White),
+												&brush));
+
+	DWRITE_TEXT_METRICS titleMetrics = {};
+	Check(titleTextLayout->GetMetrics(&titleMetrics));
 
 	_deviceContext->BeginDraw();
 
@@ -338,9 +300,10 @@ void Application::Draw() NOEXCEPT
 	_deviceContext->DrawTextLayout(Point2F(margin, margin + margin + titleMetrics.height),
 								   descriptionTextLayout.Get(),
 								   brush.Get());
-	_deviceContext->EndDraw();
 
-	_swapChain->Present(1, 0);
+	Check(_deviceContext->EndDraw());
+
+	Check(_swapChain->Present(1, 0));
 }
 
 void Application::RegisterBackgroundTask() NOEXCEPT
@@ -416,6 +379,70 @@ void Application::RegisterBackgroundTask() NOEXCEPT
 			ComPtr<IBackgroundTaskRegistration> taskRegistration;
 			backgroundTaskBuilder->Register(&taskRegistration);
 		});
+}
+
+MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(D2D1_SIZE_F size)
+{
+	using namespace D2D1;
+	using namespace MTL;
+	using namespace std;
+
+	if (!_titleTextFormat)
+	{
+		Check(_dwriteFactory->CreateTextFormat(L"Segoe UI",
+											   nullptr,
+											   DWRITE_FONT_WEIGHT_NORMAL,
+											   DWRITE_FONT_STYLE_NORMAL,
+											   DWRITE_FONT_STRETCH_NORMAL,
+											   14.0f,
+											   L"en-US",
+											   &_titleTextFormat));
+	}
+
+	const wchar_t title[] = L"AutoLogin";
+	ComPtr<IDWriteTextLayout> titleTextLayout;
+	Check(_dwriteFactory->CreateTextLayout(title,
+										   extent<decltype(title)>::value,
+										   _titleTextFormat.Get(),
+										   size.width,
+										   size.height,
+										   &titleTextLayout));
+
+	return titleTextLayout;
+}
+
+MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(D2D1_SIZE_F size)
+{
+	using namespace D2D1;
+	using namespace MTL;
+	using namespace std;
+
+	if (!_descriptionTextFormat)
+	{
+		Check(_dwriteFactory->CreateTextFormat(L"Segoe UI",
+											   nullptr,
+											   DWRITE_FONT_WEIGHT_NORMAL,
+											   DWRITE_FONT_STYLE_NORMAL,
+											   DWRITE_FONT_STRETCH_NORMAL,
+											   10.0f,
+											   L"ru-RU",
+											   &_descriptionTextFormat));
+	}
+
+	const wchar_t description[] =
+			L"Приложение работает в автоматическом режиме.\r\n"
+			L"Как только будет установлено соединение с WiFi сетью, будет запущен процесс автоматической авторизации. "
+			L"Вам останется только дождаться уведомления об успешном соединении.";
+
+	ComPtr<IDWriteTextLayout> descriptionTextLayout;
+	Check(_dwriteFactory->CreateTextLayout(description,
+										   extent<decltype(description)>::value,
+										   _descriptionTextFormat.Get(),
+										   size.width,
+										   size.height,
+										   &descriptionTextLayout));
+
+	return descriptionTextLayout;
 }
 
 int CALLBACK WinMain(HINSTANCE,
