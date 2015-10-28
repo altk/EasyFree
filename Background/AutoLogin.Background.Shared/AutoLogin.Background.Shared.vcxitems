@@ -18,6 +18,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)dllmain.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Internals\MosMetroAuthorizer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Internals\PackageChecker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -27,6 +28,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Internals\IAuthorizer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Internals\MosMetroAuthorizer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Internals\NetworkInfoProvider.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\PackageCkecker.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
   </ItemGroup>
   <ItemGroup>

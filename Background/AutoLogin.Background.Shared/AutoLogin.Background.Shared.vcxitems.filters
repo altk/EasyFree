@@ -9,6 +9,9 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Internals\MosMetroAuthorizer.cpp">
       <Filter>Internals</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Internals\PackageChecker.cpp">
+      <Filter>Internals</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
@@ -22,6 +25,9 @@
       <Filter>Internals</Filter>
     </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Internals\MosMetroAuthorizer.h">
+      <Filter>Internals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\PackageCkecker.h">
       <Filter>Internals</Filter>
     </ClInclude>
   </ItemGroup>

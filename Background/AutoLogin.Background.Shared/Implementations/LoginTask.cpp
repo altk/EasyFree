@@ -5,6 +5,7 @@
 #include <MTL.h>
 #include <Internals/MosMetroAuthorizer.h>
 #include <Internals/NetworkInfoProvider.h>
+#include <Internals/PackageCkecker.h>
 
 using namespace AutoLogin::Background::Implementations;
 using namespace std;
@@ -24,19 +25,24 @@ HRESULT LoginTask::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 
 HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 {
-	ComPtr<IBackgroundTaskDeferral> taskDefferal;
-	Check(taskInstance->GetDeferral(&taskDefferal));
+	using namespace Internals;
 
-	if (Internals::MosMetroAuthorizer().Authorize(Internals::NetworkInfoProvider::GetNetworkConnectionProfile().Get()).get())
+	if (PackageChecker::CheckCurrentPackage())
 	{
-		PromtSuccessNotification();
-	}
-	else
-	{
-		PromtFailNotification();
-	}
+		ComPtr<IBackgroundTaskDeferral> taskDefferal;
+		Check(taskInstance->GetDeferral(&taskDefferal));
 
-	Check(taskDefferal->Complete());
+		if (MosMetroAuthorizer().Authorize(NetworkInfoProvider::GetNetworkConnectionProfile().Get()).get())
+		{
+			PromtSuccessNotification();
+		}
+		else
+		{
+			PromtFailNotification();
+		}
+
+		Check(taskDefferal->Complete());
+	}
 	return S_OK;
 }
 
