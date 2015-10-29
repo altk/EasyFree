@@ -1101,7 +1101,6 @@ namespace MTL
 
 #pragma endregion
 
-
 	template <typename TDelegateInterface,
 			  typename TCallback,
 			  typename ... TArgs>
@@ -1237,7 +1236,7 @@ inline MTL::Iterator<TItem> begin(ABI::Windows::Foundation::Collections::IIterab
 }
 
 template <typename TItem>
-inline MTL::Iterator<TItem> end(ABI::Windows::Foundation::Collections::IIterable<TItem>* iterable) NOEXCEPT
+inline MTL::Iterator<TItem> end(ABI::Windows::Foundation::Collections::IIterable<TItem>*) NOEXCEPT
 {
 	using namespace MTL;
 	return Iterator<TItem>();

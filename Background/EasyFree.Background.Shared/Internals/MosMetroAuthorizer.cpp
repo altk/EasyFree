@@ -238,7 +238,7 @@ private:
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
 								   &uriFactory));
 
-		Check(uriFactory->CreateUri(HStringReference(L"https://www.google.ru").Get(),
+		Check(uriFactory->CreateUri(HStringReference(L"https://login.wi-fi.ru/am/UI/Login").Get(),
 									&uri));
 
 		Check(httpClient->GetAsync(uri.Get(),
