@@ -108,8 +108,10 @@ HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEX
 				{
 					InitContext();
 				}
-
-				Draw();
+				if (_deviceContext)
+				{
+					Draw();
+				}
 
 				return S_OK;
 			}

@@ -12,7 +12,7 @@ namespace EasyFree
 			public:
 				static bool CheckCurrentPackage() NOEXCEPT;
 			private:
-				static MTL::HString GetPackageFullName();
+				static MTL::HString GetPackageIdentity();
 			};
 		}
 	}

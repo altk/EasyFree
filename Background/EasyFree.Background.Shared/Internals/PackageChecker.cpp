@@ -8,15 +8,18 @@
 
 using namespace EasyFree::Background::Internals;
 
-MTL::HString PackageChecker::GetPackageFullName()
+MTL::HString PackageChecker::GetPackageIdentity()
 {
+	using namespace std;
 	using namespace MTL;
 	using namespace ABI::Windows::ApplicationModel;
 
 	ComPtr<IPackageStatics> packageStatics;
 	ComPtr<IPackage> currentPackage;
 	ComPtr<IPackageId> packageId;
-	HString fullName;
+	HString packageFamilyName;
+	HString publisherId;
+	PackageVersion packageVersion;
 
 	Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Package).Get(),
 							   &packageStatics));
@@ -25,9 +28,15 @@ MTL::HString PackageChecker::GetPackageFullName()
 
 	Check(currentPackage->get_Id(&packageId));
 
-	Check(packageId->get_FullName(&fullName));
+	Check(packageId->get_FamilyName(&packageFamilyName));
 
-	return fullName;
+	Check(packageId->get_PublisherId(&publisherId));
+
+	Check(packageId->get_Version(&packageVersion));
+	
+	auto versionString = to_wstring(packageVersion.Major).append(L".") + to_wstring(packageVersion.Minor).append(L".") + to_wstring(packageVersion.Build);
+	
+	return packageFamilyName + publisherId + HString(versionString.data(), versionString.size());
 }
 
 bool PackageChecker::CheckCurrentPackage() NOEXCEPT
@@ -62,7 +71,7 @@ bool PackageChecker::CheckCurrentPackage() NOEXCEPT
 		Check(hashAlgorithmProviderStatics->OpenAlgorithm(sha512Name.Get(),
 														  &sha512HashAlgorithmProvider));
 
-		Check(cryptographicBufferStatics->ConvertStringToBinary(GetPackageFullName().Get(),
+		Check(cryptographicBufferStatics->ConvertStringToBinary(GetPackageIdentity().Get(),
 																BinaryStringEncoding_Utf16LE,
 																&packageFullNameBuffer));
 
@@ -74,7 +83,7 @@ bool PackageChecker::CheckCurrentPackage() NOEXCEPT
 																&currentPackageHashString));
 
 		return strcmp(Base64::Encode(reinterpret_cast<unsigned const char*>(currentPackageHashString.GetRawBuffer()), sizeof(wchar_t) * currentPackageHashString.Size()).data(),
-					  "1n4SXBHZzohjo+h75K6eXOUood9eKJ1fUt+Vt+VrYTXvTQQVTshgaYF1k5V08hJ2BpZ7hZbQMT8ts2T4rRSbPQ==") == 0;
+					  "5DmdCZHKZEA4jF2OduuFDAWnFjqKaAEQi2sUZh0rFxhoP19szYgwZ2RXF7nQQOLUMP4K0j6gsCbjxudicnFw7w==") == 0;
 	}
 	catch (...)
 	{

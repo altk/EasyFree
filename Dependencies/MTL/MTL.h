@@ -492,12 +492,17 @@ namespace MTL
 			return *this;
 		}
 
+		friend HString operator+(const HString& lhs, const HString& rhs)
+		{
+			HString result;
+			Check(WindowsConcatString(lhs.Get(), rhs.Get(), &result));
+			return result;
+		}
+
 		friend bool operator==(const HString& lhs, const HString& rhs)
 		{
 			INT32 compareResult;
-			Check(WindowsCompareStringOrdinal(lhs.Get(),
-											  rhs.Get(),
-											  &compareResult));
+			Check(WindowsCompareStringOrdinal(lhs.Get(), rhs.Get(), &compareResult));
 			return compareResult == 0;
 		}
 
@@ -1057,7 +1062,7 @@ namespace MTL
 		using TResult = typename GetAbiType<typename IAsyncOperation<TArgument>::TResult_complex>::type;
 
 		task_completion_event<TResult> taskCompletitionEvent;
-		
+
 		auto callback = CreateCallback<IAsyncOperationCompletedHandler<TArgument>>(
 			[taskCompletitionEvent]
 			(IAsyncOperation<TArgument>* operation, AsyncStatus status)->
@@ -1077,9 +1082,9 @@ namespace MTL
 				}
 				return hr;
 			});
-		
+
 		Check(asyncOperation->put_Completed(callback.Get()));
-		
+
 		return task<TResult>(taskCompletitionEvent);
 	}
 
@@ -1114,9 +1119,9 @@ namespace MTL
 				}
 				return hr;
 			});
-		
+
 		Check(asyncOperation->put_Completed(callback.Get()));
-		
+
 		return task<TResult>(taskCompletitionEvent);
 	}
 
