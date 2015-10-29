@@ -732,7 +732,6 @@ namespace MTL
 	{
 		static_assert(std::is_base_of<IUnknown, TClass>::value, "Not all interfaces inherit IUnknown.");
 
-		friend void swap(ComPtr&, ComPtr&) NOEXCEPT;
 		friend class Internals::ComPtrRef<TClass>;
 
 	public:
@@ -842,7 +841,7 @@ namespace MTL
 			swap(_pointer, other._pointer);
 		}
 
-		friend void swap(ComPtr& lhs, ComPtr& rhs)
+		friend void swap(ComPtr& lhs, ComPtr& rhs) NOEXCEPT
 		{
 			using std::swap;
 			swap(lhs._pointer, rhs._pointer);
@@ -1090,7 +1089,7 @@ namespace MTL
 			return !(lhs == rhs);
 		}
 
-		friend void swap(Iterator& lhs, Iterator& rhs)
+		friend void swap(Iterator& lhs, Iterator& rhs) NOEXCEPT
 		{
 			using std::swap;
 			swap(lhs._iterator, rhs._iterator);
