@@ -143,7 +143,7 @@ HRESULT Application::Run() NOEXCEPT
 {
 	using namespace ABI::Windows::UI::Core;
 	using namespace MTL;
-	
+
 	try
 	{
 		RegisterBackgroundTask();
@@ -278,12 +278,12 @@ void Application::Draw() NOEXCEPT
 
 	_deviceContext->GetDpi(&dpiX, &dpiY);
 
-	auto scaleFactor = 96.0f / dpiX;
-	auto margin = 16.0f * scaleFactor;
-	auto width = size.width * scaleFactor - margin * 2;
+	auto scaleFactor = dpiX / 96.0f;
+	auto margin = 4;
+	auto width = size.width / scaleFactor - 2 * margin;
 
-	auto titleTextLayout = GetTitleLayout(48.0f * scaleFactor, SizeF(width));
-	auto descriptionTextLayout = GetDescriptionLayout(32.0f * scaleFactor, SizeF(width));
+	auto titleTextLayout = GetTitleLayout(14.0f, SizeF(width));
+	auto descriptionTextLayout = GetDescriptionLayout(9.0f, SizeF(width));
 
 	ComPtr<ID2D1SolidColorBrush> brush;
 	Check(_deviceContext->CreateSolidColorBrush(ColorF(ColorF::White),
