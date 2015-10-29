@@ -1,0 +1,29 @@
+import "Windows.ApplicationModel.Core.idl";
+
+namespace EasyFree
+{
+	interface IApplication;
+
+	runtimeclass Application;
+}
+
+namespace EasyFree
+{
+	[exclusiveto(EasyFree.Application)]
+	[uuid(11F8F7D8-0C71-4A01-A6A8-5D895FBD6FFC)]
+	[version(1.0)]
+	interface IApplication : IInspectable
+	{
+	};
+
+	[version(1.0)]
+	[activatable(1.0)]
+	[marshaling_behavior(agile)]
+	[threading(both)]
+	runtimeclass Application
+	{
+		[default] interface EasyFree.IApplication;
+		interface Windows.ApplicationModel.Core.IFrameworkViewSource;
+		interface Windows.ApplicationModel.Core.IFrameworkView;
+	};
+}
