@@ -35,8 +35,8 @@ namespace EasyFree
 			void Draw() NOEXCEPT;
 			void RegisterBackgroundTask() NOEXCEPT;
 			
-			MTL::ComPtr<IDWriteTextLayout> GetTitleLayout(D2D1_SIZE_F size);
-			MTL::ComPtr<IDWriteTextLayout> GetDescriptionLayout(D2D1_SIZE_F size);
+			MTL::ComPtr<IDWriteTextLayout> GetTitleLayout(FLOAT fontSize, D2D1_SIZE_F size);
+			MTL::ComPtr<IDWriteTextLayout> GetDescriptionLayout(FLOAT fontSize, D2D1_SIZE_F size);
 		};
 	}
 }

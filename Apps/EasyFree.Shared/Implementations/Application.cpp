@@ -283,8 +283,8 @@ void Application::Draw() NOEXCEPT
 	auto margin = 16.0f * scaleFactor;
 	auto width = size.width * scaleFactor - margin * 2;
 
-	auto titleTextLayout = GetTitleLayout(SizeF(width));
-	auto descriptionTextLayout = GetDescriptionLayout(SizeF(width));
+	auto titleTextLayout = GetTitleLayout(48.0f * scaleFactor, SizeF(width));
+	auto descriptionTextLayout = GetDescriptionLayout(32.0f * scaleFactor, SizeF(width));
 
 	ComPtr<ID2D1SolidColorBrush> brush;
 	Check(_deviceContext->CreateSolidColorBrush(ColorF(ColorF::White),
@@ -383,7 +383,7 @@ void Application::RegisterBackgroundTask() NOEXCEPT
 		});
 }
 
-MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(D2D1_SIZE_F size)
+MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize, D2D1_SIZE_F size)
 {
 	using namespace D2D1;
 	using namespace MTL;
@@ -396,7 +396,7 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(D2D1_SIZE_F size)
 											   DWRITE_FONT_WEIGHT_NORMAL,
 											   DWRITE_FONT_STYLE_NORMAL,
 											   DWRITE_FONT_STRETCH_NORMAL,
-											   14.0f,
+											   fontSize,
 											   L"en-US",
 											   &_titleTextFormat));
 	}
@@ -413,7 +413,7 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(D2D1_SIZE_F size)
 	return titleTextLayout;
 }
 
-MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(D2D1_SIZE_F size)
+MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize, D2D1_SIZE_F size)
 {
 	using namespace D2D1;
 	using namespace MTL;
@@ -426,7 +426,7 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(D2D1_SIZE_F siz
 											   DWRITE_FONT_WEIGHT_NORMAL,
 											   DWRITE_FONT_STYLE_NORMAL,
 											   DWRITE_FONT_STRETCH_NORMAL,
-											   10.0f,
+											   fontSize,
 											   L"ru-RU",
 											   &_descriptionTextFormat));
 	}
