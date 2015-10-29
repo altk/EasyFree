@@ -7,7 +7,6 @@
 #include <dwrite.h>
 #include <windows.graphics.display.h>
 #include <windows.applicationmodel.background.h>
-#include <windows.foundation.collections.h>
 #include <MTL.h>
 
 using namespace EasyFree::Implementations;
@@ -144,11 +143,11 @@ HRESULT Application::Run() NOEXCEPT
 {
 	using namespace ABI::Windows::UI::Core;
 	using namespace MTL;
-
-	RegisterBackgroundTask();
-
+	
 	try
 	{
+		RegisterBackgroundTask();
+
 		ComPtr<ICoreDispatcher> coreDispatcher;
 		Check(_coreWindow->get_Dispatcher(&coreDispatcher));
 		Check(coreDispatcher->ProcessEvents(CoreProcessEventsOption_ProcessUntilQuit));
@@ -308,7 +307,7 @@ void Application::Draw() NOEXCEPT
 	Check(_swapChain->Present(1, 0));
 }
 
-void Application::RegisterBackgroundTask() NOEXCEPT
+Concurrency::task<void> Application::RegisterBackgroundTask() NOEXCEPT
 {
 	using namespace ABI::Windows::ApplicationModel::Background;
 	using namespace ABI::Windows::Foundation::Collections;
@@ -316,71 +315,67 @@ void Application::RegisterBackgroundTask() NOEXCEPT
 	using namespace MTL;
 	using namespace MTL;
 
-	ComPtr<IBackgroundExecutionManagerStatics> backgroundExecutionManagerStatics;
-	GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundExecutionManager).Get(),
-						 &backgroundExecutionManagerStatics);
+	try
+	{
+		ComPtr<IBackgroundExecutionManagerStatics> backgroundExecutionManagerStatics;
+		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundExecutionManager).Get(),
+								   &backgroundExecutionManagerStatics));
 
-	ComPtr<IAsyncOperation<BackgroundAccessStatus>> backgroundAccessStatusAsyncOperation;
-	backgroundExecutionManagerStatics->RequestAccessAsync(&backgroundAccessStatusAsyncOperation);
+		ComPtr<IAsyncOperation<BackgroundAccessStatus>> backgroundAccessStatusAsyncOperation;
+		Check(backgroundExecutionManagerStatics->RequestAccessAsync(&backgroundAccessStatusAsyncOperation));
 
-	GetTask(backgroundAccessStatusAsyncOperation.Get()).then(
-		[]
-		(BackgroundAccessStatus) ->
-		void
-		{
-			ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
-			GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
-								 &backgroundTaskRegistrationStatics);
-
-			ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
-			backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations);
-
-			ComPtr<IIterable<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterable;
-			taskRegistrations.As(&registrationsIterable);
-
-			ComPtr<IIterator<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterator;
-			registrationsIterable->First(&registrationsIterator);
-
-			boolean hasCurrent;
-			registrationsIterator->get_HasCurrent(&hasCurrent);
-
-			while (hasCurrent)
+		return GetTask(backgroundAccessStatusAsyncOperation.Get()).then(
+			[]
+			(BackgroundAccessStatus status) NOEXCEPT ->
+			void
 			{
-				ComPtr<IKeyValuePair<GUID, IBackgroundTaskRegistration*>> current;
-				registrationsIterator->get_Current(&current);
+				try
+				{
+					if (status == BackgroundAccessStatus_Denied) return;
 
-				ComPtr<IBackgroundTaskRegistration> taskRegistration;
-				current->get_Value(&taskRegistration);
+					ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
+					Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
+											   &backgroundTaskRegistrationStatics));
 
-				taskRegistration->Unregister(true);
+					ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
+					Check(backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations));
 
-				registrationsIterator->MoveNext(&hasCurrent);
-			}
+					ComPtr<IIterable<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterable;
+					Check(taskRegistrations.As(&registrationsIterable));
 
-			ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
-			ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
-													 &backgroundTaskBuilder);
+					if (begin(registrationsIterable.Get()) != end(registrationsIterable.Get())) return;
 
-			backgroundTaskBuilder->put_Name(HString(L"EasyFreeTask").Detach());
-			backgroundTaskBuilder->put_TaskEntryPoint(HString(L"EasyFree.Background.LoginTask").Detach());
+					ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
+					Check(ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
+																   &backgroundTaskBuilder));
 
-			ComPtr<ISystemTriggerFactory> systemTriggerActivationFactory;
-			GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_SystemTrigger).Get(),
-								 &systemTriggerActivationFactory);
+					Check(backgroundTaskBuilder->put_Name(HStringReference(L"EasyFreeTask").Get()));
+					Check(backgroundTaskBuilder->put_TaskEntryPoint(HStringReference(L"EasyFree.Background.LoginTask").Get()));
 
-			ComPtr<ISystemTrigger> systemTrigger;
-			systemTriggerActivationFactory->Create(SystemTriggerType_TimeZoneChange,
-												   false,
-												   &systemTrigger);
+					ComPtr<ISystemTriggerFactory> systemTriggerActivationFactory;
+					Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_SystemTrigger).Get(),
+											   &systemTriggerActivationFactory));
 
-			ComPtr<IBackgroundTrigger> backgroundTrigger;
-			systemTrigger.As(&backgroundTrigger);
+					ComPtr<ISystemTrigger> systemTrigger;
+					Check(systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
+																 false,
+																 &systemTrigger));
 
-			backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get());
+					ComPtr<IBackgroundTrigger> backgroundTrigger;
+					Check(systemTrigger.As(&backgroundTrigger));
 
-			ComPtr<IBackgroundTaskRegistration> taskRegistration;
-			backgroundTaskBuilder->Register(&taskRegistration);
-		});
+					Check(backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get()));
+
+					ComPtr<IBackgroundTaskRegistration> taskRegistration;
+					Check(backgroundTaskBuilder->Register(&taskRegistration));
+				}
+				catch (...) {}
+			});
+	}
+	catch (...)
+	{
+		return Concurrency::task_from_result();
+	}
 }
 
 MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize, D2D1_SIZE_F size)

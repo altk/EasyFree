@@ -772,6 +772,16 @@ namespace MTL
 			return nullptr != _pointer;
 		}
 
+		friend bool operator==(const ComPtr& lhs, const ComPtr& rhs) NOEXCEPT
+		{
+			return lhs._pointer == rhs._pointer;
+		}
+
+		friend bool operator!=(const ComPtr& lhs, const ComPtr& rhs) NOEXCEPT
+		{
+			return !(lhs == rhs);
+		}
+
 		Internals::RemoveIUnknown<TClass>* operator->() const NOEXCEPT
 		{
 			return Get();
@@ -829,7 +839,13 @@ namespace MTL
 
 		void Swap(ComPtr& other) NOEXCEPT
 		{
-			std::swap(_pointer, other._pointer);
+			swap(_pointer, other._pointer);
+		}
+
+		friend void swap(ComPtr& lhs, ComPtr& rhs)
+		{
+			using std::swap;
+			swap(lhs._pointer, rhs._pointer);
 		}
 
 	private:
@@ -1009,6 +1025,84 @@ namespace MTL
 
 #pragma endregion
 
+#pragma region Iterator
+
+	template <typename TItem>
+	class Iterator final
+	{
+	public:
+		Iterator() NOEXCEPT { }
+
+		explicit Iterator(ABI::Windows::Foundation::Collections::IIterable<TItem>* iterable)
+		{
+			boolean hasCurrent;
+			Check(iterable->First(&_iterator));
+			Check(_iterator->get_HasCurrent(&hasCurrent));
+			if (!hasCurrent) _iterator.Release();
+		}
+
+		Iterator(const Iterator& other) NOEXCEPT
+			: _iterator(other._iterator) {}
+
+		Iterator(Iterator&& other) NOEXCEPT
+			: _iterator(std::move(other._iterator)) {}
+
+		Iterator& operator=(const Iterator& other) NOEXCEPT
+		{
+			if (this != &other)
+			{
+				_iterator = other._iterator;
+			}
+			return *this;
+		}
+
+		Iterator& operator=(Iterator&& other) NOEXCEPT
+		{
+			if (this != &other)
+			{
+				_iterator = std::move(other._iterator);
+			}
+			return *this;
+		}
+
+		const TItem& operator*()
+		{
+			TItem item;
+			Check(_iterator->get_Current(&item));
+			return item;
+		}
+
+		Iterator& operator++()
+		{
+			boolean hasNext;
+			Check(_iterator->MoveNext(&hasNext));
+			if (!hasNext) _iterator.Release();
+			return *this;
+		}
+
+		friend bool operator==(const Iterator& lhs, const Iterator& rhs)
+		{
+			return lhs._iterator == rhs._iterator;
+		}
+
+		friend bool operator!=(const Iterator& lhs, const Iterator& rhs)
+		{
+			return !(lhs == rhs);
+		}
+
+		friend void swap(Iterator& lhs, Iterator& rhs)
+		{
+			using std::swap;
+			swap(lhs._iterator, rhs._iterator);
+		}
+
+	private:
+		ComPtr<ABI::Windows::Foundation::Collections::IIterator<TItem>> _iterator;
+	};
+
+#pragma endregion
+
+
 	template <typename TDelegateInterface,
 			  typename TCallback,
 			  typename ... TArgs>
@@ -1136,12 +1230,16 @@ namespace MTL
 	}
 }
 
-namespace std
+template <typename TItem>
+inline MTL::Iterator<TItem> begin(ABI::Windows::Foundation::Collections::IIterable<TItem>* iterable) NOEXCEPT
 {
-	template <typename ... TInterfaces>
-	inline void swap(MTL::ComPtr<TInterfaces...>& lhs,
-					 MTL::ComPtr<TInterfaces...>& rhs) NOEXCEPT
-	{
-		lhs.Swap(rhs);
-	}
+	using namespace MTL;
+	return Iterator<TItem>(iterable);
+}
+
+template <typename TItem>
+inline MTL::Iterator<TItem> end(ABI::Windows::Foundation::Collections::IIterable<TItem>* iterable) NOEXCEPT
+{
+	using namespace MTL;
+	return Iterator<TItem>();
 }

@@ -5,7 +5,6 @@
 #include <MTL.h>
 #include <Internals/MosMetroAuthorizer.h>
 #include <Internals/NetworkInfoProvider.h>
-#include <Internals/PackageCkecker.h>
 
 using namespace EasyFree::Background::Implementations;
 using namespace std;

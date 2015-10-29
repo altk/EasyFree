@@ -33,7 +33,7 @@ namespace EasyFree
 
 			void InitContext() NOEXCEPT;
 			void Draw() NOEXCEPT;
-			void RegisterBackgroundTask() NOEXCEPT;
+			Concurrency::task<void> RegisterBackgroundTask() NOEXCEPT;
 			
 			MTL::ComPtr<IDWriteTextLayout> GetTitleLayout(FLOAT fontSize, D2D1_SIZE_F size);
 			MTL::ComPtr<IDWriteTextLayout> GetDescriptionLayout(FLOAT fontSize, D2D1_SIZE_F size);
