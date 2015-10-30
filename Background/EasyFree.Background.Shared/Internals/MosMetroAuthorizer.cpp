@@ -87,7 +87,7 @@ private:
 	{
 		using namespace std;
 
-		vector<tuple<const char*, const char*>> params;
+		string result;
 
 		auto children = &formNode->v.element.children;
 		for (unsigned i = 0; i < children->length; ++i)
@@ -95,41 +95,36 @@ private:
 			auto child = static_cast<GumboNode*>(children->data[i]);
 			if (GUMBO_TAG_INPUT == child->v.element.tag)
 			{
-				tuple<const char*, const char*> idValueTuple;
+				string name,
+					   value;
 				auto attributes = &child->v.element.attributes;
 				for (unsigned j = 0; j < attributes->length; ++j)
 				{
 					auto attribute = static_cast<GumboAttribute*>(attributes->data[j]);
 					if (strcmp(attribute->name, "name") == 0)
 					{
-						get<0>(idValueTuple) = attribute->value;
+						name.append(attribute->value);
 					}
 					if (strcmp(attribute->name, "value") == 0)
 					{
-						get<1>(idValueTuple) = attribute->value;
+						value.append(attribute->value);
 					}
 					//Ключ и значение найдены, можно прерывать цикл
-					if (!get<0>(idValueTuple) && !get<1>(idValueTuple))
+					if (!name.empty() && !value.empty())
 					{
 						break;
 					}
 				}
-				params.emplace_back(move(idValueTuple));
+
+				result.append(name)
+					  .append("=")
+					  .append(value)
+					  .append("&");
 			}
 		}
 
-		string result;
-
-		if (!params.empty())
+		if (!result.empty())
 		{
-			for (auto& t : params)
-			{
-				result = result.append(get<0>(t))
-							   .append("=")
-							   .append(get<1>(t))
-							   .append("&");
-			}
-
 			result = result.substr(0, result.size() - 1);
 		}
 
@@ -140,7 +135,7 @@ private:
 class MosMetroAuthorizerImpl final
 {
 public:
-	static task<bool> Authorize() 
+	static task<bool> Authorize()
 	{
 		try
 		{
@@ -151,40 +146,45 @@ public:
 			Check(httpClient.As(&closableClient));
 
 			return GetInitialResponseTask(httpClient.Get()).then(
-				[httpClient]
-			(IHttpResponseMessage* response) ->
-				task<IHttpResponseMessage*>
-			{
-				auto locationUri = GetResponseLocationHeader(response);
-				return GetResponseContentTask(response).then(
-					[]
-				(IBuffer* responseContent)
-				{
-					return GetPostContent(responseContent);
-				})
-					.then(
-						[httpClient, locationUri]
-				(wstring postContent)
-				{
-					return GetAuthResponseTask(httpClient.Get(),
-						locationUri.Get(),
-						move(postContent));
-				});
-			})
-				.then(
-					[]
-			(task<IHttpResponseMessage*> postResponseTask)->
-				bool
-			{
-				try
-				{
-					return postResponseTask.get() != nullptr;
-				}
-				catch (...)
-				{
-					return false;
-				}
-			});
+															   [httpClient]
+															   (IHttpResponseMessage* response) ->
+															   task<IHttpResponseMessage*>
+															   {
+																   ComPtr<IHttpRequestMessage> request;
+																   Check(response->get_RequestMessage(&request));
+
+																   ComPtr<IUriRuntimeClass> locationUri;
+																   Check(request->get_RequestUri(&locationUri));
+																   
+																   return GetResponseContentTask(response).then(
+																											  []
+																											  (IBuffer* responseContent)
+																											  {
+																												  return GetPostContent(responseContent);
+																											  })
+																										  .then(
+																											  [httpClient, locationUri]
+																											  (wstring postContent)
+																											  {
+																												  return GetAuthResponseTask(httpClient.Get(),
+																																			 locationUri.Get(),
+																																			 move(postContent));
+																											  });
+															   })
+														   .then(
+															   []
+															   (task<IHttpResponseMessage*> postResponseTask)->
+															   bool
+															   {
+																   try
+																   {
+																	   return postResponseTask.get() != nullptr;
+																   }
+																   catch (...)
+																   {
+																	   return false;
+																   }
+															   });
 		}
 		catch (const ComException&)
 		{
@@ -264,18 +264,6 @@ private:
 		return GetTask(readAsBufferOperation.Get());
 	}
 
-	static ComPtr<IUriRuntimeClass> GetResponseLocationHeader(IHttpResponseMessage* response)
-	{
-		ComPtr<IHttpResponseHeaderCollection> responseHeaderCollection;
-		ComPtr<IUriRuntimeClass> locationUri;
-
-		Check(response->get_Headers(&responseHeaderCollection));
-
-		Check(responseHeaderCollection->get_Location(&locationUri));
-
-		return locationUri;
-	}
-
 	static wstring GetPostContent(IBuffer* responseContent)
 	{
 		auto buffer = CreateComPtr(responseContent);
@@ -319,7 +307,7 @@ task<bool> MosMetroAuthorizer::Authorize() const NOEXCEPT
 	return MosMetroAuthorizerImpl::Authorize();
 }
 
-bool MosMetroAuthorizer::CanAuth(IConnectionProfile* connectionProfile) const NOEXCEPT 
+bool MosMetroAuthorizer::CanAuth(IConnectionProfile* connectionProfile) const NOEXCEPT
 {
 	return MosMetroAuthorizerImpl::CanAuth(connectionProfile);
 }

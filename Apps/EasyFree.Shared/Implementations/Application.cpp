@@ -271,16 +271,10 @@ void Application::Draw() NOEXCEPT
 	using namespace MTL;
 	using namespace std;
 
-	auto size = _deviceContext->GetPixelSize();
+	auto size = _deviceContext->GetSize();
 
-	FLOAT dpiX,
-		  dpiY;
-
-	_deviceContext->GetDpi(&dpiX, &dpiY);
-
-	auto scaleFactor = dpiX / 96.0f;
-	auto margin = 4;
-	auto width = size.width / scaleFactor - 2 * margin;
+	auto margin = 4.0f;
+	auto width = size.width - 2 * margin;
 
 	auto titleTextLayout = GetTitleLayout(14.0f, SizeF(width));
 	auto descriptionTextLayout = GetDescriptionLayout(9.0f, SizeF(width));
