@@ -26,117 +26,124 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 {
 	using namespace Internals;
 
-	ComPtr<IBackgroundTaskDeferral> taskDefferal;
-	Check(taskInstance->GetDeferral(&taskDefferal));
-
-	if (MosMetroAuthorizer().Authorize(NetworkInfoProvider::GetNetworkConnectionProfile().Get()).get())
+	MosMetroAuthorizer authorizer;
+	if (authorizer.CanAuth(NetworkInfoProvider::GetNetworkConnectionProfile().Get()))
 	{
-		PromtSuccessNotification();
-	}
-	else
-	{
-		PromtFailNotification();
-	}
+		ComPtr<IBackgroundTaskDeferral> taskDefferal;
+		Check(taskInstance->GetDeferral(&taskDefferal));
 
-	Check(taskDefferal->Complete());
+		authorizer.Authorize()
+				  .then(
+					  [taskDefferal]
+					  (bool authResult) NOEXCEPT->
+					  void
+					  {
+						  try
+						  {
+							  if (authResult)
+							  {
+								  PromtSuccessNotification();
+							  }
+							  else
+							  {
+								  PromtFailNotification();
+							  }
+
+							  Check(taskDefferal->Complete());
+						  }
+						  catch (...) {}
+					  });
+	}
 
 	return S_OK;
 }
 
-void LoginTask::PromtSuccessNotification() NOEXCEPT
+void LoginTask::PromtSuccessNotification()
 {
-	try
-	{
-		ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
-		ComPtr<IXmlDocument> xmlDocument;
-		ComPtr<IXmlNodeList> xmlNodeList;
-		ComPtr<IXmlNode> xmlNode0;
-		ComPtr<IXmlNodeSerializer> xmlNodeSerializer0;
-		ComPtr<IXmlNode> xmlNode1;
-		ComPtr<IXmlNodeSerializer> xmlNodeSerializer1;
-		ComPtr<IToastNotificationFactory> toastNotificationFactory;
-		ComPtr<IToastNotification> toastNotification;
-		ComPtr<IToastNotifier> toastNotifier;
+	ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
+	ComPtr<IXmlDocument> xmlDocument;
+	ComPtr<IXmlNodeList> xmlNodeList;
+	ComPtr<IXmlNode> xmlNode0;
+	ComPtr<IXmlNodeSerializer> xmlNodeSerializer0;
+	ComPtr<IXmlNode> xmlNode1;
+	ComPtr<IXmlNodeSerializer> xmlNodeSerializer1;
+	ComPtr<IToastNotificationFactory> toastNotificationFactory;
+	ComPtr<IToastNotification> toastNotification;
+	ComPtr<IToastNotifier> toastNotifier;
 
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
-								   &toastNotificationManagerStatics));
+	Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
+							   &toastNotificationManagerStatics));
 
-		Check(toastNotificationManagerStatics->GetTemplateContent(ToastTemplateType_ToastText02,
-																  &xmlDocument));
+	Check(toastNotificationManagerStatics->GetTemplateContent(ToastTemplateType_ToastText02,
+															  &xmlDocument));
 
-		Check(xmlDocument->GetElementsByTagName(HStringReference(L"text").Get(),
-												&xmlNodeList));
+	Check(xmlDocument->GetElementsByTagName(HStringReference(L"text").Get(),
+											&xmlNodeList));
 
-		Check(xmlNodeList->Item(0, &xmlNode0));
+	Check(xmlNodeList->Item(0, &xmlNode0));
 
-		Check(xmlNode0.As(&xmlNodeSerializer0));
+	Check(xmlNode0.As(&xmlNodeSerializer0));
 
-		Check(xmlNodeSerializer0->put_InnerText(HStringReference(L"EasyFree").Get()));
+	Check(xmlNodeSerializer0->put_InnerText(HStringReference(L"EasyFree").Get()));
 
-		Check(xmlNodeList->Item(1, &xmlNode1));
+	Check(xmlNodeList->Item(1, &xmlNode1));
 
-		Check(xmlNode1.As(&xmlNodeSerializer1));
+	Check(xmlNode1.As(&xmlNodeSerializer1));
 
-		Check(xmlNodeSerializer1->put_InnerText(HStringReference(L"Соединение установлено").Get()));
+	Check(xmlNodeSerializer1->put_InnerText(HStringReference(L"Соединение установлено").Get()));
 
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
-								   &toastNotificationFactory));
+	Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
+							   &toastNotificationFactory));
 
-		Check(toastNotificationFactory->CreateToastNotification(xmlDocument.Get(),
-																&toastNotification));
+	Check(toastNotificationFactory->CreateToastNotification(xmlDocument.Get(),
+															&toastNotification));
 
-		Check(toastNotificationManagerStatics->CreateToastNotifier(&toastNotifier));
+	Check(toastNotificationManagerStatics->CreateToastNotifier(&toastNotifier));
 
-		Check(toastNotifier->Show(toastNotification.Get()));
-	}
-	catch (...) {}
+	Check(toastNotifier->Show(toastNotification.Get()));
 }
 
-void LoginTask::PromtFailNotification() NOEXCEPT
+void LoginTask::PromtFailNotification()
 {
-	try
-	{
-		ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
-		ComPtr<IXmlDocument> xmlDocument;
-		ComPtr<IXmlNodeList> xmlNodeList;
-		ComPtr<IXmlNode> xmlNode0;
-		ComPtr<IXmlNodeSerializer> xmlNodeSerializer0;
-		ComPtr<IXmlNode> xmlNode1;
-		ComPtr<IXmlNodeSerializer> xmlNodeSerializer1;
-		ComPtr<IToastNotificationFactory> toastNotificationFactory;
-		ComPtr<IToastNotification> toastNotification;
-		ComPtr<IToastNotifier> toastNotifier;
+	ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
+	ComPtr<IXmlDocument> xmlDocument;
+	ComPtr<IXmlNodeList> xmlNodeList;
+	ComPtr<IXmlNode> xmlNode0;
+	ComPtr<IXmlNodeSerializer> xmlNodeSerializer0;
+	ComPtr<IXmlNode> xmlNode1;
+	ComPtr<IXmlNodeSerializer> xmlNodeSerializer1;
+	ComPtr<IToastNotificationFactory> toastNotificationFactory;
+	ComPtr<IToastNotification> toastNotification;
+	ComPtr<IToastNotifier> toastNotifier;
 
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
-								   &toastNotificationManagerStatics));
+	Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
+							   &toastNotificationManagerStatics));
 
-		Check(toastNotificationManagerStatics->GetTemplateContent(ToastTemplateType_ToastText02,
-																  &xmlDocument));
+	Check(toastNotificationManagerStatics->GetTemplateContent(ToastTemplateType_ToastText02,
+															  &xmlDocument));
 
-		Check(xmlDocument->GetElementsByTagName(HStringReference(L"text").Get(),
-												&xmlNodeList));
+	Check(xmlDocument->GetElementsByTagName(HStringReference(L"text").Get(),
+											&xmlNodeList));
 
-		Check(xmlNodeList->Item(0, &xmlNode0));
+	Check(xmlNodeList->Item(0, &xmlNode0));
 
-		Check(xmlNode0.As(&xmlNodeSerializer0));
+	Check(xmlNode0.As(&xmlNodeSerializer0));
 
-		Check(xmlNodeSerializer0->put_InnerText(HStringReference(L"EasyFree").Get()));
+	Check(xmlNodeSerializer0->put_InnerText(HStringReference(L"EasyFree").Get()));
 
-		Check(xmlNodeList->Item(1, &xmlNode1));
+	Check(xmlNodeList->Item(1, &xmlNode1));
 
-		Check(xmlNode1.As(&xmlNodeSerializer1));
+	Check(xmlNode1.As(&xmlNodeSerializer1));
 
-		Check(xmlNodeSerializer1->put_InnerText(HStringReference(L"Ошибка соединения").Get()));
+	Check(xmlNodeSerializer1->put_InnerText(HStringReference(L"Ошибка соединения").Get()));
 
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
-								   &toastNotificationFactory));
+	Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
+							   &toastNotificationFactory));
 
-		Check(toastNotificationFactory->CreateToastNotification(xmlDocument.Get(),
-																&toastNotification));
+	Check(toastNotificationFactory->CreateToastNotification(xmlDocument.Get(),
+															&toastNotification));
 
-		Check(toastNotificationManagerStatics->CreateToastNotifier(&toastNotifier));
+	Check(toastNotificationManagerStatics->CreateToastNotifier(&toastNotifier));
 
-		Check(toastNotifier->Show(toastNotification.Get()));
-	}
-	catch (...) {}
+	Check(toastNotifier->Show(toastNotification.Get()));
 }

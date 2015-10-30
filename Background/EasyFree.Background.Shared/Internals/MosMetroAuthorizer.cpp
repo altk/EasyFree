@@ -140,56 +140,59 @@ private:
 class MosMetroAuthorizerImpl final
 {
 public:
-	static task<bool> Authorize(IConnectionProfile* connectionProfile) NOEXCEPT 
+	static task<bool> Authorize() 
 	{
-		if (!CheckProfile(connectionProfile)) return task_from_result(false);
+		try
+		{
+			ComPtr<IClosable> closableClient;
 
-		ComPtr<IClosable> closableClient;
+			auto httpClient = CreateHttpClient();
 
-		auto httpClient = CreateHttpClient();
+			Check(httpClient.As(&closableClient));
 
-		Check(httpClient.As(&closableClient));
-
-		return GetInitialResponseTask(httpClient.Get()).then(
-														   [httpClient]
-														   (IHttpResponseMessage* response) ->
-														   task<IHttpResponseMessage*>
-														   {
-															   auto locationUri = GetResponseLocationHeader(response);
-															   return GetResponseContentTask(response).then(
-																										  []
-																										  (IBuffer* responseContent)
-																										  {
-																											  return GetPostContent(responseContent);
-																										  })
-																									  .then(
-																										  [httpClient, locationUri]
-																										  (wstring postContent)
-																										  {
-																											  return GetAuthResponseTask(httpClient.Get(),
-																																		 locationUri.Get(),
-																																		 move(postContent));
-																										  });
-														   })
-													   .then(
-														   []
-														   (task<IHttpResponseMessage*> postResponseTask)->
-														   bool
-														   {
-															   try
-															   {
-																   return postResponseTask.get() != nullptr;
-															   }
-															   catch (...)
-															   {
-																   return false;
-															   }
-														   });
+			return GetInitialResponseTask(httpClient.Get()).then(
+				[httpClient]
+			(IHttpResponseMessage* response) ->
+				task<IHttpResponseMessage*>
+			{
+				auto locationUri = GetResponseLocationHeader(response);
+				return GetResponseContentTask(response).then(
+					[]
+				(IBuffer* responseContent)
+				{
+					return GetPostContent(responseContent);
+				})
+					.then(
+						[httpClient, locationUri]
+				(wstring postContent)
+				{
+					return GetAuthResponseTask(httpClient.Get(),
+						locationUri.Get(),
+						move(postContent));
+				});
+			})
+				.then(
+					[]
+			(task<IHttpResponseMessage*> postResponseTask)->
+				bool
+			{
+				try
+				{
+					return postResponseTask.get() != nullptr;
+				}
+				catch (...)
+				{
+					return false;
+				}
+			});
+		}
+		catch (const ComException&)
+		{
+			return task_from_result(false);
+		}
 	}
 
-private:
-
-	static bool CheckProfile(IConnectionProfile* connectionProfile) NOEXCEPT
+	static bool CanAuth(IConnectionProfile* connectionProfile) NOEXCEPT
 	{
 		if (!connectionProfile) return false;
 
@@ -205,6 +208,8 @@ private:
 			return false;
 		}
 	}
+
+private:
 
 	static ComPtr<IHttpClient> CreateHttpClient()
 	{
@@ -309,7 +314,12 @@ private:
 	}
 };
 
-task<bool> MosMetroAuthorizer::Authorize(IConnectionProfile* connectionProfile) const NOEXCEPT
+task<bool> MosMetroAuthorizer::Authorize() const NOEXCEPT
 {
-	return MosMetroAuthorizerImpl::Authorize(connectionProfile);
+	return MosMetroAuthorizerImpl::Authorize();
+}
+
+bool MosMetroAuthorizer::CanAuth(IConnectionProfile* connectionProfile) const NOEXCEPT 
+{
+	return MosMetroAuthorizerImpl::CanAuth(connectionProfile);
 }
