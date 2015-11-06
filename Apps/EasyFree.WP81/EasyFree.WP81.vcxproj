@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{56342b2c-8301-4be0-a5a4-a96fd9c76aee}</ProjectGuid>
     <RootNamespace>EasyFree</RootNamespace>
-    <DefaultLanguage>en-US</DefaultLanguage>
+    <DefaultLanguage>ru-RU</DefaultLanguage>
     <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Phone</ApplicationType>

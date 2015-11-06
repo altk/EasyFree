@@ -16,7 +16,7 @@
   </Resources>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="EasyFree.Application">
-      <m3:VisualElements DisplayName="Easy Free" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="EasyFree" ForegroundText="light" BackgroundColor="transparent" ToastCapable="true">
+      <m3:VisualElements DisplayName="Easy Free" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="Easy Free автоматизирует авторизацию в известных Wi-Fi сетях. Больше нет необходимости подтверждать вход и смотреть рекламу." ForegroundText="light" BackgroundColor="transparent" ToastCapable="true">
         <m3:DefaultTile Square71x71Logo="Assets\Square71x71Logo.png">
           <m3:ShowNameOnTiles>
             <m3:ShowOn Tile="square150x150Logo" />
@@ -30,7 +30,6 @@
         <Extension Category="windows.backgroundTasks" EntryPoint="EasyFree.Background.LoginTask">
           <BackgroundTasks>
             <Task Type="systemEvent" />
-            <Task Type="timer" />
           </BackgroundTasks>
         </Extension>
       </Extensions>
