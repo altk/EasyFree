@@ -276,21 +276,6 @@
     <Image Include="Assets\Square150x150Logo.scale-400.png">
       <DeploymentContent>true</DeploymentContent>
     </Image>
-    <Image Include="Assets\Square310x310Logo.scale-100.png">
-      <DeploymentContent>true</DeploymentContent>
-    </Image>
-    <Image Include="Assets\Square310x310Logo.scale-125.png">
-      <DeploymentContent>true</DeploymentContent>
-    </Image>
-    <Image Include="Assets\Square310x310Logo.scale-150.png">
-      <DeploymentContent>true</DeploymentContent>
-    </Image>
-    <Image Include="Assets\Square310x310Logo.scale-200.png">
-      <DeploymentContent>true</DeploymentContent>
-    </Image>
-    <Image Include="Assets\Square310x310Logo.scale-400.png">
-      <DeploymentContent>true</DeploymentContent>
-    </Image>
     <Image Include="Assets\Square44x44Logo.scale-100_altform-unplated.png">
       <DeploymentContent>true</DeploymentContent>
     </Image>
@@ -300,7 +285,9 @@
     <Image Include="Assets\Square44x44Logo.scale-150_altform-unplated.png">
       <DeploymentContent>true</DeploymentContent>
     </Image>
-    <Image Include="Assets\Square44x44Logo.scale-200.png" />
+    <Image Include="Assets\Square44x44Logo.scale-200.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
     <Image Include="Assets\Square44x44Logo.scale-200_altform-unplated.png">
       <DeploymentContent>true</DeploymentContent>
     </Image>
