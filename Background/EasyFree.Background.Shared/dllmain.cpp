@@ -19,6 +19,8 @@ HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId,
 	using namespace EasyFree::Background::Internals;
 	using namespace MTL;
 
+	*factory = nullptr;
+
 	if (!PackageChecker::CheckCurrentPackage())
 	{
 		return E_ACCESSDENIED;

@@ -150,7 +150,7 @@ namespace MTL
 		template <typename TClass, typename TResult, typename... TArgs>
 		struct FunctionTraits<TResult(TClass::*)(TArgs ...) const> : FunctionTraits<TResult(TArgs ...)> {};
 
-#ifndef _M_ARM
+#ifdef _M_IX86
 		template <typename TResult, typename... TArgs>
 		struct FunctionTraits<TResult(__stdcall *)(TArgs ...)> : FunctionTraits<TResult(TArgs ...)> {};
 

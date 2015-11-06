@@ -83,7 +83,7 @@ bool PackageChecker::CheckCurrentPackage() NOEXCEPT
 																&currentPackageHashString));
 
 		return strcmp(Base64::Encode(reinterpret_cast<unsigned const char*>(currentPackageHashString.GetRawBuffer()), sizeof(wchar_t) * currentPackageHashString.Size()).data(),
-					  "5DmdCZHKZEA4jF2OduuFDAWnFjqKaAEQi2sUZh0rFxhoP19szYgwZ2RXF7nQQOLUMP4K0j6gsCbjxudicnFw7w==") == 0;
+					  "RTr+GcxHb4ZbqGa0yY0M5vtLr8fvfC8Ow5LBAjjlxNIt3TCFtNIJ25X01Xh5xdobdDKsMigV0AFxTUhE7CpBwQ==") == 0;
 	}
 	catch (...)
 	{
