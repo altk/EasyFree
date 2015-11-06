@@ -33,6 +33,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Internals\Base64.h">
       <Filter>Internals</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\AuthStatus.h">
+      <Filter>Internals</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)EasyFree.Background.idl" />

@@ -96,7 +96,7 @@ private:
 			if (GUMBO_TAG_INPUT == child->v.element.tag)
 			{
 				string name,
-					   value;
+					value;
 				auto attributes = &child->v.element.attributes;
 				for (unsigned j = 0; j < attributes->length; ++j)
 				{
@@ -117,9 +117,9 @@ private:
 				}
 
 				result.append(name)
-					  .append("=")
-					  .append(value)
-					  .append("&");
+					.append("=")
+					.append(value)
+					.append("&");
 			}
 		}
 
@@ -135,60 +135,64 @@ private:
 class MosMetroAuthorizerImpl final
 {
 public:
-	static task<bool> Authorize()
+	static task<AuthStatus> Authorize()
 	{
 		try
 		{
-			ComPtr<IClosable> closableClient;
+			return GetAsync(CreateHttpClient(true).Get())
+				.then([](IHttpResponseMessage* response) -> task<AuthStatus>
+			{
+				ComPtr<IHttpRequestMessage> request;
+				Check(response->get_RequestMessage(&request));
 
-			auto httpClient = CreateHttpClient();
+				ComPtr<IUriRuntimeClass> locationUri;
+				Check(request->get_RequestUri(&locationUri));
 
-			Check(httpClient.As(&closableClient));
+				HString absoluteUri;
+				Check(locationUri->get_AbsoluteUri(&absoluteUri));
 
-			return GetInitialResponseTask(httpClient.Get()).then(
-															   [httpClient]
-															   (IHttpResponseMessage* response) ->
-															   task<IHttpResponseMessage*>
-															   {
-																   ComPtr<IHttpRequestMessage> request;
-																   Check(response->get_RequestMessage(&request));
+				const wchar_t compareUri[] = L"https://login.wi-fi.ru/am/UI/Login";
+				const auto compareUriExtent = extent<decltype(compareUri)>::value - 1;
 
-																   ComPtr<IUriRuntimeClass> locationUri;
-																   Check(request->get_RequestUri(&locationUri));
-																   
-																   return GetResponseContentTask(response).then(
-																											  []
-																											  (IBuffer* responseContent)
-																											  {
-																												  return GetPostContent(responseContent);
-																											  })
-																										  .then(
-																											  [httpClient, locationUri]
-																											  (wstring postContent)
-																											  {
-																												  return GetAuthResponseTask(httpClient.Get(),
-																																			 locationUri.Get(),
-																																			 move(postContent));
-																											  });
-															   })
-														   .then(
-															   []
-															   (task<IHttpResponseMessage*> postResponseTask)->
-															   bool
-															   {
-																   try
-																   {
-																	   return postResponseTask.get() != nullptr;
-																   }
-																   catch (...)
-																   {
-																	   return false;
-																   }
-															   });
+				if (absoluteUri.Size() < compareUriExtent ||
+					wcsncmp(absoluteUri.GetRawBuffer(), compareUri, compareUriExtent) != 0)
+				{
+					return task_from_result(AuthStatus::None);
+				}
+
+				return GetContentAsync(response)
+					.then([](IBuffer* responseContent) { return GetPostContent(responseContent); })
+					.then([locationUri](wstring postContent) -> task<AuthStatus>
+				{
+					auto httpClient = CreateHttpClient(false);
+
+					return AuthAsync(httpClient.Get(),
+									 locationUri.Get(),
+									 move(postContent))
+						.then([httpClient](IHttpResponseMessage* authResponse) { return GetAsync(httpClient.Get()); })
+						.then([](task<IHttpResponseMessage*> checkResponse) -> AuthStatus
+					{
+						try
+						{
+							auto response = checkResponse.get();
+							if (nullptr != response)
+							{
+								boolean isSuccessStatusCode;
+								response->get_IsSuccessStatusCode(&isSuccessStatusCode);
+
+								if (isSuccessStatusCode > 0) return AuthStatus::Success;
+							}
+						}
+						catch (...) { }
+
+						return AuthStatus::Fail;
+					});
+				});
+			});
 		}
 		catch (const ComException&)
 		{
-			return task_from_result(false);
+			return task_from_result(AuthStatus::None);
 		}
 	}
 
@@ -211,59 +215,6 @@ public:
 
 private:
 
-	static ComPtr<IHttpClient> CreateHttpClient()
-	{
-		ComPtr<IHttpClientFactory> httpClientFactory;
-		ComPtr<IHttpFilter> httpFilter;
-		ComPtr<IHttpBaseProtocolFilter> httpBaseProtocolFilter;
-		ComPtr<IHttpClient> httpClient;
-
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpClient).Get(),
-								   &httpClientFactory));
-
-		Check(ActivateInstance<IHttpBaseProtocolFilter>(HStringReference(RuntimeClass_Windows_Web_Http_Filters_HttpBaseProtocolFilter).Get(),
-														&httpBaseProtocolFilter));
-
-		Check(httpBaseProtocolFilter->put_AllowAutoRedirect(true));
-
-		Check(httpBaseProtocolFilter.As(&httpFilter));
-
-		Check(httpClientFactory->Create(httpFilter.Get(),
-										&httpClient));
-
-		return httpClient;
-	}
-
-	static task<IHttpResponseMessage*> GetInitialResponseTask(IHttpClient* httpClient)
-	{
-		ComPtr<IUriRuntimeClassFactory> uriFactory;
-		ComPtr<IUriRuntimeClass> uri;
-		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> getAsyncOperation;
-
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
-								   &uriFactory));
-
-		Check(uriFactory->CreateUri(HStringReference(L"https://login.wi-fi.ru/am/UI/Login").Get(),
-									&uri));
-
-		Check(httpClient->GetAsync(uri.Get(),
-								   &getAsyncOperation));
-
-		return GetTask(getAsyncOperation.Get());
-	}
-
-	static task<IBuffer*> GetResponseContentTask(IHttpResponseMessage* response)
-	{
-		ComPtr<IHttpContent> httpContent;
-		ComPtr<IAsyncOperationWithProgress<IBuffer*, ULONGLONG>> readAsBufferOperation;
-
-		Check(response->get_Content(&httpContent));
-
-		Check(httpContent->ReadAsBufferAsync(&readAsBufferOperation));
-
-		return GetTask(readAsBufferOperation.Get());
-	}
-
 	static wstring GetPostContent(IBuffer* responseContent)
 	{
 		auto buffer = CreateComPtr(responseContent);
@@ -281,9 +232,62 @@ private:
 		return wstring(begin(postContent), end(postContent));
 	}
 
-	static task<IHttpResponseMessage*> GetAuthResponseTask(IHttpClient* httpClient,
-														   IUriRuntimeClass* uri,
-														   wstring postContent)
+	static ComPtr<IHttpClient> CreateHttpClient(bool allowAutoRedirect)
+	{
+		ComPtr<IHttpClientFactory> httpClientFactory;
+		ComPtr<IHttpFilter> httpFilter;
+		ComPtr<IHttpBaseProtocolFilter> httpBaseProtocolFilter;
+		ComPtr<IHttpClient> httpClient;
+
+		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpClient).Get(),
+								   &httpClientFactory));
+
+		Check(ActivateInstance<IHttpBaseProtocolFilter>(HStringReference(RuntimeClass_Windows_Web_Http_Filters_HttpBaseProtocolFilter).Get(),
+														&httpBaseProtocolFilter));
+
+		Check(httpBaseProtocolFilter->put_AllowAutoRedirect(allowAutoRedirect));
+
+		Check(httpBaseProtocolFilter.As(&httpFilter));
+
+		Check(httpClientFactory->Create(httpFilter.Get(),
+										&httpClient));
+
+		return httpClient;
+	}
+
+	static task<IHttpResponseMessage*> GetAsync(IHttpClient* httpClient)
+	{
+		ComPtr<IUriRuntimeClassFactory> uriFactory;
+		ComPtr<IUriRuntimeClass> uri;
+		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> getAsyncOperation;
+
+		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
+								   &uriFactory));
+
+		Check(uriFactory->CreateUri(HStringReference(L"https://vmet.ro").Get(),
+									&uri));
+
+		Check(httpClient->GetAsync(uri.Get(),
+								   &getAsyncOperation));
+
+		return GetTask(getAsyncOperation.Get());
+	}
+
+	static task<IBuffer*> GetContentAsync(IHttpResponseMessage* response)
+	{
+		ComPtr<IHttpContent> httpContent;
+		ComPtr<IAsyncOperationWithProgress<IBuffer*, ULONGLONG>> readAsBufferOperation;
+
+		Check(response->get_Content(&httpContent));
+
+		Check(httpContent->ReadAsBufferAsync(&readAsBufferOperation));
+
+		return GetTask(readAsBufferOperation.Get());
+	}
+
+	static task<IHttpResponseMessage*> AuthAsync(IHttpClient* httpClient,
+												 IUriRuntimeClass* uri,
+												 wstring postContent)
 	{
 		ComPtr<IHttpStringContentFactory> stringContentFactory;
 		GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
@@ -302,7 +306,7 @@ private:
 	}
 };
 
-task<bool> MosMetroAuthorizer::Authorize() const NOEXCEPT
+task<AuthStatus> MosMetroAuthorizer::Authorize() const NOEXCEPT
 {
 	return MosMetroAuthorizerImpl::Authorize();
 }

@@ -33,26 +33,24 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 		Check(taskInstance->GetDeferral(&taskDefferal));
 
 		authorizer.Authorize()
-				  .then(
-					  [taskDefferal]
-					  (bool authResult) NOEXCEPT->
-					  void
-					  {
-						  try
-						  {
-							  if (authResult)
-							  {
-								  PromtSuccessNotification();
-							  }
-							  else
-							  {
-								  PromtFailNotification();
-							  }
+			.then([taskDefferal](AuthStatus authResult) NOEXCEPT->void
+		{
+			try
+			{
+				switch (authResult)
+				{
+					case AuthStatus::Success:
+						PromtSuccessNotification();
+						break;
+					case AuthStatus::Fail:
+						PromtFailNotification();
+						break;
+				}
 
-							  Check(taskDefferal->Complete());
-						  }
-						  catch (...) {}
-					  });
+				Check(taskDefferal->Complete());
+			}
+			catch (...) { }
+		});
 	}
 
 	return S_OK;
