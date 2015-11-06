@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest" xmlns:m3="http://schemas.microsoft.com/appx/2014/manifest" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest">
-  <Identity Name="10697altk.EasyFree" Publisher="CN=D89AF1F6-F2EE-4703-B7DA-78CA9BB3AF11" Version="1.0.0.0" />
+  <Identity Name="10697altk.EasyFree" Publisher="CN=D89AF1F6-F2EE-4703-B7DA-78CA9BB3AF11" Version="1.0.81.0" />
   <mp:PhoneIdentity PhoneProductId="02a8f830-a88d-4a70-8cae-187dcd249128" PhonePublisherId="8f9c8123-e8c2-42f5-a24c-31f78912e065" />
   <Properties>
     <DisplayName>Easy Free</DisplayName>

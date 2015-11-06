@@ -6,6 +6,8 @@
 #include <windows.security.cryptography.core.h>
 #include <MTL.h>
 
+#include <chrono>
+
 using namespace EasyFree::Background::Internals;
 
 MTL::HString PackageChecker::GetPackageIdentity()
@@ -34,7 +36,7 @@ MTL::HString PackageChecker::GetPackageIdentity()
 
 	Check(packageId->get_Version(&packageVersion));
 	
-	auto versionString = to_wstring(packageVersion.Major).append(L".") + to_wstring(packageVersion.Minor).append(L".") + to_wstring(packageVersion.Build);
+	auto versionString = to_wstring(packageVersion.Major) + L"." + to_wstring(packageVersion.Minor);
 	
 	return packageFamilyName + publisherId + HString(versionString.data(), versionString.size());
 }
@@ -56,6 +58,8 @@ bool PackageChecker::CheckCurrentPackage() NOEXCEPT
 		ComPtr<IBuffer> packageFullNameHashBuffer;
 		HString sha512Name;
 		HString currentPackageHashString;
+
+		auto old = std::chrono::high_resolution_clock::now();
 
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Security_Cryptography_Core_HashAlgorithmProvider).Get(),
 								   &hashAlgorithmProviderStatics));
@@ -83,7 +87,7 @@ bool PackageChecker::CheckCurrentPackage() NOEXCEPT
 																&currentPackageHashString));
 
 		return strcmp(Base64::Encode(reinterpret_cast<unsigned const char*>(currentPackageHashString.GetRawBuffer()), sizeof(wchar_t) * currentPackageHashString.Size()).data(),
-					  "RTr+GcxHb4ZbqGa0yY0M5vtLr8fvfC8Ow5LBAjjlxNIt3TCFtNIJ25X01Xh5xdobdDKsMigV0AFxTUhE7CpBwQ==") == 0;
+					  "JW2tnHFTgbB3vA8CYHMERpRdCj0lUkRGU+l/2n7yBougkya1rTpBnNFjVc3k3fuKs6hxTqatywcUJbvyK1oaPw==") == 0;
 	}
 	catch (...)
 	{
