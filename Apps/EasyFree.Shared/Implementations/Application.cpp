@@ -44,24 +44,24 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 	auto token = make_shared<EventRegistrationToken>();
 	auto callback = CreateCallback<ITypedEventHandler<CoreApplicationView*, IActivatedEventArgs*>>(
 		[token]
-		(ICoreApplicationView* coreApplicationView, IActivatedEventArgs* args)->
+	(ICoreApplicationView* coreApplicationView, IActivatedEventArgs* args)->
 		HRESULT
+	{
+		try
 		{
-			try
-			{
-				Check(coreApplicationView->remove_Activated(*token));
+			Check(coreApplicationView->remove_Activated(*token));
 
-				ComPtr<ICoreWindow> coreWindow;
-				Check(coreApplicationView->get_CoreWindow(&coreWindow));
-				Check(coreWindow->Activate());
+			ComPtr<ICoreWindow> coreWindow;
+			Check(coreApplicationView->get_CoreWindow(&coreWindow));
+			Check(coreWindow->Activate());
 
-				return S_OK;
-			}
-			catch (const ComException& comException)
-			{
-				return comException.GetResult();
-			}
-		});
+			return S_OK;
+		}
+		catch (const ComException& comException)
+		{
+			return comException.GetResult();
+		}
+	});
 
 	try
 	{
@@ -89,36 +89,36 @@ HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEX
 
 	auto visibilityChangedCallback = CreateCallback<ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*>>(
 		[this]
-		(ICoreWindow*, IVisibilityChangedEventArgs* args)->
+	(ICoreWindow*, IVisibilityChangedEventArgs* args)->
 		HRESULT
+	{
+		try
 		{
-			try
-			{
-				boolean isVisible;
-				Check(args->get_Visible(&isVisible));
+			boolean isVisible;
+			Check(args->get_Visible(&isVisible));
 
-				if (!isVisible)
-				{
-					_deviceContext.Release();
-					_swapChain.Release();
-					_dwriteFactory.Release();
-				}
-				if (!_deviceContext)
-				{
-					InitContext();
-				}
-				if (_deviceContext)
-				{
-					Draw();
-				}
-
-				return S_OK;
-			}
-			catch (const ComException& comException)
+			if (!isVisible)
 			{
-				return comException.GetResult();
+				_deviceContext.Release();
+				_swapChain.Release();
+				_dwriteFactory.Release();
 			}
-		});
+			if (!_deviceContext)
+			{
+				InitContext();
+			}
+			if (_deviceContext)
+			{
+				Draw();
+			}
+
+			return S_OK;
+		}
+		catch (const ComException& comException)
+		{
+			return comException.GetResult();
+		}
+	});
 
 	try
 	{
@@ -185,14 +185,14 @@ void Application::InitContext() NOEXCEPT
 		Check(displayInformationStatics->GetForCurrentView(&displayInformation));
 
 		FLOAT dpiX,
-			  dpiY;
+			dpiY;
 
 		Check(displayInformation->get_RawDpiX(&dpiX));
 		Check(displayInformation->get_RawDpiY(&dpiY));
 
 		ComPtr<ID2D1Factory1> factory;
 		Check(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED,
-								D2D1_FACTORY_OPTIONS{},
+								D2D1_FACTORY_OPTIONS{ },
 								static_cast<ID2D1Factory1**>(&factory)));
 
 		ComPtr<ID3D11Device> device;
@@ -216,7 +216,7 @@ void Application::InitContext() NOEXCEPT
 		Check(dxgiAdapter->GetParent(__uuidof(dxgiFactory),
 									 &dxgiFactory));
 
-		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
+		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0 };
 		swapChainDesc.Stereo = false;
 		swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 		swapChainDesc.SampleDesc.Count = 1;
@@ -283,7 +283,7 @@ void Application::Draw() NOEXCEPT
 	Check(_deviceContext->CreateSolidColorBrush(ColorF(ColorF::White),
 												&brush));
 
-	DWRITE_TEXT_METRICS titleMetrics = {};
+	DWRITE_TEXT_METRICS titleMetrics = { };
 	Check(titleTextLayout->GetMetrics(&titleMetrics));
 
 	_deviceContext->BeginDraw();
@@ -318,53 +318,50 @@ Concurrency::task<void> Application::RegisterBackgroundTask() NOEXCEPT
 		ComPtr<IAsyncOperation<BackgroundAccessStatus>> backgroundAccessStatusAsyncOperation;
 		Check(backgroundExecutionManagerStatics->RequestAccessAsync(&backgroundAccessStatusAsyncOperation));
 
-		return GetTask(backgroundAccessStatusAsyncOperation.Get()).then(
-			[]
-			(BackgroundAccessStatus status) NOEXCEPT ->
-			void
+		return GetTask(backgroundAccessStatusAsyncOperation.Get()).then([](BackgroundAccessStatus status) NOEXCEPT -> void
+		{
+			try
 			{
-				try
-				{
-					if (status == BackgroundAccessStatus_Denied) return;
+				if (status == BackgroundAccessStatus_Denied) return;
 
-					ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
-					Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
-											   &backgroundTaskRegistrationStatics));
+				ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
+				Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
+										   &backgroundTaskRegistrationStatics));
 
-					ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
-					Check(backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations));
+				ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
+				Check(backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations));
 
-					ComPtr<IIterable<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterable;
-					Check(taskRegistrations.As(&registrationsIterable));
+				ComPtr<IIterable<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterable;
+				Check(taskRegistrations.As(&registrationsIterable));
 
-					if (begin(registrationsIterable.Get()) != end(registrationsIterable.Get())) return;
+				if (begin(registrationsIterable.Get()) != end(registrationsIterable.Get())) return;
 
-					ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
-					Check(ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
-																   &backgroundTaskBuilder));
+				ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
+				Check(ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
+															   &backgroundTaskBuilder));
 
-					Check(backgroundTaskBuilder->put_Name(HStringReference(L"EasyFreeTask").Get()));
-					Check(backgroundTaskBuilder->put_TaskEntryPoint(HStringReference(L"EasyFree.Background.LoginTask").Get()));
+				Check(backgroundTaskBuilder->put_Name(HStringReference(L"EasyFreeTask").Get()));
+				Check(backgroundTaskBuilder->put_TaskEntryPoint(HStringReference(L"EasyFree.Background.LoginTask").Get()));
 
-					ComPtr<ISystemTriggerFactory> systemTriggerActivationFactory;
-					Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_SystemTrigger).Get(),
-											   &systemTriggerActivationFactory));
+				ComPtr<ISystemTriggerFactory> systemTriggerActivationFactory;
+				Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_SystemTrigger).Get(),
+										   &systemTriggerActivationFactory));
 
-					ComPtr<ISystemTrigger> systemTrigger;
-					Check(systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
-																 false,
-																 &systemTrigger));
+				ComPtr<ISystemTrigger> systemTrigger;
+				Check(systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
+															 false,
+															 &systemTrigger));
 
-					ComPtr<IBackgroundTrigger> backgroundTrigger;
-					Check(systemTrigger.As(&backgroundTrigger));
+				ComPtr<IBackgroundTrigger> backgroundTrigger;
+				Check(systemTrigger.As(&backgroundTrigger));
 
-					Check(backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get()));
+				Check(backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get()));
 
-					ComPtr<IBackgroundTaskRegistration> taskRegistration;
-					Check(backgroundTaskBuilder->Register(&taskRegistration));
-				}
-				catch (...) {}
-			});
+				ComPtr<IBackgroundTaskRegistration> taskRegistration;
+				Check(backgroundTaskBuilder->Register(&taskRegistration));
+			}
+			catch (...) { }
+		});
 	}
 	catch (...)
 	{
@@ -390,7 +387,7 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize, D2D1_
 											   &_titleTextFormat));
 	}
 
-	const wchar_t title[] = L"EasyFree";
+	const wchar_t title[] = L"Easy Free";
 	ComPtr<IDWriteTextLayout> titleTextLayout;
 	Check(_dwriteFactory->CreateTextLayout(title,
 										   extent<decltype(title)>::value,
@@ -421,9 +418,9 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize,
 	}
 
 	const wchar_t description[] =
-			L"Приложение работает в автоматическом режиме.\r\n"
-			L"Как только будет установлено соединение с WiFi сетью, будет запущен процесс автоматической авторизации. "
-			L"Вам останется только дождаться уведомления об успешном соединении.";
+		L"Приложение работает в автономном режиме.\r\n"
+		L"Как только будет установлено соединение с Wi-Fi сетью, запуститься процесс авторизации.\r\n"
+		L"Приятного использования интернета :-)";
 
 	ComPtr<IDWriteTextLayout> descriptionTextLayout;
 	Check(_dwriteFactory->CreateTextLayout(description,
