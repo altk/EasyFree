@@ -166,9 +166,14 @@ namespace MTL
 #pragma region RemoveIUnknown
 
 		template <typename TInterface>
-		struct RemoveIUnknown abstract : TInterface
+		struct NOVTABLE RemoveIUnknown abstract : TInterface
 		{
 			static_assert(std::is_base_of<IUnknown, TInterface>::value, "TInterface must inherit IUnknown");
+		public:
+			operator TInterface*() NOEXCEPT
+			{ 
+				return this;
+			}
 		private:
 			STDMETHODIMP_(ULONG) AddRef();
 			STDMETHODIMP_(ULONG) Release();
@@ -1240,4 +1245,90 @@ inline MTL::Iterator<TItem> end(ABI::Windows::Foundation::Collections::IIterable
 {
 	using namespace MTL;
 	return Iterator<TItem>();
+}
+
+template <typename TKey, typename TValue>
+inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, TValue>*> begin(ABI::Windows::Foundation::Collections::IMap<TKey, TValue>* map) NOEXCEPT
+{
+	using namespace MTL;
+	using namespace ABI::Windows::Foundation::Collections;
+	using namespace ABI::Windows::Foundation;
+	
+	ComPtr<IIterable<IKeyValuePair<TKey, TValue>*>> iterable;
+	map->QueryInterface<IIterable<IKeyValuePair<TKey, TValue>*>>(&iterable);
+
+	return Iterator<IKeyValuePair<TKey, TValue>*>(iterable.Get());
+}
+
+template <typename TKey, typename TValue>
+inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, TValue>*> end(ABI::Windows::Foundation::Collections::IMap<TKey, TValue>*) NOEXCEPT
+{
+	using namespace MTL;
+	using namespace ABI::Windows::Foundation::Collections;
+
+	return Iterator<IKeyValuePair<TKey, TValue>*>();
+}
+
+template <typename TKey, typename TValue>
+inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, TValue>*> begin(ABI::Windows::Foundation::Collections::IMapView<TKey, TValue>* mapView) NOEXCEPT
+{
+	using namespace MTL;
+	using namespace ABI::Windows::Foundation::Collections;
+	using namespace ABI::Windows::Foundation;
+
+	ComPtr<IIterable<IKeyValuePair<TKey, TValue>*>> iterable;
+	mapView->QueryInterface<IIterable<IKeyValuePair<TKey, TValue>*>>(&iterable);
+
+	return Iterator<IKeyValuePair<TKey, TValue>*>(iterable.Get());
+}
+
+template <typename TKey, typename TValue>
+inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, TValue>*> end(ABI::Windows::Foundation::Collections::IMapView<TKey, TValue>*) NOEXCEPT
+{
+	using namespace MTL;
+	using namespace ABI::Windows::Foundation::Collections;
+
+	return Iterator<IKeyValuePair<TKey, TValue>*>();
+}
+
+template <typename TValue>
+inline MTL::Iterator<TValue> begin(ABI::Windows::Foundation::Collections::IVector<TValue>* vector) NOEXCEPT
+{
+	using namespace MTL;
+	using namespace ABI::Windows::Foundation::Collections;
+	using namespace ABI::Windows::Foundation;
+
+	ComPtr<IIterable<TValue>> iterable;
+	vector->QueryInterface<IIterable<TValue>>(&iterable);
+
+	return Iterator<TValue>(iterable.Get());
+}
+
+template <typename TValue>
+inline MTL::Iterator<TValue> end(ABI::Windows::Foundation::Collections::IVector<TValue>*) NOEXCEPT
+{
+	using namespace MTL;
+
+	return Iterator<TValue>();
+}
+
+template <typename TValue>
+inline MTL::Iterator<TValue> begin(ABI::Windows::Foundation::Collections::IVectorView<TValue>* vectorView) NOEXCEPT
+{
+	using namespace MTL;
+	using namespace ABI::Windows::Foundation::Collections;
+	using namespace ABI::Windows::Foundation;
+
+	ComPtr<IIterable<TValue>> iterable;
+	vectorView->QueryInterface<IIterable<TValue>>(&iterable);
+
+	return Iterator<TValue>(iterable.Get());
+}
+
+template <typename TValue>
+inline MTL::Iterator<TValue> end(ABI::Windows::Foundation::Collections::IVectorView<TValue>*) NOEXCEPT
+{
+	using namespace MTL;
+
+	return Iterator<TValue>();
 }

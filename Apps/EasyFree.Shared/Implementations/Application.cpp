@@ -331,10 +331,7 @@ Concurrency::task<void> Application::RegisterBackgroundTask() NOEXCEPT
 				ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
 				Check(backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations));
 
-				ComPtr<IIterable<IKeyValuePair<GUID, IBackgroundTaskRegistration*>*>> registrationsIterable;
-				Check(taskRegistrations.As(&registrationsIterable));
-
-				if (begin(registrationsIterable.Get()) != end(registrationsIterable.Get())) return;
+				if (begin(taskRegistrations.Get()) != end(taskRegistrations.Get())) return;
 
 				ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
 				Check(ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
