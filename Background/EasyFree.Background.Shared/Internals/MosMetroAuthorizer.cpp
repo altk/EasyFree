@@ -264,7 +264,7 @@ private:
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
 								   &uriFactory));
 
-		Check(uriFactory->CreateUri(HStringReference(L"https://vmet.ro").Get(),
+		Check(uriFactory->CreateUri(HStringReference(L"https://httpbin.org/status/200").Get(),
 									&uri));
 
 		Check(httpClient->GetAsync(uri.Get(),

@@ -6,8 +6,6 @@
 #include <windows.security.cryptography.core.h>
 #include <MTL.h>
 
-#include <chrono>
-
 using namespace EasyFree::Background::Internals;
 
 MTL::HString PackageChecker::GetPackageIdentity()
@@ -58,8 +56,6 @@ bool PackageChecker::CheckCurrentPackage() NOEXCEPT
 		ComPtr<IBuffer> packageFullNameHashBuffer;
 		HString sha512Name;
 		HString currentPackageHashString;
-
-		auto old = std::chrono::high_resolution_clock::now();
 
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Security_Cryptography_Core_HashAlgorithmProvider).Get(),
 								   &hashAlgorithmProviderStatics));
