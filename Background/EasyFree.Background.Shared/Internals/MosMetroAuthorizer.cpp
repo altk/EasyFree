@@ -24,16 +24,12 @@ using namespace Windows::Storage::Streams;
 using namespace MTL;
 using namespace EasyFree::Background::Internals;
 
+const char* test = "<HTML> <HEAD> <TITLE> Web Authentication Redirect</TITLE> <META http-equiv=\"Cache - control\" content=\"no - cache\"> <META http-equiv=\"Pragma\" content=\"no - cache\"> <META http-equiv=\"Expires\" content=\" - 1\"> <META http-equiv=\"refresh\" content=\"1;URL=https://login.wi-fi.ru/am/UI/Login?org=mac&service=coa&client_mac=c8-d1-0b-01-24-e1&ForceAuth=true\"></ HEAD> </HTML>";
+
 class ResponseParser final
 {
 public:
 	static string GetPostString(const char* source) NOEXCEPT
-	{
-		return ParseHTML(source);
-	}
-
-private:
-	static string ParseHTML(const char* source) NOEXCEPT
 	{
 		using namespace std;
 
@@ -50,7 +46,7 @@ private:
 
 		if (!formNode) return result;
 
-		result = ParseFormElement(formNode);
+		result = GetFormParams(formNode);
 
 		gumbo_destroy_output(&kGumboDefaultOptions,
 							 output);
@@ -58,6 +54,30 @@ private:
 		return result;
 	}
 
+	static string GetFormUrl(const char* source) NOEXCEPT
+	{
+		using namespace std;
+
+		string result;
+
+		if (!source) return result;
+
+		auto output = gumbo_parse(source);
+
+		if (!output) return result;
+
+		auto headNode = FindNodeByTag(output->root,
+									  GUMBO_TAG_HEAD);
+
+		result = GetUrl(headNode);
+
+		gumbo_destroy_output(&kGumboDefaultOptions,
+							 output);
+
+		return result;
+	}
+
+private:
 	static const GumboNode* FindNodeByTag(const GumboNode* node,
 										  GumboTag tag) NOEXCEPT
 	{
@@ -83,7 +103,7 @@ private:
 		return nullptr;
 	}
 
-	static string ParseFormElement(const GumboNode* formNode) NOEXCEPT
+	static string GetFormParams(const GumboNode* formNode) NOEXCEPT
 	{
 		using namespace std;
 
@@ -101,11 +121,11 @@ private:
 				for (unsigned j = 0; j < attributes->length; ++j)
 				{
 					auto attribute = static_cast<GumboAttribute*>(attributes->data[j]);
-					if (strcmp(attribute->name, "name") == 0)
+					if (_stricmp(attribute->name, "name") == 0)
 					{
 						name.append(attribute->value);
 					}
-					if (strcmp(attribute->name, "value") == 0)
+					else if (_stricmp(attribute->name, "value") == 0)
 					{
 						value.append(attribute->value);
 					}
@@ -130,6 +150,43 @@ private:
 
 		return result;
 	}
+
+	static string GetUrl(const GumboNode* headNode) NOEXCEPT
+	{
+		using namespace std;
+
+		string result;
+
+		auto children = &headNode->v.element.children;
+		for (unsigned i = 0; i < children->length; ++i)
+		{
+			auto child = static_cast<GumboNode*>(children->data[i]);
+			if (GUMBO_TAG_META == child->v.element.tag)
+			{
+				auto attributes = &child->v.element.attributes;
+				if (attributes->length <= 0) break;
+
+				auto httpEquivAttribute = static_cast<GumboAttribute*>(attributes->data[0]);
+				if (_stricmp(httpEquivAttribute->name, "http-equiv") != 0 || _stricmp(httpEquivAttribute->value, "refresh") != 0) continue;
+
+				for (unsigned j = 1; j < attributes->length; ++j)
+				{
+					auto attribute = static_cast<GumboAttribute*>(attributes->data[j]);
+					if (_stricmp(attribute->name, "content") == 0)
+					{
+						const char term[] = "http";
+						auto first = strstr(attribute->value, term);
+						if (nullptr != first)
+						{
+							result.append(first);
+						}
+					}
+				}
+			}
+		}
+
+		return result;
+	}
 };
 
 class MosMetroAuthorizerImpl final
@@ -139,8 +196,33 @@ public:
 	{
 		try
 		{
-			return GetAsync(CreateHttpClient(true).Get())
-				.then([](IHttpResponseMessage* response) -> task<AuthStatus>
+			auto httpClient = CreateHttpClient(false);
+			wstring bindUrl = L"https://httpbin.org/status/200";
+
+			return GetAsync(httpClient.Get(), bindUrl)
+				.then([](IHttpResponseMessage* response)
+			{
+				return GetContentAsync(response);
+			})
+				.then([](IBuffer* buffer) -> string
+			{
+				ComPtr<IBufferByteAccess> contentBytes;
+				Check(buffer->QueryInterface<IBufferByteAccess>(&contentBytes));
+
+				byte* content;
+				Check(contentBytes->Buffer(&content));
+
+				return ResponseParser::GetFormUrl(reinterpret_cast<const char*>(content));
+			})
+				.then([httpClient](string url)
+			{
+				if (url.empty())
+				{
+					throw concurrency::task_canceled();
+				}
+				return GetAsync(httpClient.Get(), wstring(begin(url), end(url)));
+			})
+				.then([httpClient](IHttpResponseMessage* response) -> task<IHttpResponseMessage*>
 			{
 				ComPtr<IHttpRequestMessage> request;
 				Check(response->get_RequestMessage(&request));
@@ -151,43 +233,44 @@ public:
 				HString absoluteUri;
 				Check(locationUri->get_AbsoluteUri(&absoluteUri));
 
-				const wchar_t compareUri[] = L"https://login.wi-fi.ru/am/UI/Login";
-				const auto compareUriExtent = extent<decltype(compareUri)>::value - 1;
-
-				if (absoluteUri.Size() < compareUriExtent ||
-					wcsncmp(absoluteUri.GetRawBuffer(), compareUri, compareUriExtent) != 0)
-				{
-					return task_from_result(AuthStatus::None);
-				}
-
 				return GetContentAsync(response)
-					.then([](IBuffer* responseContent) { return GetPostContent(responseContent); })
-					.then([locationUri](wstring postContent) -> task<AuthStatus>
+					.then([](IBuffer* responseContent)
 				{
-					auto httpClient = CreateHttpClient(false);
-
+					return GetPostContent(responseContent);
+				})
+					.then([httpClient, locationUri](wstring postContent)
+				{
 					return AuthAsync(httpClient.Get(),
 									 locationUri.Get(),
-									 move(postContent))
-						.then([httpClient](IHttpResponseMessage* authResponse) { return GetAsync(httpClient.Get()); })
-						.then([](task<IHttpResponseMessage*> checkResponse) -> AuthStatus
-					{
-						try
-						{
-							auto response = checkResponse.get();
-							if (nullptr != response)
-							{
-								boolean isSuccessStatusCode;
-								response->get_IsSuccessStatusCode(&isSuccessStatusCode);
-
-								if (isSuccessStatusCode > 0) return AuthStatus::Success;
-							}
-						}
-						catch (...) { }
-
-						return AuthStatus::Fail;
-					});
+									 move(postContent));
 				});
+			})
+				.then([httpClient, bindUrl](IHttpResponseMessage* authResponse)
+			{
+				return GetAsync(httpClient.Get(), move(bindUrl));
+			})
+				.then([](task<IHttpResponseMessage*> checkResponse) -> AuthStatus
+			{
+				try
+				{
+					auto response = checkResponse.get();
+					if (nullptr != response)
+					{
+						boolean isSuccessStatusCode;
+						response->get_IsSuccessStatusCode(&isSuccessStatusCode);
+
+						if (isSuccessStatusCode > 0) return AuthStatus::Success;
+					}
+				}
+				catch (const concurrency::task_canceled&)
+				{
+					return AuthStatus::None;
+				}
+				catch (...) 
+				{
+					return AuthStatus::Fail;
+				}
+
 			});
 		}
 		catch (const ComException&)
@@ -214,7 +297,6 @@ public:
 	}
 
 private:
-
 	static wstring GetPostContent(IBuffer* responseContent)
 	{
 		auto buffer = CreateComPtr(responseContent);
@@ -255,7 +337,7 @@ private:
 		return httpClient;
 	}
 
-	static task<IHttpResponseMessage*> GetAsync(IHttpClient* httpClient)
+	static task<IHttpResponseMessage*> GetAsync(IHttpClient* httpClient, wstring url)
 	{
 		ComPtr<IUriRuntimeClassFactory> uriFactory;
 		ComPtr<IUriRuntimeClass> uri;
@@ -264,7 +346,7 @@ private:
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
 								   &uriFactory));
 
-		Check(uriFactory->CreateUri(HStringReference(L"https://httpbin.org/status/200").Get(),
+		Check(uriFactory->CreateUri(HStringReference(url.data(), url.size()).Get(),
 									&uri));
 
 		Check(httpClient->GetAsync(uri.Get(),
