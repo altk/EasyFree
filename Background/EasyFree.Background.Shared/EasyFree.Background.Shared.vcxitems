@@ -26,7 +26,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\AuthStatus.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Internals\Base64.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Internals\IAuthorizer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Internals\MosMetroAuthorizer.h" />

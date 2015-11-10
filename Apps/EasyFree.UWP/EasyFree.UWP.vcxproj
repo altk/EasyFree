@@ -83,6 +83,7 @@
     <Import Project="..\..\Dependencies\MTL\MTL.vcxitems" Label="Shared" />
     <Import Project="..\..\Dependencies\gumbo\gumbo.vcxitems" Label="Shared" />
     <Import Project="..\EasyFree.Shared\EasyFree.Shared.vcxitems" Label="Shared" />
+    <Import Project="..\..\Shared\EasyFree.Internals.Shared\EasyFree.Internals.Shared.vcxitems" Label="Shared" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />

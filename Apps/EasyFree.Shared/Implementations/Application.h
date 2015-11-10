@@ -5,6 +5,7 @@
 #include <dwrite.h>
 #include <windows.applicationmodel.core.h>
 #include <macro.h>
+#include <AuthStatus.h>
 #include <MTL.h>
 
 namespace EasyFree
@@ -24,6 +25,8 @@ namespace EasyFree
 			STDMETHODIMP Run() NOEXCEPT override final;
 			STDMETHODIMP Uninitialize() NOEXCEPT override final;
 		private:
+			Internals::AuthStatus::Enum _authStatus = Internals::AuthStatus::None;
+
 			MTL::ComPtr<ABI::Windows::UI::Core::ICoreWindow> _coreWindow;
 			MTL::ComPtr<ID2D1DeviceContext> _deviceContext;
 			MTL::ComPtr<IDXGISwapChain1> _swapChain;

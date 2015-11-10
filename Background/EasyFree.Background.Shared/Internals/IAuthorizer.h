@@ -12,7 +12,7 @@ namespace EasyFree
 		{
 			struct NOVTABLE IAuthorizer abstract
 			{
-				virtual Concurrency::task<AuthStatus> Authorize() const NOEXCEPT = 0;
+				virtual Concurrency::task<EasyFree::Internals::AuthStatus::Enum> Authorize() const NOEXCEPT = 0;
 
 				virtual bool CanAuth(ABI::Windows::Networking::Connectivity::IConnectionProfile* connectionProfile) const NOEXCEPT = 0;
 			};

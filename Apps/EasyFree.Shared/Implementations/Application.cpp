@@ -10,6 +10,7 @@
 #include <MTL.h>
 
 using namespace EasyFree::Implementations;
+using namespace EasyFree::Internals;
 
 HRESULT Application::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 {
@@ -41,32 +42,68 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 	using namespace ABI::Windows::UI::Core;
 	using namespace MTL;
 
-	auto token = make_shared<EventRegistrationToken>();
-	auto callback = CreateCallback<ITypedEventHandler<CoreApplicationView*, IActivatedEventArgs*>>(
-		[token]
-	(ICoreApplicationView* coreApplicationView, IActivatedEventArgs* args)->
-		HRESULT
-	{
-		try
+	EventRegistrationToken token;
+	auto callback = CreateCallback<ITypedEventHandler<CoreApplicationView*, IActivatedEventArgs*>>([this](ICoreApplicationView* coreApplicationView, IActivatedEventArgs* args)-> HRESULT
 		{
-			Check(coreApplicationView->remove_Activated(*token));
+			try
+			{
+				ComPtr<ICoreWindow> coreWindow;
+				Check(coreApplicationView->get_CoreWindow(&coreWindow));
+				Check(coreWindow->Activate());
 
-			ComPtr<ICoreWindow> coreWindow;
-			Check(coreApplicationView->get_CoreWindow(&coreWindow));
-			Check(coreWindow->Activate());
+				ActivationKind activationKind;
+				Check(args->get_Kind(&activationKind));
 
-			return S_OK;
-		}
-		catch (const ComException& comException)
-		{
-			return comException.GetResult();
-		}
-	});
+				switch (activationKind)
+				{
+					case ActivationKind_Launch:
+						{
+							ComPtr<ILaunchActivatedEventArgs> launchActivatedArgs;
+							Check(args->QueryInterface<ILaunchActivatedEventArgs>(&launchActivatedArgs));
+
+							HString argument;
+							Check(launchActivatedArgs->get_Arguments(&argument));
+
+							if (argument)
+							{
+								auto rawArgument = argument.GetRawBuffer();
+
+								if (wcscmp(rawArgument, AuthStatus::launchAttributeSuccess) == 0)
+								{
+									_authStatus = AuthStatus::Success;
+								}
+								else if (wcscmp(rawArgument, AuthStatus::launchAttributeFail) == 0)
+								{
+									_authStatus = AuthStatus::Fail;
+								}
+								else if (wcscmp(rawArgument, AuthStatus::launchAttributeUnauthorized) == 0)
+								{
+									_authStatus = AuthStatus::Unauthorized;
+								}
+							}
+							else
+							{
+								_authStatus = AuthStatus::None;
+							}
+
+							break;
+						}
+					default:
+						break;
+				}
+
+				return S_OK;
+			}
+			catch (const ComException& comException)
+			{
+				return comException.GetResult();
+			}
+		});
 
 	try
 	{
 		Check(applicationView->add_Activated(callback.Get(),
-											 token.get()));
+											 &token));
 
 		return S_OK;
 	}
@@ -89,36 +126,36 @@ HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEX
 
 	auto visibilityChangedCallback = CreateCallback<ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*>>(
 		[this]
-	(ICoreWindow*, IVisibilityChangedEventArgs* args)->
+		(ICoreWindow*, IVisibilityChangedEventArgs* args)->
 		HRESULT
-	{
-		try
 		{
-			boolean isVisible;
-			Check(args->get_Visible(&isVisible));
+			try
+			{
+				boolean isVisible;
+				Check(args->get_Visible(&isVisible));
 
-			if (!isVisible)
-			{
-				_deviceContext.Release();
-				_swapChain.Release();
-				_dwriteFactory.Release();
-			}
-			if (!_deviceContext)
-			{
-				InitContext();
-			}
-			if (_deviceContext)
-			{
-				Draw();
-			}
+				if (!isVisible)
+				{
+					_deviceContext.Release();
+					_swapChain.Release();
+					_dwriteFactory.Release();
+				}
+				if (!_deviceContext)
+				{
+					InitContext();
+				}
+				if (_deviceContext)
+				{
+					Draw();
+				}
 
-			return S_OK;
-		}
-		catch (const ComException& comException)
-		{
-			return comException.GetResult();
-		}
-	});
+				return S_OK;
+			}
+			catch (const ComException& comException)
+			{
+				return comException.GetResult();
+			}
+		});
 
 	try
 	{
@@ -185,14 +222,14 @@ void Application::InitContext() NOEXCEPT
 		Check(displayInformationStatics->GetForCurrentView(&displayInformation));
 
 		FLOAT dpiX,
-			dpiY;
+			  dpiY;
 
 		Check(displayInformation->get_RawDpiX(&dpiX));
 		Check(displayInformation->get_RawDpiY(&dpiY));
 
 		ComPtr<ID2D1Factory1> factory;
 		Check(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED,
-								D2D1_FACTORY_OPTIONS{ },
+								D2D1_FACTORY_OPTIONS{},
 								static_cast<ID2D1Factory1**>(&factory)));
 
 		ComPtr<ID3D11Device> device;
@@ -216,7 +253,7 @@ void Application::InitContext() NOEXCEPT
 		Check(dxgiAdapter->GetParent(__uuidof(dxgiFactory),
 									 &dxgiFactory));
 
-		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { 0 };
+		DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
 		swapChainDesc.Stereo = false;
 		swapChainDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 		swapChainDesc.SampleDesc.Count = 1;
@@ -283,7 +320,7 @@ void Application::Draw() NOEXCEPT
 	Check(_deviceContext->CreateSolidColorBrush(ColorF(ColorF::White),
 												&brush));
 
-	DWRITE_TEXT_METRICS titleMetrics = { };
+	DWRITE_TEXT_METRICS titleMetrics = {};
 	Check(titleTextLayout->GetMetrics(&titleMetrics));
 
 	_deviceContext->BeginDraw();
@@ -319,46 +356,46 @@ Concurrency::task<void> Application::RegisterBackgroundTask() NOEXCEPT
 		Check(backgroundExecutionManagerStatics->RequestAccessAsync(&backgroundAccessStatusAsyncOperation));
 
 		return GetTask(backgroundAccessStatusAsyncOperation.Get()).then([](BackgroundAccessStatus status) NOEXCEPT -> void
-		{
-			try
 			{
-				if (status == BackgroundAccessStatus_Denied) return;
+				try
+				{
+					if (status == BackgroundAccessStatus_Denied) return;
 
-				ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
-				Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
-										   &backgroundTaskRegistrationStatics));
+					ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
+					Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
+											   &backgroundTaskRegistrationStatics));
 
-				ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
-				Check(backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations));
+					ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
+					Check(backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations));
 
-				if (begin(taskRegistrations.Get()) != end(taskRegistrations.Get())) return;
+					if (begin(taskRegistrations.Get()) != end(taskRegistrations.Get())) return;
 
-				ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
-				Check(ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
-															   &backgroundTaskBuilder));
+					ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
+					Check(ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
+																   &backgroundTaskBuilder));
 
-				Check(backgroundTaskBuilder->put_Name(HStringReference(L"EasyFreeTask").Get()));
-				Check(backgroundTaskBuilder->put_TaskEntryPoint(HStringReference(L"EasyFree.Background.LoginTask").Get()));
+					Check(backgroundTaskBuilder->put_Name(HStringReference(L"EasyFreeTask").Get()));
+					Check(backgroundTaskBuilder->put_TaskEntryPoint(HStringReference(L"EasyFree.Background.LoginTask").Get()));
 
-				ComPtr<ISystemTriggerFactory> systemTriggerActivationFactory;
-				Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_SystemTrigger).Get(),
-										   &systemTriggerActivationFactory));
+					ComPtr<ISystemTriggerFactory> systemTriggerActivationFactory;
+					Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_SystemTrigger).Get(),
+											   &systemTriggerActivationFactory));
 
-				ComPtr<ISystemTrigger> systemTrigger;
-				Check(systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
-															 false,
-															 &systemTrigger));
+					ComPtr<ISystemTrigger> systemTrigger;
+					Check(systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
+																 false,
+																 &systemTrigger));
 
-				ComPtr<IBackgroundTrigger> backgroundTrigger;
-				Check(systemTrigger.As(&backgroundTrigger));
+					ComPtr<IBackgroundTrigger> backgroundTrigger;
+					Check(systemTrigger.As(&backgroundTrigger));
 
-				Check(backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get()));
+					Check(backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get()));
 
-				ComPtr<IBackgroundTaskRegistration> taskRegistration;
-				Check(backgroundTaskBuilder->Register(&taskRegistration));
-			}
-			catch (...) { }
-		});
+					ComPtr<IBackgroundTaskRegistration> taskRegistration;
+					Check(backgroundTaskBuilder->Register(&taskRegistration));
+				}
+				catch (...) { }
+			});
 	}
 	catch (...)
 	{
@@ -414,14 +451,36 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize,
 											   &_descriptionTextFormat));
 	}
 
-	const wchar_t description[] =
-		L"Приложение работает в автономном режиме.\r\n"
-		L"Как только будет установлено соединение с Wi-Fi сетью, запуститься процесс авторизации.\r\n"
-		L"Приятного использования интернета :-)";
+	const wchar_t* description;
 
+	switch (_authStatus)
+	{
+	case AuthStatus::Success:
+		description =
+			L"Авторизация выполнена успешно.\r\n"
+			L"Приятного использования интернета :-)";
+		break;
+	case AuthStatus::Fail:
+		description =
+			L"Произошла ошибка при авторизации.\r\n"
+			L"Попробуйте переподключиться к текущему соединению.";  
+		break;
+	case AuthStatus::Unauthorized:
+		description =
+			L"Авторизация невозможна.\r\n"
+			L"Для успешного прохождения авторизации необходимо выполнить регистрацию.";
+		break;
+	default:
+		description =
+			L"Приложение работает в автономном режиме.\r\n"
+			L"Как только будет установлено соединение с Wi-Fi сетью, запуститься процесс авторизации.\r\n"
+			L"Приятного использования интернета :-)";
+		break;
+	}
+		
 	ComPtr<IDWriteTextLayout> descriptionTextLayout;
 	Check(_dwriteFactory->CreateTextLayout(description,
-										   extent<decltype(description)>::value,
+										   wcslen(description),
 										   _descriptionTextFormat.Get(),
 										   size.width,
 										   size.height,

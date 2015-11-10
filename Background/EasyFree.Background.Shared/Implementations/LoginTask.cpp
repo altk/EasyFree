@@ -7,6 +7,7 @@
 #include <Internals/NetworkInfoProvider.h>
 
 using namespace EasyFree::Background::Implementations;
+using namespace EasyFree::Internals;
 using namespace std;
 using namespace Concurrency;
 using namespace ABI::Windows::ApplicationModel::Background;
@@ -16,131 +17,39 @@ using namespace ABI::Windows::Data::Xml::Dom;
 using namespace ABI::Windows::UI::Notifications;
 using namespace MTL;
 
-const wchar_t launchAttributeName[] = L"launch";
-const wchar_t textTagName[] = L"text";
-const wchar_t launchAttributeSuccess[] = L"success";
-const wchar_t launchAttributeFail[] = L"fail";
-const wchar_t launchAttributeUnauthorized[] = L"unauthorized";
-const wchar_t titleText[] = L"Easy Free";
-const wchar_t successText[] = L"Соединение устрановлено";
-const wchar_t failText[] = L"Ошибка соедиения";
-const wchar_t unauthorizedText[] = L"Необходима авторизация";
-
 class NotificationHelper final
 {
 public:
 	static void PromtSuccessNotification()
 	{
-		ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
-		ComPtr<IXmlAttribute> launchAttribute;
-		ComPtr<IXmlDocument> xmlDocument;
-		ComPtr<IXmlNodeList> xmlNodeList;
-		ComPtr<IXmlNode> xmlNode0;
-		ComPtr<IXmlNodeSerializer> xmlNodeSerializer0;
-		ComPtr<IXmlNode> xmlNode1;
-		ComPtr<IXmlNodeSerializer> xmlNodeSerializer1;
-		ComPtr<IToastNotificationFactory> toastNotificationFactory;
-		ComPtr<IToastNotification> toastNotification;
-		ComPtr<IToastNotifier> toastNotifier;
-
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
-								   &toastNotificationManagerStatics));
-
-		Check(toastNotificationManagerStatics->GetTemplateContent(ToastTemplateType_ToastText02,
-																  &xmlDocument));
-
-		Check(xmlDocument->CreateAttribute(HStringReference(launchAttributeName).Get(),
-										   &launchAttribute));
-
-		Check(launchAttribute->put_Value(HStringReference(launchAttributeSuccess).Get()));
-
-		Check(xmlDocument->GetElementsByTagName(HStringReference(textTagName).Get(),
-												&xmlNodeList));
-
-		Check(xmlNodeList->Item(0, &xmlNode0));
-
-		Check(xmlNode0.As(&xmlNodeSerializer0));
-
-		Check(xmlNodeSerializer0->put_InnerText(HStringReference(titleText).Get()));
-
-		Check(xmlNodeList->Item(1, &xmlNode1));
-
-		Check(xmlNode1.As(&xmlNodeSerializer1));
-
-		Check(xmlNodeSerializer1->put_InnerText(HStringReference(successText).Get()));
-
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
-								   &toastNotificationFactory));
-
-		Check(toastNotificationFactory->CreateToastNotification(xmlDocument.Get(),
-																&toastNotification));
-
-		Check(toastNotificationManagerStatics->CreateToastNotifier(&toastNotifier));
-
-		Check(toastNotifier->Show(toastNotification.Get()));
+		PromtNotification(AuthStatus::launchAttributeSuccess, 
+						  L"Easy Free", 
+						  L"Соединение установлено");
 	}
 
 	static void PromtFailNotification()
 	{
-		ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
-		ComPtr<IXmlAttribute> launchAttribute;
-		ComPtr<IXmlDocument> xmlDocument;
-		ComPtr<IXmlNodeList> xmlNodeList;
-		ComPtr<IXmlNode> xmlNode0;
-		ComPtr<IXmlNodeSerializer> xmlNodeSerializer0;
-		ComPtr<IXmlNode> xmlNode1;
-		ComPtr<IXmlNodeSerializer> xmlNodeSerializer1;
-		ComPtr<IToastNotificationFactory> toastNotificationFactory;
-		ComPtr<IToastNotification> toastNotification;
-		ComPtr<IToastNotifier> toastNotifier;
-
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
-								   &toastNotificationManagerStatics));
-
-		Check(toastNotificationManagerStatics->GetTemplateContent(ToastTemplateType_ToastText02,
-																  &xmlDocument));
-
-		Check(xmlDocument->CreateAttribute(HStringReference(launchAttributeName).Get(),
-										   &launchAttribute));
-
-		Check(launchAttribute->put_Value(HStringReference(launchAttributeFail).Get()));
-
-		Check(xmlDocument->GetElementsByTagName(HStringReference(textTagName).Get(),
-												&xmlNodeList));
-
-		Check(xmlNodeList->Item(0, &xmlNode0));
-
-		Check(xmlNode0.As(&xmlNodeSerializer0));
-
-		Check(xmlNodeSerializer0->put_InnerText(HStringReference(titleText).Get()));
-
-		Check(xmlNodeList->Item(1, &xmlNode1));
-
-		Check(xmlNode1.As(&xmlNodeSerializer1));
-
-		Check(xmlNodeSerializer1->put_InnerText(HStringReference(failText).Get()));
-
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
-								   &toastNotificationFactory));
-
-		Check(toastNotificationFactory->CreateToastNotification(xmlDocument.Get(),
-																&toastNotification));
-
-		Check(toastNotificationManagerStatics->CreateToastNotifier(&toastNotifier));
-
-		Check(toastNotifier->Show(toastNotification.Get()));
+		PromtNotification(AuthStatus::launchAttributeFail, 
+						  L"Easy Free", 
+						  L"Ошибка соединения");
 	}
 
 	static void PromtUnauthorizedNotification()
 	{
+		PromtNotification(AuthStatus::launchAttributeUnauthorized, 
+						  L"Easy Free", 
+						  L"Необходима авторизация");
+
+	}
+
+private:
+	static void PromtNotification(wstring launchAttribute,
+								  wstring title,
+								  wstring description)
+	{
 		ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
-		ComPtr<IXmlAttribute> launchAttribute;
-		ComPtr<IXmlDocument> xmlDocument;
-		ComPtr<IXmlNodeList> xmlNodeList;
-		ComPtr<IXmlNode> xmlNode0;
-		ComPtr<IXmlNodeSerializer> xmlNodeSerializer0;
-		ComPtr<IXmlNode> xmlNode1;
-		ComPtr<IXmlNodeSerializer> xmlNodeSerializer1;
+		ComPtr<IXmlDocument> document;
+		ComPtr<IXmlDocumentIO> documentIO;
 		ComPtr<IToastNotificationFactory> toastNotificationFactory;
 		ComPtr<IToastNotification> toastNotification;
 		ComPtr<IToastNotifier> toastNotifier;
@@ -148,33 +57,24 @@ public:
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
 								   &toastNotificationManagerStatics));
 
-		Check(toastNotificationManagerStatics->GetTemplateContent(ToastTemplateType_ToastText02,
-																  &xmlDocument));
+		Check(ActivateInstance<IXmlDocument>(HStringReference(RuntimeClass_Windows_Data_Xml_Dom_XmlDocument).Get(),
+											 &document));
 
-		Check(xmlDocument->CreateAttribute(HStringReference(launchAttributeName).Get(),
-										   &launchAttribute));
+		Check(document.As(&documentIO));
 
-		Check(launchAttribute->put_Value(HStringReference(launchAttributeUnauthorized).Get()));
+		auto toastXml = wstring(L"<toast launch=\"").append(move(launchAttribute))
+													.append(L"\"><visual><binding template=\"ToastText02\"><text id=\"1\">")
+													.append(move(title))
+													.append(L"</text><text id=\"2\">")
+													.append(move(description))
+													.append(L"</text></binding></visual></toast>");
 
-		Check(xmlDocument->GetElementsByTagName(HStringReference(textTagName).Get(),
-												&xmlNodeList));
-
-		Check(xmlNodeList->Item(0, &xmlNode0));
-
-		Check(xmlNode0.As(&xmlNodeSerializer0));
-
-		Check(xmlNodeSerializer0->put_InnerText(HStringReference(titleText).Get()));
-
-		Check(xmlNodeList->Item(1, &xmlNode1));
-
-		Check(xmlNode1.As(&xmlNodeSerializer1));
-
-		Check(xmlNodeSerializer1->put_InnerText(HStringReference(unauthorizedText).Get()));
+		Check(documentIO->LoadXml(HStringReference(toastXml.data(), toastXml.size()).Get()));
 
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
 								   &toastNotificationFactory));
 
-		Check(toastNotificationFactory->CreateToastNotification(xmlDocument.Get(),
+		Check(toastNotificationFactory->CreateToastNotification(document.Get(),
 																&toastNotification));
 
 		Check(toastNotificationManagerStatics->CreateToastNotifier(&toastNotifier));
@@ -200,24 +100,26 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 		Check(taskInstance->GetDeferral(&taskDefferal));
 
 		authorizer.Authorize()
-			.then([taskDefferal](AuthStatus authResult) NOEXCEPT->void
-		{
-			try
-			{
-				switch (authResult)
-				{
-					case AuthStatus::Success:
-						NotificationHelper::PromtSuccessNotification();
-						break;
-					case AuthStatus::Fail:
-						NotificationHelper::PromtFailNotification();
-						break;
-				}
+				  .then([taskDefferal](AuthStatus::Enum authResult) NOEXCEPT-> void
+					  {
+						  try
+						  {
+							  switch (authResult)
+							  {
+								  case AuthStatus::Success:
+									  NotificationHelper::PromtSuccessNotification();
+									  break;
+								  case AuthStatus::Fail:
+									  NotificationHelper::PromtFailNotification();
+									  break;
+								  default:
+									  break;
+							  }
 
-				Check(taskDefferal->Complete());
-			}
-			catch (...) { }
-		});
+							  Check(taskDefferal->Complete());
+						  }
+						  catch (...) {}
+					  });
 	}
 
 	return S_OK;

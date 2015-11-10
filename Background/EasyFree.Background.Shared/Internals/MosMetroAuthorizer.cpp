@@ -24,8 +24,6 @@ using namespace Windows::Storage::Streams;
 using namespace MTL;
 using namespace EasyFree::Background::Internals;
 
-const char* test = "<HTML> <HEAD> <TITLE> Web Authentication Redirect</TITLE> <META http-equiv=\"Cache - control\" content=\"no - cache\"> <META http-equiv=\"Pragma\" content=\"no - cache\"> <META http-equiv=\"Expires\" content=\" - 1\"> <META http-equiv=\"refresh\" content=\"1;URL=https://login.wi-fi.ru/am/UI/Login?org=mac&service=coa&client_mac=c8-d1-0b-01-24-e1&ForceAuth=true\"></ HEAD> </HTML>";
-
 class ResponseParser final
 {
 public:
@@ -116,7 +114,7 @@ private:
 			if (GUMBO_TAG_INPUT == child->v.element.tag)
 			{
 				string name,
-					value;
+					   value;
 				auto attributes = &child->v.element.attributes;
 				for (unsigned j = 0; j < attributes->length; ++j)
 				{
@@ -137,9 +135,9 @@ private:
 				}
 
 				result.append(name)
-					.append("=")
-					.append(value)
-					.append("&");
+					  .append("=")
+					  .append(value)
+					  .append("&");
 			}
 		}
 
@@ -192,7 +190,7 @@ private:
 class MosMetroAuthorizerImpl final
 {
 public:
-	static task<AuthStatus> Authorize()
+	static task<EasyFree::Internals::AuthStatus::Enum> Authorize()
 	{
 		try
 		{
@@ -200,82 +198,81 @@ public:
 			wstring bindUrl = L"https://httpbin.org/status/200";
 
 			return GetAsync(httpClient.Get(), bindUrl)
-				.then([](IHttpResponseMessage* response)
-			{
-				return GetContentAsync(response);
-			})
-				.then([](IBuffer* buffer) -> string
-			{
-				ComPtr<IBufferByteAccess> contentBytes;
-				Check(buffer->QueryInterface<IBufferByteAccess>(&contentBytes));
+					.then([](IHttpResponseMessage* response)
+						{
+							return GetContentAsync(response);
+						})
+					.then([](IBuffer* buffer) -> string
+						{
+							ComPtr<IBufferByteAccess> contentBytes;
+							Check(buffer->QueryInterface<IBufferByteAccess>(&contentBytes));
 
-				byte* content;
-				Check(contentBytes->Buffer(&content));
+							byte* content;
+							Check(contentBytes->Buffer(&content));
 
-				return ResponseParser::GetFormUrl(reinterpret_cast<const char*>(content));
-			})
-				.then([httpClient](string url)
-			{
-				if (url.empty())
-				{
-					throw concurrency::task_canceled();
-				}
-				return GetAsync(httpClient.Get(), wstring(begin(url), end(url)));
-			})
-				.then([httpClient](IHttpResponseMessage* response) -> task<IHttpResponseMessage*>
-			{
-				ComPtr<IHttpRequestMessage> request;
-				Check(response->get_RequestMessage(&request));
+							return ResponseParser::GetFormUrl(reinterpret_cast<const char*>(content));
+						})
+					.then([httpClient](string url)
+						{
+							if (url.empty())
+							{
+								throw task_canceled();
+							}
+							return GetAsync(httpClient.Get(), wstring(begin(url), end(url)));
+						})
+					.then([httpClient](IHttpResponseMessage* response) -> task<IHttpResponseMessage*>
+						{
+							ComPtr<IHttpRequestMessage> request;
+							Check(response->get_RequestMessage(&request));
 
-				ComPtr<IUriRuntimeClass> locationUri;
-				Check(request->get_RequestUri(&locationUri));
+							ComPtr<IUriRuntimeClass> locationUri;
+							Check(request->get_RequestUri(&locationUri));
 
-				HString absoluteUri;
-				Check(locationUri->get_AbsoluteUri(&absoluteUri));
+							HString absoluteUri;
+							Check(locationUri->get_AbsoluteUri(&absoluteUri));
 
-				return GetContentAsync(response)
-					.then([](IBuffer* responseContent)
-				{
-					return GetPostContent(responseContent);
-				})
-					.then([httpClient, locationUri](wstring postContent)
-				{
-					return AuthAsync(httpClient.Get(),
-									 locationUri.Get(),
-									 move(postContent));
-				});
-			})
-				.then([httpClient, bindUrl](IHttpResponseMessage* authResponse)
-			{
-				return GetAsync(httpClient.Get(), move(bindUrl));
-			})
-				.then([](task<IHttpResponseMessage*> checkResponse) -> AuthStatus
-			{
-				try
-				{
-					auto response = checkResponse.get();
-					if (nullptr != response)
-					{
-						boolean isSuccessStatusCode;
-						response->get_IsSuccessStatusCode(&isSuccessStatusCode);
+							return GetContentAsync(response)
+									.then([](IBuffer* responseContent)
+										{
+											return GetPostContent(responseContent);
+										})
+									.then([httpClient, locationUri](wstring postContent)
+										{
+											return AuthAsync(httpClient.Get(),
+															 locationUri.Get(),
+															 move(postContent));
+										});
+						})
+					.then([httpClient, bindUrl](IHttpResponseMessage* authResponse)
+						{
+							return GetAsync(httpClient.Get(), move(bindUrl));
+						})
+					.then([](task<IHttpResponseMessage*> checkResponse) -> EasyFree::Internals::AuthStatus::Enum
+						{
+							try
+							{
+								auto response = checkResponse.get();
+								if (nullptr != response)
+								{
+									boolean isSuccessStatusCode;
+									response->get_IsSuccessStatusCode(&isSuccessStatusCode);
 
-						if (isSuccessStatusCode > 0) return AuthStatus::Success;
-					}
-				}
-				catch (const concurrency::task_canceled&)
-				{
-					return AuthStatus::None;
-				}
-				catch (...) 
-				{
-					return AuthStatus::Fail;
-				}
-
-			});
+									if (isSuccessStatusCode > 0) return EasyFree::Internals::AuthStatus::Success;
+								}
+							}
+							catch (const task_canceled&)
+							{
+								return EasyFree::Internals::AuthStatus::None;
+							}
+							catch (...)
+							{
+								return EasyFree::Internals::AuthStatus::Fail;
+							}
+						});
 		}
 		catch (const ComException&)
 		{
-			return task_from_result(AuthStatus::None);
+			return task_from_result(EasyFree::Internals::AuthStatus::None);
 		}
 	}
 
@@ -388,7 +385,7 @@ private:
 	}
 };
 
-task<AuthStatus> MosMetroAuthorizer::Authorize() const NOEXCEPT
+task<EasyFree::Internals::AuthStatus::Enum> MosMetroAuthorizer::Authorize() const NOEXCEPT
 {
 	return MosMetroAuthorizerImpl::Authorize();
 }
