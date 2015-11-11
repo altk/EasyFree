@@ -92,6 +92,11 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 						break;
 				}
 
+				if (_deviceContext)
+				{
+					Draw();
+				}
+
 				return S_OK;
 			}
 			catch (const ComException& comException)
@@ -324,6 +329,8 @@ void Application::Draw() NOEXCEPT
 	Check(titleTextLayout->GetMetrics(&titleMetrics));
 
 	_deviceContext->BeginDraw();
+
+	_deviceContext->Clear();
 
 	_deviceContext->DrawTextLayout(Point2F(margin, margin + margin),
 								   titleTextLayout.Get(),
