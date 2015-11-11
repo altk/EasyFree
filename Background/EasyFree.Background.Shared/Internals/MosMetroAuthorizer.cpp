@@ -195,7 +195,7 @@ public:
 		try
 		{
 			auto httpClient = CreateHttpClient(false);
-			wstring bindUrl = L"https://httpbin.org/status/200";
+			wstring bindUrl = L"http://httpbin.org/status/200";
 
 			return GetAsync(httpClient.Get(), bindUrl)
 					.then([](IHttpResponseMessage* response)
@@ -255,7 +255,7 @@ public:
 								if (nullptr != response)
 								{
 									boolean isSuccessStatusCode;
-									response->get_IsSuccessStatusCode(&isSuccessStatusCode);
+									Check(response->get_IsSuccessStatusCode(&isSuccessStatusCode));
 
 									if (isSuccessStatusCode > 0) return EasyFree::Internals::AuthStatus::Success;
 								}
@@ -272,7 +272,7 @@ public:
 		}
 		catch (const ComException&)
 		{
-			return task_from_result(EasyFree::Internals::AuthStatus::None);
+			return task_from_result(EasyFree::Internals::AuthStatus::Fail);
 		}
 	}
 
