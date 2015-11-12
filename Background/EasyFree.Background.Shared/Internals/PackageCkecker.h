@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include <macro.h>
 
 namespace EasyFree
@@ -12,7 +13,7 @@ namespace EasyFree
 			public:
 				static bool CheckCurrentPackage() NOEXCEPT;
 			private:
-				static MTL::HString GetPackageIdentity();
+				static std::wstring GetPackageIdentity();
 			};
 		}
 	}

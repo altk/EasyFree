@@ -268,6 +268,7 @@ public:
 							{
 								return EasyFree::Internals::AuthStatus::Fail;
 							}
+							return EasyFree::Internals::AuthStatus::None;
 						});
 		}
 		catch (const ComException&)
