@@ -23,6 +23,7 @@ using namespace ABI::Windows::UI::Notifications;
 using namespace Windows::Storage::Streams;
 using namespace MTL;
 using namespace EasyFree::Background::Internals;
+using namespace EasyFree::Internals;
 
 class ResponseParser final
 {
@@ -190,7 +191,7 @@ private:
 class MosMetroAuthorizerImpl final
 {
 public:
-	static task<EasyFree::Internals::AuthStatus::Enum> Authorize()
+	static task<AuthStatus::Enum> Authorize()
 	{
 		try
 		{
@@ -247,7 +248,7 @@ public:
 						{
 							return GetAsync(httpClient.Get(), move(bindUrl));
 						})
-					.then([](task<IHttpResponseMessage*> checkResponse) -> EasyFree::Internals::AuthStatus::Enum
+					.then([](task<IHttpResponseMessage*> checkResponse) -> AuthStatus::Enum
 						{
 							try
 							{
@@ -257,36 +258,33 @@ public:
 									boolean isSuccessStatusCode;
 									Check(response->get_IsSuccessStatusCode(&isSuccessStatusCode));
 
-									if (isSuccessStatusCode > 0) return EasyFree::Internals::AuthStatus::Success;
+									if (isSuccessStatusCode > 0) return AuthStatus::Success;
 								}
 							}
 							catch (const task_canceled&)
 							{
-								return EasyFree::Internals::AuthStatus::None;
+								return AuthStatus::None;
 							}
 							catch (...)
 							{
-								return EasyFree::Internals::AuthStatus::Fail;
+								return AuthStatus::Fail;
 							}
-							return EasyFree::Internals::AuthStatus::None;
+							return AuthStatus::None;
 						});
 		}
 		catch (const ComException&)
 		{
-			return task_from_result(EasyFree::Internals::AuthStatus::Fail);
+			return task_from_result(AuthStatus::Fail);
 		}
 	}
 
-	static bool CanAuth(IConnectionProfile* connectionProfile) NOEXCEPT
+	static bool CanAuth(const wchar_t* const connectionName) NOEXCEPT
 	{
-		if (!connectionProfile) return false;
+		if (nullptr == connectionName) return false;
 
 		try
 		{
-			HString profileName;
-			Check(connectionProfile->get_ProfileName(&profileName));
-
-			return wcscmp(profileName.GetRawBuffer(), L"MosMetro_Free") == 0;
+			return wcscmp(connectionName, L"MosMetro_Free") == 0;
 		}
 		catch (const ComException&)
 		{
@@ -386,12 +384,12 @@ private:
 	}
 };
 
-task<EasyFree::Internals::AuthStatus::Enum> MosMetroAuthorizer::Authorize() const NOEXCEPT
+task<AuthStatus::Enum> MosMetroAuthorizer::Authorize() NOEXCEPT
 {
 	return MosMetroAuthorizerImpl::Authorize();
 }
 
-bool MosMetroAuthorizer::CanAuth(IConnectionProfile* connectionProfile) const NOEXCEPT
+bool MosMetroAuthorizer::CanAuth(const wchar_t* const connectionName) NOEXCEPT
 {
-	return MosMetroAuthorizerImpl::CanAuth(connectionProfile);
+	return MosMetroAuthorizerImpl::CanAuth(connectionName);
 }

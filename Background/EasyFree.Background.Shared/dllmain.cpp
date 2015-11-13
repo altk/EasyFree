@@ -4,7 +4,6 @@
 #include <macro.h>
 #include <MTL.h>
 #include <Implementations\LoginTask.h>
-#include "Internals/PackageCkecker.h"
 
 BOOL APIENTRY DllMain(HMODULE, DWORD, LPVOID) NOEXCEPT
 {
@@ -16,16 +15,10 @@ HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId,
 {
 	using namespace ABI::EasyFree;
 	using namespace EasyFree::Background::Implementations;
-	using namespace EasyFree::Background::Internals;
 	using namespace MTL;
 
 	*factory = nullptr;
-
-	if (!PackageChecker::CheckCurrentPackage())
-	{
-		return E_ACCESSDENIED;
-	}
-
+	
 	if (nullptr == activatableClassId || nullptr == factory)
 	{
 		return E_INVALIDARG;
@@ -46,5 +39,6 @@ HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId,
 
 HRESULT WINAPI DllCanUnloadNow() NOEXCEPT
 {
+	//TODO реализовать правильное уведомление
 	return S_OK;
 }

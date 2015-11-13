@@ -10,7 +10,7 @@ namespace EasyFree
 		{
 			struct NetworkInfoProvider final
 			{
-				static MTL::ComPtr<ABI::Windows::Networking::Connectivity::IConnectionProfile> GetNetworkConnectionProfile() NOEXCEPT
+				static MTL::ComPtr<ABI::Windows::Networking::Connectivity::IConnectionProfile> GetNetworkConnectionProfile()
 				{
 					using namespace MTL;
 					using namespace ABI::Windows::Networking::Connectivity;
@@ -18,14 +18,10 @@ namespace EasyFree
 					ComPtr<INetworkInformationStatics> networkInformationStatics;
 					ComPtr<IConnectionProfile> connectionProfile;
 
-					try
-					{
-						Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Networking_Connectivity_NetworkInformation).Get(),
-												   &networkInformationStatics));
+					Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Networking_Connectivity_NetworkInformation).Get(),
+											   &networkInformationStatics));
 
-						Check(networkInformationStatics->GetInternetConnectionProfile(&connectionProfile));
-					}
-					catch (const ComException&) {}
+					Check(networkInformationStatics->GetInternetConnectionProfile(&connectionProfile));
 
 					return connectionProfile;
 				}

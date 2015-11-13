@@ -1,5 +1,5 @@
 #pragma once
-#include "IAuthorizer.h"
+#include <AuthStatus.h>
 
 namespace EasyFree
 {
@@ -7,12 +7,11 @@ namespace EasyFree
 	{
 		namespace Internals
 		{
-			class MosMetroAuthorizer final : public IAuthorizer
+			struct MosMetroAuthorizer final 
 			{
-			public:
-				virtual Concurrency::task<EasyFree::Internals::AuthStatus::Enum> Authorize() const NOEXCEPT override;
+				static Concurrency::task<EasyFree::Internals::AuthStatus::Enum> Authorize() NOEXCEPT;
 
-				virtual bool CanAuth(ABI::Windows::Networking::Connectivity::IConnectionProfile* connectionProfile) const NOEXCEPT override;
+				static bool CanAuth(const wchar_t* const connectionName) NOEXCEPT;
 			};
 		}
 	}

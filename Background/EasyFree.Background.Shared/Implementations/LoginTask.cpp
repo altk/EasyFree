@@ -5,6 +5,7 @@
 #include <MTL.h>
 #include <Internals/MosMetroAuthorizer.h>
 #include <Internals/NetworkInfoProvider.h>
+#include <Internals/PackageCkecker.h>
 
 using namespace EasyFree::Background::Implementations;
 using namespace EasyFree::Internals;
@@ -22,24 +23,30 @@ class NotificationHelper final
 public:
 	static void PromtSuccessNotification()
 	{
-		PromtNotification(AuthStatus::launchAttributeSuccess, 
-						  L"Easy Free", 
+		PromtNotification(AuthStatus::launchAttributeSuccess,
+						  L"Easy Free",
 						  L"Соединение установлено");
 	}
 
 	static void PromtFailNotification()
 	{
-		PromtNotification(AuthStatus::launchAttributeFail, 
-						  L"Easy Free", 
+		PromtNotification(AuthStatus::launchAttributeFail,
+						  L"Easy Free",
 						  L"Ошибка соединения");
 	}
 
 	static void PromtUnauthorizedNotification()
 	{
-		PromtNotification(AuthStatus::launchAttributeUnauthorized, 
-						  L"Easy Free", 
+		PromtNotification(AuthStatus::launchAttributeUnauthorized,
+						  L"Easy Free",
 						  L"Необходима авторизация");
+	}
 
+	static void PromtUnlicensedNotification()
+	{
+		PromtNotification(AuthStatus::launchAttributeUnlicensed,
+						  L"Easy Free",
+						  L"Нелицензионное использование");
 	}
 
 private:
@@ -47,39 +54,43 @@ private:
 								  wstring title,
 								  wstring description)
 	{
-		ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
-		ComPtr<IXmlDocument> document;
-		ComPtr<IXmlDocumentIO> documentIO;
-		ComPtr<IToastNotificationFactory> toastNotificationFactory;
-		ComPtr<IToastNotification> toastNotification;
-		ComPtr<IToastNotifier> toastNotifier;
+		try
+		{
+			ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
+			ComPtr<IXmlDocument> document;
+			ComPtr<IXmlDocumentIO> documentIO;
+			ComPtr<IToastNotificationFactory> toastNotificationFactory;
+			ComPtr<IToastNotification> toastNotification;
+			ComPtr<IToastNotifier> toastNotifier;
 
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
-								   &toastNotificationManagerStatics));
+			Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotificationManager).Get(),
+									   &toastNotificationManagerStatics));
 
-		Check(ActivateInstance<IXmlDocument>(HStringReference(RuntimeClass_Windows_Data_Xml_Dom_XmlDocument).Get(),
-											 &document));
+			Check(ActivateInstance<IXmlDocument>(HStringReference(RuntimeClass_Windows_Data_Xml_Dom_XmlDocument).Get(),
+												 &document));
 
-		Check(document.As(&documentIO));
+			Check(document.As(&documentIO));
 
-		auto toastXml = wstring(L"<toast launch=\"").append(move(launchAttribute))
-													.append(L"\"><visual><binding template=\"ToastText02\"><text id=\"1\">")
-													.append(move(title))
-													.append(L"</text><text id=\"2\">")
-													.append(move(description))
-													.append(L"</text></binding></visual></toast>");
+			auto toastXml = wstring(L"<toast launch=\"").append(move(launchAttribute))
+														.append(L"\"><visual><binding template=\"ToastText02\"><text id=\"1\">")
+														.append(move(title))
+														.append(L"</text><text id=\"2\">")
+														.append(move(description))
+														.append(L"</text></binding></visual></toast>");
 
-		Check(documentIO->LoadXml(HStringReference(toastXml.data(), toastXml.size()).Get()));
+			Check(documentIO->LoadXml(HStringReference(toastXml.data(), toastXml.size()).Get()));
 
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
-								   &toastNotificationFactory));
+			Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification).Get(),
+									   &toastNotificationFactory));
 
-		Check(toastNotificationFactory->CreateToastNotification(document.Get(),
-																&toastNotification));
+			Check(toastNotificationFactory->CreateToastNotification(document.Get(),
+																	&toastNotification));
 
-		Check(toastNotificationManagerStatics->CreateToastNotifier(&toastNotifier));
+			Check(toastNotificationManagerStatics->CreateToastNotifier(&toastNotifier));
 
-		Check(toastNotifier->Show(toastNotification.Get()));
+			Check(toastNotifier->Show(toastNotification.Get()));
+		}
+		catch (...) {}
 	}
 };
 
@@ -93,34 +104,52 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 {
 	using namespace Internals;
 
-	MosMetroAuthorizer authorizer;
-	if (authorizer.CanAuth(NetworkInfoProvider::GetNetworkConnectionProfile().Get()))
+	try
 	{
-		ComPtr<IBackgroundTaskDeferral> taskDefferal;
-		Check(taskInstance->GetDeferral(&taskDefferal));
+		auto currentNetwork = NetworkInfoProvider::GetNetworkConnectionProfile();
+		if (currentNetwork)
+		{
+			HString connectionName;
+			Check(currentNetwork->get_ProfileName(&connectionName));
 
-		authorizer.Authorize()
-				  .then([taskDefferal](AuthStatus::Enum authResult) NOEXCEPT-> void
-					  {
-						  try
-						  {
-							  switch (authResult)
-							  {
-								  case AuthStatus::Success:
-									  NotificationHelper::PromtSuccessNotification();
-									  break;
-								  case AuthStatus::Fail:
-									  NotificationHelper::PromtFailNotification();
-									  break;
-								  default:
-									  break;
-							  }
+			if (MosMetroAuthorizer::CanAuth(connectionName.GetRawBuffer()))
+			{
+				if (PackageChecker::CheckCurrentPackage())
+				{
+					ComPtr<IBackgroundTaskDeferral> taskDefferal;
+					Check(taskInstance->GetDeferral(&taskDefferal));
 
-							  Check(taskDefferal->Complete());
-						  }
-						  catch (...) {}
-					  });
+					MosMetroAuthorizer::Authorize()
+							.then([taskDefferal](AuthStatus::Enum authResult) NOEXCEPT-> void
+								{
+									try
+									{
+										switch (authResult)
+										{
+											case AuthStatus::Success:
+												NotificationHelper::PromtSuccessNotification();
+												break;
+											case AuthStatus::Fail:
+												NotificationHelper::PromtFailNotification();
+												break;
+											case AuthStatus::Unauthorized:
+												NotificationHelper::PromtFailNotification();
+												break;
+										}
+
+										Check(taskDefferal->Complete());
+									}
+									catch (...) {}
+								});
+				}
+				else
+				{
+					NotificationHelper::PromtUnlicensedNotification();
+				}
+			}
+		}
 	}
+	catch (...) {}
 
 	return S_OK;
 }

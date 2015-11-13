@@ -18,9 +18,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.h">
       <Filter>Implementations</Filter>
     </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\IAuthorizer.h">
-      <Filter>Internals</Filter>
-    </ClInclude>
     <ClInclude Include="$(MSBuildThisFileDirectory)Internals\NetworkInfoProvider.h">
       <Filter>Internals</Filter>
     </ClInclude>
