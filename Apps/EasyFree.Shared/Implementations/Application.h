@@ -25,7 +25,7 @@ namespace EasyFree
 			STDMETHODIMP Run() NOEXCEPT override final;
 			STDMETHODIMP Uninitialize() NOEXCEPT override final;
 		private:
-			Internals::AuthStatus::Enum _authStatus = Internals::AuthStatus::None;
+			Internals::AuthStatus::Enum _launchArgument = Internals::AuthStatus::None;
 
 			MTL::ComPtr<ABI::Windows::UI::Core::ICoreWindow> _coreWindow;
 			MTL::ComPtr<ID2D1DeviceContext> _deviceContext;

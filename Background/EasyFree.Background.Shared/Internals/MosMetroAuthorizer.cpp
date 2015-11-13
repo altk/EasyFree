@@ -191,6 +191,11 @@ private:
 class MosMetroAuthorizerImpl final
 {
 public:
+	static std::string GetAuthUrl() NOEXCEPT
+	{
+		return "https://login.wi-fi.ru/am/UI/Login";
+	}
+
 	static task<AuthStatus::Enum> Authorize() NOEXCEPT
 	{
 		try
@@ -223,7 +228,7 @@ public:
 							}
 
 							//ѕровер€ем на полное совпадение, если успешно, значит устройство ещЄ не зарегистрировано
-							if (strcmp(url.data(), "https://login.wi-fi.ru/am/UI/Login") == 0)
+							if (url == GetAuthUrl())
 							{
 								return task_from_result(AuthStatus::Unauthorized);
 							}
@@ -383,7 +388,7 @@ private:
 	}
 };
 
-task<AuthStatus::Enum> MosMetroAuthorizer::Authorize() NOEXCEPT
+task<AuthStatus::Enum> MosMetroAuthorizer::AuthAsync() NOEXCEPT
 {
 	return MosMetroAuthorizerImpl::Authorize();
 }
@@ -391,4 +396,9 @@ task<AuthStatus::Enum> MosMetroAuthorizer::Authorize() NOEXCEPT
 bool MosMetroAuthorizer::CanAuth(const wchar_t* const connectionName) NOEXCEPT
 {
 	return MosMetroAuthorizerImpl::CanAuth(connectionName);
+}
+
+std::string MosMetroAuthorizer::GetAuthUrl() NOEXCEPT
+{
+	return MosMetroAuthorizerImpl::GetAuthUrl();
 }

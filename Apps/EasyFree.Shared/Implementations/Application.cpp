@@ -36,6 +36,7 @@ HRESULT Application::CreateView(ABI::Windows::ApplicationModel::Core::IFramework
 HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreApplicationView* applicationView) NOEXCEPT
 {
 	using namespace std;
+	using namespace ABI::Windows::System;
 	using namespace ABI::Windows::Foundation;
 	using namespace ABI::Windows::ApplicationModel::Core;
 	using namespace ABI::Windows::ApplicationModel::Activation;
@@ -66,24 +67,51 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 
 							if (argument)
 							{
-								auto rawArgument = argument.GetRawBuffer();
+								ComPtr<IUriRuntimeClassFactory> uriFactory;
+								Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
+														   &uriFactory));
 
-								if (wcscmp(rawArgument, AuthStatus::launchAttributeSuccess) == 0)
+								ComPtr<IUriRuntimeClass> launchUri;
+								Check(uriFactory->CreateUri(argument.Get(),
+															&launchUri));
+
+								HString scheme;
+								Check(launchUri->get_SchemeName(&scheme));
+
+								const auto schemeRaw = scheme.GetRawBuffer();
+
+								if (nullptr != schemeRaw)
 								{
-									_authStatus = AuthStatus::Success;
-								}
-								else if (wcscmp(rawArgument, AuthStatus::launchAttributeFail) == 0)
-								{
-									_authStatus = AuthStatus::Fail;
-								}
-								else if (wcscmp(rawArgument, AuthStatus::launchAttributeUnauthorized) == 0)
-								{
-									_authStatus = AuthStatus::Unauthorized;
+									if (wcscmp(schemeRaw, AuthStatus::launchAttributeScheme))
+									{
+										const auto argumentRaw = argument.GetRawBuffer();
+
+										if (wcscmp(argumentRaw, AuthStatus::launchAttributeSuccess) == 0)
+										{
+											_launchArgument = AuthStatus::Success;
+										}
+										else if (wcscmp(argumentRaw, AuthStatus::launchAttributeFail) == 0)
+										{
+											_launchArgument = AuthStatus::Fail;
+										}
+									}
+									else if (wcscmp(schemeRaw, L"http"))
+									{
+										ComPtr<ILauncherStatics> launcherStatics;
+										Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_System_Launcher).Get(),
+																   &launcherStatics));
+
+										ComPtr<IAsyncOperation<bool>> launchAsyncOperation;
+										Check(launcherStatics->LaunchUriAsync(launchUri.Get(),
+																			  &launchAsyncOperation));
+
+										Check(coreWindow->Close());
+									}
 								}
 							}
 							else
 							{
-								_authStatus = AuthStatus::None;
+								_launchArgument = AuthStatus::None;
 							}
 
 							break;
@@ -460,7 +488,7 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize,
 
 	const wchar_t* description;
 
-	switch (_authStatus)
+	switch (_launchArgument)
 	{
 	case AuthStatus::Success:
 		description =

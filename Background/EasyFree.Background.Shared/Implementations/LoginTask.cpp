@@ -35,9 +35,9 @@ public:
 						  L"Ошибка соединения");
 	}
 
-	static void PromtUnauthorizedNotification()
+	static void PromtUnauthorizedNotification(std::string launchAttribute)
 	{
-		PromtNotification(AuthStatus::launchAttributeUnauthorized,
+		PromtNotification(std::wstring(begin(launchAttribute), end(launchAttribute)),
 						  L"Easy Free",
 						  L"Необходима авторизация");
 	}
@@ -119,7 +119,7 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 					ComPtr<IBackgroundTaskDeferral> taskDefferal;
 					Check(taskInstance->GetDeferral(&taskDefferal));
 
-					MosMetroAuthorizer::Authorize()
+					MosMetroAuthorizer::AuthAsync()
 							.then([taskDefferal](AuthStatus::Enum authResult) NOEXCEPT-> void
 								{
 									try
@@ -133,7 +133,7 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 												NotificationHelper::PromtFailNotification();
 												break;
 											case AuthStatus::Unauthorized:
-												NotificationHelper::PromtFailNotification();
+												NotificationHelper::PromtUnauthorizedNotification(MosMetroAuthorizer::GetAuthUrl());
 												break;
 										}
 

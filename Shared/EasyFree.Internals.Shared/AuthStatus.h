@@ -19,9 +19,9 @@ namespace EasyFree
 			
 			static const wchar_t* const launchAttributeFail;
 			
-			static const wchar_t* const launchAttributeUnauthorized;
-
 			static const wchar_t* const launchAttributeUnlicensed;
+
+			static const wchar_t* const launchAttributeScheme;
 		};
 	}
 }
