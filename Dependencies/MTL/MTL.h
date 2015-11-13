@@ -365,6 +365,7 @@ namespace MTL
 
 #pragma region ComException
 
+	//TODO Реализовать наследование от std::exception
 	class ComException final
 	{
 	public:

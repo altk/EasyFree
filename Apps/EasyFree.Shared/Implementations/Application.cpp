@@ -475,7 +475,8 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize,
 	case AuthStatus::Unauthorized:
 		description =
 			L"Авторизация невозможна.\r\n"
-			L"Для успешного прохождения авторизации необходимо выполнить регистрацию.";
+			L"Для успешного прохождения авторизации необходимо выполнить регистрацию. "
+			L"Перейдите в браузер и следуйте инструкциям интернет-провайдера.";
 		break;
 	default:
 		description =

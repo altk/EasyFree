@@ -191,18 +191,16 @@ private:
 class MosMetroAuthorizerImpl final
 {
 public:
-	static task<AuthStatus::Enum> Authorize()
+	static task<AuthStatus::Enum> Authorize() NOEXCEPT
 	{
 		try
 		{
+			static wstring bindUrl = L"http://httpbin.org/status/200";
+			
 			auto httpClient = CreateHttpClient(false);
-			wstring bindUrl = L"http://httpbin.org/status/200";
 
 			return GetAsync(httpClient.Get(), bindUrl)
-					.then([](IHttpResponseMessage* response)
-						{
-							return GetContentAsync(response);
-						})
+					.then(GetContentAsync)
 					.then([](IBuffer* buffer) -> string
 						{
 							ComPtr<IBufferByteAccess> contentBytes;
@@ -213,83 +211,78 @@ public:
 
 							return ResponseParser::GetFormUrl(reinterpret_cast<const char*>(content));
 						})
-					.then([httpClient](string url)
+					.then([httpClient](string url) -> task<AuthStatus::Enum>
 						{
+							//Запрос прошёл без каких-либо проблем, поэтому URL для перехода не найден
 							if (url.empty())
 							{
-								throw task_canceled();
+								return task_from_result(AuthStatus::None);
 							}
-							return GetAsync(httpClient.Get(), wstring(begin(url), end(url)));
-						})
-					.then([httpClient](IHttpResponseMessage* response) -> task<IHttpResponseMessage*>
-						{
-							ComPtr<IHttpRequestMessage> request;
-							Check(response->get_RequestMessage(&request));
 
-							ComPtr<IUriRuntimeClass> locationUri;
-							Check(request->get_RequestUri(&locationUri));
+							//Проверяем на полное совпадение, если успешно, значит устройство ещё не зарегистрировано
+							if (strcmp(url.data(), "https://login.wi-fi.ru/am/UI/Login") == 0)
+							{
+								return task_from_result(AuthStatus::Unauthorized);
+							}
 
-							HString absoluteUri;
-							Check(locationUri->get_AbsoluteUri(&absoluteUri));
-
-							return GetContentAsync(response)
-									.then([](IBuffer* responseContent)
+							return GetAsync(httpClient.Get(), wstring(begin(url), end(url)))
+									.then([httpClient](IHttpResponseMessage* response) -> task<IHttpResponseMessage*>
 										{
-											return GetPostContent(responseContent);
+											ComPtr<IHttpRequestMessage> request;
+											Check(response->get_RequestMessage(&request));
+
+											ComPtr<IUriRuntimeClass> locationUri;
+											Check(request->get_RequestUri(&locationUri));
+
+											HString absoluteUri;
+											Check(locationUri->get_AbsoluteUri(&absoluteUri));
+
+											return GetContentAsync(response).then(GetPostContent)
+																			.then([httpClient, locationUri](wstring postContent)
+																				{
+																					return AuthAsync(httpClient.Get(),
+																									 locationUri.Get(),
+																									 move(postContent));
+																				});
 										})
-									.then([httpClient, locationUri](wstring postContent)
+									.then([httpClient](IHttpResponseMessage* authResponse)
 										{
-											return AuthAsync(httpClient.Get(),
-															 locationUri.Get(),
-															 move(postContent));
+											return GetAsync(httpClient.Get(), bindUrl);
+										})
+									.then([](IHttpResponseMessage* checkResponse) -> AuthStatus::Enum
+										{
+											boolean isSuccessStatusCode;
+											Check(checkResponse->get_IsSuccessStatusCode(&isSuccessStatusCode));
+
+											if (isSuccessStatusCode > 0)
+											{
+												return AuthStatus::Success;
+											}
+											else
+											{
+												return AuthStatus::Fail;
+											}
 										});
 						})
-					.then([httpClient, bindUrl](IHttpResponseMessage* authResponse)
-						{
-							return GetAsync(httpClient.Get(), move(bindUrl));
-						})
-					.then([](task<IHttpResponseMessage*> checkResponse) -> AuthStatus::Enum
+					.then([](task<AuthStatus::Enum> result) NOEXCEPT -> AuthStatus::Enum
 						{
 							try
 							{
-								auto response = checkResponse.get();
-								if (nullptr != response)
-								{
-									boolean isSuccessStatusCode;
-									Check(response->get_IsSuccessStatusCode(&isSuccessStatusCode));
-
-									if (isSuccessStatusCode > 0) return AuthStatus::Success;
-								}
+								return result.get();
 							}
-							catch (const task_canceled&)
-							{
-								return AuthStatus::None;
-							}
-							catch (...)
-							{
-								return AuthStatus::Fail;
-							}
+							catch (...) {}
 							return AuthStatus::None;
 						});
 		}
-		catch (const ComException&)
-		{
-			return task_from_result(AuthStatus::Fail);
-		}
+		catch (...) {}
+		return task_from_result(AuthStatus::None);
 	}
 
 	static bool CanAuth(const wchar_t* const connectionName) NOEXCEPT
 	{
 		if (nullptr == connectionName) return false;
 
-		try
-		{
-			return wcscmp(connectionName, L"MosMetro_Free") == 0;
-		}
-		catch (const ComException&)
-		{
-			return false;
-		}
+		return wcscmp(connectionName, L"MosMetro_Free") == 0;
 	}
 
 private:
