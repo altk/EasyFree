@@ -196,11 +196,14 @@ public:
 		try
 		{
 			static wstring bindUrl = L"http://httpbin.org/status/200";
-			
+
 			auto httpClient = CreateHttpClient(false);
 
 			return GetAsync(httpClient.Get(), bindUrl)
-					.then(GetContentAsync)
+					.then([](IHttpResponseMessage* response)
+						{
+							return GetContentAsync(response);
+						})
 					.then([](IBuffer* buffer) -> string
 						{
 							ComPtr<IBufferByteAccess> contentBytes;
@@ -237,7 +240,10 @@ public:
 											HString absoluteUri;
 											Check(locationUri->get_AbsoluteUri(&absoluteUri));
 
-											return GetContentAsync(response).then(GetPostContent)
+											return GetContentAsync(response).then([](IBuffer* buffer)
+																				{
+																					return GetPostContent(buffer);
+																				})
 																			.then([httpClient, locationUri](wstring postContent)
 																				{
 																					return AuthAsync(httpClient.Get(),
