@@ -82,7 +82,7 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 
 								if (nullptr != schemeRaw)
 								{
-									if (wcscmp(schemeRaw, AuthStatus::launchAttributeScheme))
+									if (wcscmp(schemeRaw, AuthStatus::launchAttributeScheme) == 0)
 									{
 										const auto argumentRaw = argument.GetRawBuffer();
 
@@ -95,7 +95,7 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 											_launchArgument = AuthStatus::Fail;
 										}
 									}
-									else if (wcscmp(schemeRaw, L"http"))
+									else if (wcsncmp(schemeRaw, L"http", 4))
 									{
 										ComPtr<ILauncherStatics> launcherStatics;
 										Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_System_Launcher).Get(),
@@ -105,7 +105,7 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 										Check(launcherStatics->LaunchUriAsync(launchUri.Get(),
 																			  &launchAsyncOperation));
 
-										Check(coreWindow->Close());
+										exit(0);
 									}
 								}
 							}
@@ -500,12 +500,12 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize,
 			L"Произошла ошибка при авторизации.\r\n"
 			L"Попробуйте переподключиться к текущему соединению.";  
 		break;
-	case AuthStatus::Unauthorized:
+	/*case AuthStatus::Unauthorized:
 		description =
 			L"Авторизация невозможна.\r\n"
 			L"Для успешного прохождения авторизации необходимо выполнить регистрацию. "
 			L"Перейдите в браузер и следуйте инструкциям интернет-провайдера.";
-		break;
+		break;*/
 	default:
 		description =
 			L"Приложение работает в автономном режиме.\r\n"
