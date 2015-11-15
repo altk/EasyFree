@@ -53,9 +53,8 @@ bool PackageChecker::CheckCurrentPackage() NOEXCEPT
 								   reinterpret_cast<const byte*>(identity.data()),
 								   sizeof(wchar_t) * identity.size());
 
-
 		return strcmp(Base64::Encode(reinterpret_cast<unsigned const char*>(digest.data()), digest.size()).data(),
-					  "4ML/isohe7a1aMqbZ5sJhMpmy4+nZMADvHrIljCWnhV22oI8087olSiGABZgjyHKDlJe+1PdfYxfXTlIgGlQDQ==") == 0;
+					  "Fks2ScR41cRSMSv00BX65xjS02kM6zXv8AuEY/fFpDig8Bh6+Pdl9n6ymZEkiaMYVobBKHwSXVhFscbnr5ntxQ==") == 0;
 	}
 	catch (...)
 	{
