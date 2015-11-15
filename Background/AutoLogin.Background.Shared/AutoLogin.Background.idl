@@ -1,0 +1,16 @@
+import "Windows.ApplicationModel.Background.idl";
+
+namespace AutoLogin
+{
+	namespace Background
+	{
+		[version(1.0)]
+		[activatable(1.0)]
+		[marshaling_behavior(agile)]
+		[threading(both)]
+		runtimeclass LoginTask
+		{
+			[default] interface Windows.ApplicationModel.Background.IBackgroundTask;
+		};
+	}
+}

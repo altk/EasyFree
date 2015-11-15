@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)dllmain.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)pch.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.cpp">
+      <Filter>Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Internals\MosMetroAuthorizer.cpp">
+      <Filter>Internals</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Internals\PackageChecker.cpp">
+      <Filter>Internals</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.h">
+      <Filter>Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\NetworkInfoProvider.h">
+      <Filter>Internals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\MosMetroAuthorizer.h">
+      <Filter>Internals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\PackageCkecker.h">
+      <Filter>Internals</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\Base64.h">
+      <Filter>Internals</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)AutoLogin.Background.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Implementations">
+      <UniqueIdentifier>{227b3ea7-256d-445c-b91e-d5638d5ce320}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Internals">
+      <UniqueIdentifier>{091c254a-7d03-4ec6-b0f9-68fe5513c7d4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
