@@ -3,12 +3,10 @@
 #include <Windows.Data.Xml.Dom.h>
 #include <Windows.UI.Notifications.h>
 #include <MTL.h>
-#include <Internals/MosMetroAuthorizer.h>
-#include <Internals/NetworkInfoProvider.h>
-#include <Internals/PackageCkecker.h>
+#include <MosMetroAuthorizer.h>
+#include <NetworkInfoProvider.h>
+#include <LicenseChecker.h>
 
-using namespace AutoLogin::Background::Implementations;
-using namespace AutoLogin::Internals;
 using namespace std;
 using namespace Concurrency;
 using namespace ABI::Windows::ApplicationModel::Background;
@@ -17,6 +15,9 @@ using namespace ABI::Windows::Storage::Streams;
 using namespace ABI::Windows::Data::Xml::Dom;
 using namespace ABI::Windows::UI::Notifications;
 using namespace MTL;
+using namespace AutoLogin::Background::Implementations;
+using namespace AutoLogin::CrossPlatform;
+using namespace AutoLogin::Windows;
 
 class NotificationHelper final
 {
@@ -102,6 +103,7 @@ HRESULT LoginTask::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 
 HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 {
+	using namespace std;
 	using namespace Internals;
 
 	try
@@ -109,18 +111,33 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 		auto currentNetwork = NetworkInfoProvider::GetNetworkConnectionProfile();
 		if (currentNetwork)
 		{
+			vector<shared_ptr<IAuthorizer>> authorizers
+					{
+						make_shared<MosMetroAuthorizer>()
+					};
+
 			HString connectionName;
 			Check(currentNetwork->get_ProfileName(&connectionName));
+			auto connectionNameRaw = connectionName.GetRawBuffer();
 
-			if (MosMetroAuthorizer::CanAuth(connectionName.GetRawBuffer()))
+			auto findIterator = find_if(begin(authorizers),
+										end(authorizers),
+										[connectionNameRaw](const shared_ptr<IAuthorizer>& authorizer)-> bool
+										{
+											return authorizer->CanAuth(connectionNameRaw);
+										});
+
+			if (findIterator != end(authorizers))
 			{
-				if (PackageChecker::CheckCurrentPackage())
+				if (LicenseChecker::Check())
 				{
+					auto authorizer = *findIterator;
+
 					ComPtr<IBackgroundTaskDeferral> taskDefferal;
 					Check(taskInstance->GetDeferral(&taskDefferal));
 
-					MosMetroAuthorizer::AuthAsync()
-							.then([taskDefferal](AuthStatus::Enum authResult) NOEXCEPT-> void
+					authorizer->AuthAsync()
+							.then([taskDefferal, authorizer](AuthStatus::Enum authResult) NOEXCEPT-> void
 								{
 									try
 									{
@@ -133,7 +150,9 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 												NotificationHelper::PromtFailNotification();
 												break;
 											case AuthStatus::Unauthorized:
-												NotificationHelper::PromtUnauthorizedNotification(MosMetroAuthorizer::GetAuthUrl());
+												NotificationHelper::PromtUnauthorizedNotification(authorizer->GetAuthUrl());
+												break;
+											default:
 												break;
 										}
 

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "AuthStatus.h"
 
-using namespace AutoLogin::Internals;
+using namespace AutoLogin::CrossPlatform;
 
 const wchar_t* const AuthStatus::launchAttributeSuccess = L"autologin://success";
 

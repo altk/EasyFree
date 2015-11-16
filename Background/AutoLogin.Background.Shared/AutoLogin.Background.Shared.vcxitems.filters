@@ -6,29 +6,17 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.cpp">
       <Filter>Implementations</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Internals\MosMetroAuthorizer.cpp">
-      <Filter>Internals</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)CrossPlatform\MosMetroAuthorizer.cpp">
+      <Filter>CrossPlatform</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Internals\PackageChecker.cpp">
-      <Filter>Internals</Filter>
+    <ClCompile Include="$(MSBuildThisFileDirectory)CrossPlatform\LicenseChecker.cpp">
+      <Filter>CrossPlatform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.h">
       <Filter>Implementations</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\NetworkInfoProvider.h">
-      <Filter>Internals</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\MosMetroAuthorizer.h">
-      <Filter>Internals</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\PackageCkecker.h">
-      <Filter>Internals</Filter>
-    </ClInclude>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\Base64.h">
-      <Filter>Internals</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -38,7 +26,7 @@
     <Filter Include="Implementations">
       <UniqueIdentifier>{227b3ea7-256d-445c-b91e-d5638d5ce320}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Internals">
+    <Filter Include="CrossPlatform">
       <UniqueIdentifier>{091c254a-7d03-4ec6-b0f9-68fe5513c7d4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>

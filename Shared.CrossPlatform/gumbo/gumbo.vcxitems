@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{A9F722C7-DFF7-43AD-A566-03F7406007AD}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)attribute.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)char_ref.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)error.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)parser.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)string_buffer.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)string_piece.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)tag.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)tokenizer.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)utf8.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)util.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)vector.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)attribute.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)char_ref.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)error.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)gumbo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)insertion_mode.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)parser.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)strings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)string_buffer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)string_piece.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)tag_enum.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)tag_gperf.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)tag_sizes.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)tag_strings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)tokenizer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)tokenizer_states.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)token_type.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)utf8.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)util.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)vector.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)char_ref.rl" />
+    <None Include="$(MSBuildThisFileDirectory)tag.in" />
+  </ItemGroup>
+</Project>

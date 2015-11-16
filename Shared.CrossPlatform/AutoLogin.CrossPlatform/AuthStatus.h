@@ -2,9 +2,9 @@
 
 namespace AutoLogin
 {
-	namespace Internals
+	namespace CrossPlatform
 	{
-		struct AuthStatus
+		struct AuthStatus final
 		{
 			enum Enum
 			{

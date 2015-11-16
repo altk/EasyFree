@@ -10,7 +10,7 @@
 #include <MTL.h>
 
 using namespace AutoLogin::Implementations;
-using namespace AutoLogin::Internals;
+using namespace AutoLogin::CrossPlatform;
 
 HRESULT Application::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 {

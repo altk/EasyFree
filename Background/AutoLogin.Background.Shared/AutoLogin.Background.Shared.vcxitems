@@ -18,18 +18,14 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)dllmain.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Internals\MosMetroAuthorizer.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Internals\PackageChecker.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)CrossPlatform\MosMetroAuthorizer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)CrossPlatform\LicenseChecker.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\Base64.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\MosMetroAuthorizer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\NetworkInfoProvider.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Internals\PackageCkecker.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
   </ItemGroup>
   <ItemGroup>
