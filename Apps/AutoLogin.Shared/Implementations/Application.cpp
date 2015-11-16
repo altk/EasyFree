@@ -8,6 +8,7 @@
 #include <windows.graphics.display.h>
 #include <windows.applicationmodel.background.h>
 #include <MTL.h>
+#include <Resources.h>
 
 using namespace AutoLogin::Implementations;
 using namespace AutoLogin::CrossPlatform;
@@ -440,9 +441,10 @@ Concurrency::task<void> Application::RegisterBackgroundTask() NOEXCEPT
 
 MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize, D2D1_SIZE_F size)
 {
+	using namespace std;
 	using namespace D2D1;
 	using namespace MTL;
-	using namespace std;
+	using namespace CrossPlatform;
 
 	if (!_titleTextFormat)
 	{
@@ -456,10 +458,9 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize, D2D1_
 											   &_titleTextFormat));
 	}
 
-	const wchar_t title[] = L"Easy Free";
 	ComPtr<IDWriteTextLayout> titleTextLayout;
-	Check(_dwriteFactory->CreateTextLayout(title,
-										   extent<decltype(title)>::value,
+	Check(_dwriteFactory->CreateTextLayout(Resources::Title,
+										   wcslen(Resources::Title),
 										   _titleTextFormat.Get(),
 										   size.width,
 										   size.height,
@@ -470,9 +471,10 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize, D2D1_
 
 MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize, D2D1_SIZE_F size)
 {
+	using namespace std;
 	using namespace D2D1;
 	using namespace MTL;
-	using namespace std;
+	using namespace CrossPlatform;
 
 	if (!_descriptionTextFormat)
 	{
@@ -491,27 +493,13 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize,
 	switch (_launchArgument)
 	{
 	case AuthStatus::Success:
-		description =
-			L"Авторизация выполнена успешно.\r\n"
-			L"Приятного использования интернета :-)";
+		description = Resources::AuthSuccess;;
 		break;
 	case AuthStatus::Fail:
-		description =
-			L"Произошла ошибка при авторизации.\r\n"
-			L"Попробуйте переподключиться к текущему соединению.";  
+		description = Resources::AuthFail;
 		break;
-	/*case AuthStatus::Unauthorized:
-		description =
-			L"Авторизация невозможна.\r\n"
-			L"Для успешного прохождения авторизации необходимо выполнить регистрацию. "
-			L"Перейдите в браузер и следуйте инструкциям интернет-провайдера.";
-		break;*/
 	default:
-		description =
-			L"Приложение работает в автономном режиме.\r\n"
-			L"Как только будет установлено соединение с Wi-Fi сетью, запуститься процесс авторизации.\r\n"
-			L"Приятного использования интернета :-)\r\n\r\n"
-			L"ВНИМАНИЕ: в режиме энергосбережения выполнение автоматической авторизации невозможно.";
+		description = Resources::Description;
 		break;
 	}
 		

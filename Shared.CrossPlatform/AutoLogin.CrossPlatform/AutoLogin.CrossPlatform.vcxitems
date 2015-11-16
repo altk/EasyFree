@@ -21,8 +21,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)LicenseChecker.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MosMetroAuthorizer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MosMetroResponseParcer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Resources.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)AuthStatus.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Resources.cpp" />
   </ItemGroup>
 </Project>

@@ -6,6 +6,7 @@
 #include <MosMetroAuthorizer.h>
 #include <NetworkInfoProvider.h>
 #include <LicenseChecker.h>
+#include <Resources.h>
 
 using namespace std;
 using namespace Concurrency;
@@ -25,29 +26,29 @@ public:
 	static void PromtSuccessNotification()
 	{
 		PromtNotification(AuthStatus::launchAttributeSuccess,
-						  L"Easy Free",
-						  L"Соединение установлено");
+						  Resources::Title,
+						  Resources::AuthSuccess);
 	}
 
 	static void PromtFailNotification()
 	{
 		PromtNotification(AuthStatus::launchAttributeFail,
-						  L"Easy Free",
-						  L"Ошибка соединения");
+						  Resources::Title,
+						  Resources::AuthFail);
 	}
 
-	static void PromtUnauthorizedNotification(std::string launchAttribute)
+	static void PromtUnauthorizedNotification(string launchAttribute)
 	{
-		PromtNotification(std::wstring(begin(launchAttribute), end(launchAttribute)),
-						  L"Easy Free",
-						  L"Необходима авторизация");
+		PromtNotification(wstring(begin(launchAttribute), end(launchAttribute)),
+						  Resources::Title,
+						  Resources::RegistrationNeed);
 	}
 
 	static void PromtUnlicensedNotification()
 	{
 		PromtNotification(AuthStatus::launchAttributeUnlicensed,
-						  L"Easy Free",
-						  L"Нелицензионное использование");
+						  Resources::Title,
+						  Resources::Unlicensed);
 	}
 
 private:
