@@ -10,15 +10,15 @@ namespace AutoLogin
 		class MosMetroResponseParser final
 		{
 		public:
-			static std::string GetPostString(const char* source) NOEXCEPT
+			static std::string GetPostString(std::string source) NOEXCEPT
 			{
 				using namespace std;
 
 				string result;
 
-				if (!source) return result;
+				if (source.empty()) return result;
 
-				auto output = gumbo_parse(source);
+				auto output = gumbo_parse(source.data());
 
 				if (!output) return result;
 
@@ -35,15 +35,15 @@ namespace AutoLogin
 				return result;
 			}
 
-			static std::string GetFormUrl(const char* source) NOEXCEPT
+			static std::string GetFormUrl(std::string source) NOEXCEPT
 			{
 				using namespace std;
 
 				string result;
 
-				if (!source) return result;
+				if (source.empty()) return result;
 
-				auto output = gumbo_parse(source);
+				auto output = gumbo_parse(source.data());
 
 				if (!output) return result;
 
