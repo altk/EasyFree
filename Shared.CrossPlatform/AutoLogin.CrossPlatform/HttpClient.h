@@ -14,6 +14,8 @@ namespace AutoLogin
 		public:
 			HttpClient() NOEXCEPT;
 
+			~HttpClient() NOEXCEPT;
+
 			HttpClient(const HttpClient& other) NOEXCEPT
 				: _impl(other._impl) {}
 
@@ -38,9 +40,9 @@ namespace AutoLogin
 				return *this;
 			}
 
-			Concurrency::task<TResponse> GetAsync(std::wstring uri) const NOEXCEPT;
+			Concurrency::task<TResponse> GetAsync(std::wstring url) const NOEXCEPT;
 
-			Concurrency::task<TResponse> PostAsync(std::wstring uri,
+			Concurrency::task<TResponse> PostAsync(std::wstring url,
 												   std::wstring postContent) const NOEXCEPT;
 		private:
 			class HttpClientImpl;

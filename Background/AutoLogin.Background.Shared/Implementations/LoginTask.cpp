@@ -2,14 +2,17 @@
 #include "LoginTask.h"
 #include <Windows.Data.Xml.Dom.h>
 #include <Windows.UI.Notifications.h>
+#include <windows.applicationmodel.background.h>
+#include <windows.web.http.h>
 #include <MTL.h>
 #include <MosMetroAuthorizer.h>
 #include <NetworkInfoProvider.h>
 #include <LicenseChecker.h>
-#include <Resources.h>
+#include <Labels.h>
 
 using namespace std;
 using namespace Concurrency;
+using namespace ABI::Windows::Web::Http;
 using namespace ABI::Windows::ApplicationModel::Background;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Storage::Streams;
@@ -19,6 +22,7 @@ using namespace MTL;
 using namespace AutoLogin::Background::Implementations;
 using namespace AutoLogin::CrossPlatform;
 using namespace AutoLogin::Windows;
+using namespace AutoLogin::Resources;
 
 class NotificationHelper final
 {
@@ -26,29 +30,29 @@ public:
 	static void PromtSuccessNotification()
 	{
 		PromtNotification(AuthStatus::launchAttributeSuccess,
-						  Resources::Title,
-						  Resources::AuthSuccess);
+						  Labels::Title,
+						  Labels::AuthSuccess);
 	}
 
 	static void PromtFailNotification()
 	{
 		PromtNotification(AuthStatus::launchAttributeFail,
-						  Resources::Title,
-						  Resources::AuthFail);
+						  Labels::Title,
+						  Labels::AuthFail);
 	}
 
-	static void PromtUnauthorizedNotification(string launchAttribute)
+	static void PromtUnauthorizedNotification(wstring launchAttribute)
 	{
-		PromtNotification(wstring(begin(launchAttribute), end(launchAttribute)),
-						  Resources::Title,
-						  Resources::RegistrationNeed);
+		PromtNotification(move(launchAttribute),
+						  Labels::Title,
+						  Labels::RegistrationNeed);
 	}
 
 	static void PromtUnlicensedNotification()
 	{
 		PromtNotification(AuthStatus::launchAttributeUnlicensed,
-						  Resources::Title,
-						  Resources::Unlicensed);
+						  Labels::Title,
+						  Labels::Unlicensed);
 	}
 
 private:
@@ -114,7 +118,7 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 		{
 			vector<shared_ptr<IAuthorizer>> authorizers
 					{
-						make_shared<MosMetroAuthorizer>()
+						make_shared<MosMetroAuthorizer<IHttpResponseMessage*>>()
 					};
 
 			HString connectionName;

@@ -2,7 +2,7 @@
 
 namespace AutoLogin
 {
-	namespace CrossPlatform
+	namespace Resources
 	{
 		struct AuthStatus final
 		{

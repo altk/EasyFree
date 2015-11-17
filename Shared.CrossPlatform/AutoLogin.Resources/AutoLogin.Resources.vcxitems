@@ -3,9 +3,7 @@
   <PropertyGroup Label="Globals">
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
-    <ItemsProjectGuid>{CA6EF515-9720-4F58-B4A7-E8CB7A805177}</ItemsProjectGuid>
-    <ItemsRootNamespace>
-    </ItemsRootNamespace>
+    <ItemsProjectGuid>{752C07D3-BEC7-435D-AA11-FBBC00B75233}</ItemsProjectGuid>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -16,11 +14,11 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)Base64.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)HttpClient.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)IAuthorizer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)LicenseChecker.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)MosMetroAuthorizer.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)MosMetroResponseParcer.h" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)AuthStatus.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Labels.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AuthStatus.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)Labels.h" />
   </ItemGroup>
 </Project>

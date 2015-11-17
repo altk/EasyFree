@@ -25,7 +25,7 @@ namespace AutoLogin
 			STDMETHODIMP Run() NOEXCEPT override final;
 			STDMETHODIMP Uninitialize() NOEXCEPT override final;
 		private:
-			CrossPlatform::AuthStatus::Enum _launchArgument = CrossPlatform::AuthStatus::None;
+			Resources::AuthStatus::Enum _launchArgument = Resources::AuthStatus::None;
 
 			MTL::ComPtr<ABI::Windows::UI::Core::ICoreWindow> _coreWindow;
 			MTL::ComPtr<ID2D1DeviceContext> _deviceContext;

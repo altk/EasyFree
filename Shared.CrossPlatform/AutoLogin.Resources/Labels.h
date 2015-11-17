@@ -2,9 +2,9 @@
 
 namespace AutoLogin
 {
-	namespace CrossPlatform
+	namespace Resources
 	{
-		struct Resources final
+		struct Labels final
 		{
 			static const wchar_t* const Title;
 

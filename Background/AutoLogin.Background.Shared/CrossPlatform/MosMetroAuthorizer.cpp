@@ -18,7 +18,6 @@ using namespace ABI::Windows::Storage::Streams;
 using namespace Windows::Storage::Streams;
 using namespace MTL;
 using namespace AutoLogin::CrossPlatform;
-using namespace AutoLogin::CrossPlatform;
 
 template <>
 task<bool> MosMetroAuthorizer<IHttpResponseMessage*>::CheckAsync(IHttpResponseMessage* response) NOEXCEPT

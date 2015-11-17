@@ -16,6 +16,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)CrossPlatform\HttpClient.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)dllmain.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)CrossPlatform\MosMetroAuthorizer.cpp" />

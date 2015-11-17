@@ -7,11 +7,11 @@
 #include <dwrite.h>
 #include <windows.graphics.display.h>
 #include <windows.applicationmodel.background.h>
+#include <Labels.h>
 #include <MTL.h>
-#include <Resources.h>
 
 using namespace AutoLogin::Implementations;
-using namespace AutoLogin::CrossPlatform;
+using namespace AutoLogin::Resources;
 
 HRESULT Application::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 {
@@ -444,7 +444,7 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize, D2D1_
 	using namespace std;
 	using namespace D2D1;
 	using namespace MTL;
-	using namespace CrossPlatform;
+	using namespace Resources;
 
 	if (!_titleTextFormat)
 	{
@@ -459,8 +459,8 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize, D2D1_
 	}
 
 	ComPtr<IDWriteTextLayout> titleTextLayout;
-	Check(_dwriteFactory->CreateTextLayout(Resources::Title,
-										   wcslen(Resources::Title),
+	Check(_dwriteFactory->CreateTextLayout(Labels::Title,
+										   wcslen(Labels::Title),
 										   _titleTextFormat.Get(),
 										   size.width,
 										   size.height,
@@ -474,7 +474,7 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize,
 	using namespace std;
 	using namespace D2D1;
 	using namespace MTL;
-	using namespace CrossPlatform;
+	using namespace Resources;
 
 	if (!_descriptionTextFormat)
 	{
@@ -493,13 +493,13 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize,
 	switch (_launchArgument)
 	{
 	case AuthStatus::Success:
-		description = Resources::AuthSuccess;;
+		description = Labels::AuthSuccess;;
 		break;
 	case AuthStatus::Fail:
-		description = Resources::AuthFail;
+		description = Labels::AuthFail;
 		break;
 	default:
-		description = Resources::Description;
+		description = Labels::Description;
 		break;
 	}
 		

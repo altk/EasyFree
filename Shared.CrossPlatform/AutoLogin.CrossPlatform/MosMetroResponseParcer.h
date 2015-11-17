@@ -10,11 +10,11 @@ namespace AutoLogin
 		class MosMetroResponseParser final
 		{
 		public:
-			static std::string GetPostString(std::string source) NOEXCEPT
+			static std::wstring GetPostString(std::string source) NOEXCEPT
 			{
 				using namespace std;
 
-				string result;
+				wstring result;
 
 				if (source.empty()) return result;
 
@@ -35,11 +35,11 @@ namespace AutoLogin
 				return result;
 			}
 
-			static std::string GetFormUrl(std::string source) NOEXCEPT
+			static std::wstring GetFormUrl(std::string source) NOEXCEPT
 			{
 				using namespace std;
 
-				string result;
+				wstring result;
 
 				if (source.empty()) return result;
 
@@ -84,11 +84,11 @@ namespace AutoLogin
 				return nullptr;
 			}
 
-			static std::string GetFormParams(const GumboNode* formNode) NOEXCEPT
+			static std::wstring GetFormParams(const GumboNode* formNode) NOEXCEPT
 			{
 				using namespace std;
 
-				string result;
+				wstring result;
 
 				auto children = &formNode->v.element.children;
 				for (unsigned i = 0; i < children->length; ++i)
@@ -96,19 +96,18 @@ namespace AutoLogin
 					auto child = static_cast<GumboNode*>(children->data[i]);
 					if (GUMBO_TAG_INPUT == child->v.element.tag)
 					{
-						string name,
-							value;
+						wstring name, value;
 						auto attributes = &child->v.element.attributes;
 						for (unsigned j = 0; j < attributes->length; ++j)
 						{
 							auto attribute = static_cast<GumboAttribute*>(attributes->data[j]);
 							if (_stricmp(attribute->name, "name") == 0)
 							{
-								name.append(attribute->value);
+								name.append(reinterpret_cast<const wchar_t*>(attribute->value));
 							}
 							else if (_stricmp(attribute->name, "value") == 0)
 							{
-								value.append(attribute->value);
+								value.append(reinterpret_cast<const wchar_t*>(attribute->value));
 							}
 							//Ключ и значение найдены, можно прерывать цикл
 							if (!name.empty() && !value.empty())
@@ -118,9 +117,9 @@ namespace AutoLogin
 						}
 
 						result.append(name)
-							.append("=")
-							.append(value)
-							.append("&");
+							  .append(L"=")
+							  .append(value)
+							  .append(L"&");
 					}
 				}
 
@@ -132,11 +131,11 @@ namespace AutoLogin
 				return result;
 			}
 
-			static std::string GetUrl(const GumboNode* headNode) NOEXCEPT
+			static std::wstring GetUrl(const GumboNode* headNode) NOEXCEPT
 			{
 				using namespace std;
 
-				string result;
+				wstring result;
 
 				auto children = &headNode->v.element.children;
 				for (unsigned i = 0; i < children->length; ++i)
@@ -159,7 +158,7 @@ namespace AutoLogin
 								auto first = strstr(attribute->value, term);
 								if (nullptr != first)
 								{
-									result.append(first);
+									result.append(reinterpret_cast<const wchar_t*>(first));
 								}
 							}
 						}
@@ -171,4 +170,3 @@ namespace AutoLogin
 		};
 	}
 }
-

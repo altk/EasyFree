@@ -10,7 +10,7 @@ namespace AutoLogin
 	namespace CrossPlatform
 	{
 		template <typename TResponse>
-		class MosMetroAuthorizer final : IAuthorizer
+		class MosMetroAuthorizer final : public IAuthorizer
 		{
 		public:
 			MosMetroAuthorizer() NOEXCEPT {}
@@ -29,10 +29,11 @@ namespace AutoLogin
 				return *this;
 			}
 
-			virtual Concurrency::task<AuthStatus::Enum> AuthAsync() NOEXCEPT override
+			virtual Concurrency::task<Resources::AuthStatus::Enum> AuthAsync() NOEXCEPT override
 			{
 				using namespace std;
 				using namespace Concurrency;
+				using namespace Resources;
 
 				wstring bindUrl = L"http://httpbin.org/status/200";
 
@@ -48,10 +49,6 @@ namespace AutoLogin
 									 .then([](string content)
 										 {
 											 return MosMetroResponseParser::GetFormUrl(move(content));
-										 })
-									 .then([](string authUrl)
-										 {
-											 return wstring(begin(authUrl), end(authUrl));
 										 })
 									 .then([httpClient, bindUrl](wstring authUrl) -> task<AuthStatus::Enum>
 										 {
@@ -73,10 +70,6 @@ namespace AutoLogin
 															  .then([](string content)
 																  {
 																	  return MosMetroResponseParser::GetPostString(content);
-																  })
-															  .then([](string postContent)
-																  {
-																	  return wstring(begin(postContent), end(postContent));
 																  })
 															  .then([httpClient, authUrl](wstring postContent)
 																  {

@@ -10,7 +10,7 @@ namespace AutoLogin
 	{
 		struct NOVTABLE IAuthorizer abstract
 		{
-			virtual Concurrency::task<AuthStatus::Enum> AuthAsync() NOEXCEPT = 0;
+			virtual Concurrency::task<Resources::AuthStatus::Enum> AuthAsync() NOEXCEPT = 0;
 
 			virtual bool CanAuth(std::wstring connectionName) const NOEXCEPT = 0;
 
