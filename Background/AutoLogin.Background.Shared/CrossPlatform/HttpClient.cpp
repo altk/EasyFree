@@ -37,9 +37,7 @@ public:
 
 		Check(httpBaseProtocolFilter.As(&httpFilter));
 
-		ComPtr<IHttpFilter> retryFilter(new RetryHttpFilter(httpFilter.Get()));
-
-		Check(httpClientFactory->Create(retryFilter.Get(),
+		Check(httpClientFactory->Create(httpFilter.Get(),
 										&_httpClient));
 	}
 
