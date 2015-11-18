@@ -40,7 +40,8 @@ namespace AutoLogin
 
 				STDMETHODIMP get_Progress(ProgressHandler** handler) NOEXCEPT override
 				{
-					*handler = static_cast<ProgressHandler*>(_progressHandler);
+					*handler = _progressHandler.Get();
+					if (*handler) (*handler)->AddRef();
 					return S_OK;
 				}
 
@@ -52,13 +53,15 @@ namespace AutoLogin
 
 				STDMETHODIMP get_Completed(CompleteHandler** handler) NOEXCEPT override
 				{
-					*handler = static_cast<CompleteHandler*>(_completeHandler);
+					*handler = _completeHandler.Get();
+					if (*handler)(*handler)->AddRef();
 					return S_OK;
 				}
 
 				STDMETHODIMP GetResults(Results** results) NOEXCEPT override
 				{
-					*results = static_cast<Results*>(_results);
+					*results = _results.Get();
+					if (*results)(*results)->AddRef();
 					return S_OK;
 				}
 
@@ -72,7 +75,10 @@ namespace AutoLogin
 					{
 						_results.Release();
 						_results.Attach(results);
-						if (_completeHandler) Check(_completeHandler->Invoke(this, status));
+						if (_completeHandler)
+						{
+							Check(_completeHandler->Invoke(this, status));
+						}
 					}
 					catch (...) {}
 				}
@@ -86,17 +92,19 @@ namespace AutoLogin
 			class RetryHttpFilter final : public MTL::RuntimeClass<ABI::Windows::Web::Http::Filters::IHttpFilter>
 			{
 			public:
-				explicit RetryHttpFilter(IHttpFilter* innerFilter) NOEXCEPT
-					: _innerFilter(innerFilter) { }
+				explicit RetryHttpFilter(IHttpFilter* innerFilter,
+										 uint_fast16_t retryCount = 3) NOEXCEPT
+					: _innerFilter(innerFilter)
+					  ,_retryCount(retryCount) { }
 
-				STDMETHODIMP QueryInterface(const GUID& guid, void** result) override
+				STDMETHODIMP QueryInterface(const GUID& guid, void** result) NOEXCEPT override
 				{
 					if (SUCCEEDED(RuntimeClass<IHttpFilter>::QueryInterface(guid, result)))
 					{
 						return S_OK;
 					}
 
-					return static_cast<IHttpFilter*>(_innerFilter)->QueryInterface(guid, result);
+					return static_cast<IHttpFilter*>(_innerFilter.Get())->QueryInterface(guid, result);
 				}
 
 				STDMETHODIMP GetRuntimeClassName(HSTRING* className) NOEXCEPT override
@@ -114,6 +122,83 @@ namespace AutoLogin
 					}
 				}
 
+				static void SendRequestAsync(MTL::ComPtr<IHttpFilter> innerFilter,
+											 MTL::ComPtr<ABI::Windows::Web::Http::IHttpRequestMessage> request,
+											 MTL::ComPtr<ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Web::Http::HttpResponseMessage*, ABI::Windows::Web::Http::HttpProgress>> operation,
+											 uint_fast16_t maxAttempts,
+											 uint_fast16_t attempt = 0)
+				{
+					using namespace MTL;
+					using namespace ABI::Windows::Web::Http;
+					using namespace ABI::Windows::Foundation;
+
+					ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> asyncOperation;
+					Check(innerFilter->SendRequestAsync(request.Get(),
+														&asyncOperation));
+
+					auto completeCallback = CreateCallback<IAsyncOperationWithProgressCompletedHandler<HttpResponseMessage*, HttpProgress>>(
+						[innerFilter, request, operation, maxAttempts, attempt]
+						(IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>* asyncInfo, AsyncStatus status)->
+						HRESULT
+						{
+							auto requestAsyncOperation = reinterpret_cast<RequestAsyncOperation*>(operation.Get());
+							IHttpResponseMessage* response = nullptr;
+
+							try
+							{
+								switch (status)
+								{
+									case AsyncStatus::Completed:
+
+										Check(asyncInfo->GetResults(&response));
+
+										boolean isSuccess;
+										response->get_IsSuccessStatusCode(&isSuccess);
+
+										if (!isSuccess)
+										{
+											if (attempt < maxAttempts)
+											{
+												SendRequestAsync(innerFilter, 
+																 request, 
+																 operation, 
+																 maxAttempts, 
+																 attempt + 1);
+												return S_OK;
+											}
+											else
+											{
+												status = AsyncStatus::Error;
+											}
+										}
+
+										break;
+									case AsyncStatus::Error:
+										if (attempt < maxAttempts)
+										{
+											SendRequestAsync(innerFilter,
+															 request, 
+															 operation, 
+															 maxAttempts, 
+															 attempt + 1);
+											return S_OK;
+										}
+										break;
+								}
+							}
+							catch (...)
+							{
+								status = AsyncStatus::Error;
+							}
+
+							requestAsyncOperation->SetResults(response, status);
+
+							return S_OK;
+						});
+
+					Check(asyncOperation->put_Completed(completeCallback.Get()));
+				}
+
 				STDMETHODIMP SendRequestAsync(ABI::Windows::Web::Http::IHttpRequestMessage* request,
 											  ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Web::Http::HttpResponseMessage*, ABI::Windows::Web::Http::HttpProgress>** operation) NOEXCEPT override
 				{
@@ -125,25 +210,13 @@ namespace AutoLogin
 					try
 					{
 						ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> result(new RequestAsyncOperation());
-						ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> asyncOperation;
 
-						Check(_innerFilter->SendRequestAsync(request,
-															 &asyncOperation));
+						SendRequestAsync(_innerFilter,
+										 CreateComPtr(request),
+										 result,
+										 _retryCount);
 
-						auto completeCallback = CreateCallback<IAsyncOperationWithProgressCompletedHandler<HttpResponseMessage*, HttpProgress>>(
-							[result]
-							(IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>* asyncInfo, AsyncStatus status)->
-							HRESULT
-							{
-								IHttpResponseMessage* response;
-								asyncInfo->GetResults(&response);
-								reinterpret_cast<RequestAsyncOperation*>(result.Get())->SetResults(response, status);
-								return S_OK;
-							});
-
-						asyncOperation->put_Completed(completeCallback.Get());
-
-						*operation = static_cast<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>*>(result);
+						*operation = result.Detach();
 					}
 					catch (const ComException& comException)
 					{
@@ -161,6 +234,7 @@ namespace AutoLogin
 
 			private:
 				MTL::ComPtr<IHttpFilter> _innerFilter;
+				uint_fast16_t _retryCount;
 			};
 		}
 	}

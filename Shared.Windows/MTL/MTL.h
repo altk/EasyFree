@@ -166,14 +166,16 @@ namespace MTL
 #pragma region RemoveIUnknown
 
 		template <typename TInterface>
-		struct NOVTABLE RemoveIUnknown abstract : TInterface
+		struct
+				NOVTABLE RemoveIUnknown abstract : TInterface
 		{
 			static_assert(std::is_base_of<IUnknown, TInterface>::value, "TInterface must inherit IUnknown");
 		public:
 			operator TInterface*() NOEXCEPT
-			{ 
+			{
 				return this;
 			}
+
 		private:
 			STDMETHODIMP_(ULONG) AddRef();
 			STDMETHODIMP_(ULONG) Release();
@@ -777,15 +779,6 @@ namespace MTL
 			return nullptr != _pointer;
 		}
 
-		explicit operator TClass*()
-		{
-			if(nullptr != _pointer)
-			{
-				_pointer->AddRef();
-			}
-			return _pointer;
-		}
-
 		friend bool operator==(const ComPtr& lhs, const ComPtr& rhs) NOEXCEPT
 		{
 			return lhs._pointer == rhs._pointer;
@@ -1169,30 +1162,46 @@ namespace MTL
 		using TResult = typename GetAbiType<typename IAsyncOperation<TArgument>::TResult_complex>::type;
 
 		task_completion_event<TResult> taskCompletitionEvent;
+		cancellation_token_source cancellationTokenSource;
 
 		auto callback = CreateCallback<IAsyncOperationCompletedHandler<TArgument>>(
-			[taskCompletitionEvent]
+			[taskCompletitionEvent, cancellationTokenSource]
 			(IAsyncOperation<TArgument>* operation, AsyncStatus status)->
 			HRESULT
 			{
-				HRESULT hr;
 				try
 				{
-					TResult result;
-					hr = operation->GetResults(&result);
-					Check(hr);
-					taskCompletitionEvent.set(result);
+					switch (status)
+					{
+						case AsyncStatus::Completed:
+							{
+								TResult result;
+								Check(operation->GetResults(&result));
+								taskCompletitionEvent.set(result);
+								break;
+							}
+						case AsyncStatus::Canceled:
+							{
+								cancellationTokenSource.cancel();
+								break;
+							}
+						case AsyncStatus::Error:
+							{
+								taskCompletitionEvent.set_exception(std::exception());
+								break;
+							}
+					}
 				}
 				catch (const ComException& exception)
 				{
 					taskCompletitionEvent.set_exception(exception);
 				}
-				return hr;
+				return S_OK;
 			});
 
 		Check(asyncOperation->put_Completed(callback.Get()));
 
-		return task<TResult>(taskCompletitionEvent);
+		return task<TResult>(taskCompletitionEvent, cancellationTokenSource.get_token());
 	}
 
 	template <typename TArgument, typename TProgress>
@@ -1206,30 +1215,46 @@ namespace MTL
 		using TResult = typename GetAbiType<typename IAsyncOperationWithProgress<TArgument, TProgress>::TResult_complex>::type;
 
 		task_completion_event<TResult> taskCompletitionEvent;
+		cancellation_token_source cancellationTokenSource;
 
 		auto callback = CreateCallback<IAsyncOperationWithProgressCompletedHandler<TArgument, TProgress>>(
-			[taskCompletitionEvent]
+			[taskCompletitionEvent, cancellationTokenSource]
 			(IAsyncOperationWithProgress<TArgument, TProgress>* operation, AsyncStatus status)->
 			HRESULT
 			{
-				HRESULT hr;
 				try
 				{
-					TResult result;
-					hr = operation->GetResults(&result);
-					Check(hr);
-					taskCompletitionEvent.set(result);
+					switch (status)
+					{
+						case AsyncStatus::Completed:
+							{
+								TResult result;
+								Check(operation->GetResults(&result));
+								taskCompletitionEvent.set(result);
+								break;
+							}
+						case AsyncStatus::Canceled:
+							{
+								cancellationTokenSource.cancel();
+								break;
+							}
+						case AsyncStatus::Error:
+							{
+								taskCompletitionEvent.set_exception(std::exception());
+								break;
+							}
+					}
 				}
 				catch (const ComException& exception)
 				{
 					taskCompletitionEvent.set_exception(exception);
 				}
-				return hr;
+				return S_OK;
 			});
 
 		Check(asyncOperation->put_Completed(callback.Get()));
 
-		return task<TResult>(taskCompletitionEvent);
+		return task<TResult>(taskCompletitionEvent, cancellationTokenSource.get_token());
 	}
 
 	inline void Check(HRESULT hr)
@@ -1263,7 +1288,7 @@ inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, 
 	using namespace MTL;
 	using namespace ABI::Windows::Foundation::Collections;
 	using namespace ABI::Windows::Foundation;
-	
+
 	ComPtr<IIterable<IKeyValuePair<TKey, TValue>*>> iterable;
 	map->QueryInterface<IIterable<IKeyValuePair<TKey, TValue>*>>(&iterable);
 
