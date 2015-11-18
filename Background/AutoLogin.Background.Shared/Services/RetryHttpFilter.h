@@ -10,13 +10,46 @@ namespace AutoLogin
 	{
 		namespace Services
 		{
-			class RequestAsyncOperation final : public MTL::RuntimeClass<ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Web::Http::HttpResponseMessage*, ABI::Windows::Web::Http::HttpProgress>>
+			class RequestAsyncOperation final : public MTL::RuntimeClass<ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Web::Http::HttpResponseMessage*, ABI::Windows::Web::Http::HttpProgress>,
+																		 IAsyncInfo>
 			{
 				using ProgressHandler = ABI::Windows::Foundation::IAsyncOperationProgressHandler<ABI::Windows::Web::Http::HttpResponseMessage*, ABI::Windows::Web::Http::HttpProgress>;
 				using CompleteHandler = ABI::Windows::Foundation::IAsyncOperationWithProgressCompletedHandler<ABI::Windows::Web::Http::HttpResponseMessage*, ABI::Windows::Web::Http::HttpProgress>;
 				using Results = std::remove_pointer<ABI::Windows::Foundation::Internal::GetAbiType<TResult_complex>::type>::type;
 
 			public:
+				RequestAsyncOperation() NOEXCEPT
+					: _id(rand())
+					  ,_status(AsyncStatus::Started) { }
+
+				STDMETHODIMP get_Id(unsigned* id) NOEXCEPT override
+				{
+					*id = _id;
+					return S_OK;
+				}
+
+				STDMETHODIMP get_Status(AsyncStatus* status) NOEXCEPT override
+				{
+					*status = _status;
+					return S_OK;
+				}
+
+				STDMETHODIMP get_ErrorCode(HRESULT* errorCode)NOEXCEPT override
+				{
+					return S_OK;
+				}
+
+				STDMETHODIMP Cancel()NOEXCEPT override
+				{
+					
+					return S_OK;
+				}
+
+				STDMETHODIMP Close()NOEXCEPT override
+				{
+					return S_OK;
+				}
+
 				STDMETHODIMP GetRuntimeClassName(HSTRING* className) NOEXCEPT override
 				{
 					using namespace MTL;
@@ -54,14 +87,14 @@ namespace AutoLogin
 				STDMETHODIMP get_Completed(CompleteHandler** handler) NOEXCEPT override
 				{
 					*handler = _completeHandler.Get();
-					if (*handler)(*handler)->AddRef();
+					if (*handler) (*handler)->AddRef();
 					return S_OK;
 				}
 
 				STDMETHODIMP GetResults(Results** results) NOEXCEPT override
 				{
 					*results = _results.Get();
-					if (*results)(*results)->AddRef();
+					if (*results) (*results)->AddRef();
 					return S_OK;
 				}
 
@@ -84,9 +117,11 @@ namespace AutoLogin
 				}
 
 			private:
+				const unsigned _id;
 				MTL::ComPtr<ProgressHandler> _progressHandler;
 				MTL::ComPtr<CompleteHandler> _completeHandler;
 				MTL::ComPtr<Results> _results;
+				AsyncStatus _status;
 			};
 
 			class RetryHttpFilter final : public MTL::RuntimeClass<ABI::Windows::Web::Http::Filters::IHttpFilter>
@@ -159,10 +194,10 @@ namespace AutoLogin
 										{
 											if (attempt < maxAttempts)
 											{
-												SendRequestAsync(innerFilter, 
-																 request, 
-																 operation, 
-																 maxAttempts, 
+												SendRequestAsync(innerFilter,
+																 request,
+																 operation,
+																 maxAttempts,
 																 attempt + 1);
 												return S_OK;
 											}
@@ -177,9 +212,9 @@ namespace AutoLogin
 										if (attempt < maxAttempts)
 										{
 											SendRequestAsync(innerFilter,
-															 request, 
-															 operation, 
-															 maxAttempts, 
+															 request,
+															 operation,
+															 maxAttempts,
 															 attempt + 1);
 											return S_OK;
 										}

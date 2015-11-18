@@ -28,7 +28,6 @@
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Services\RetryHttpFilter.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)AutoLogin.Background.idl" />
