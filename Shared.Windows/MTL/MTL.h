@@ -5,6 +5,7 @@
 #include <ppltasks.h>
 #include <inspectable.h>
 #include <roapi.h>
+#include <asyncinfo.h>
 #include <windows.foundation.h>
 #include <windows.foundation.collections.h>
 #include <macro.h>
@@ -1161,8 +1162,20 @@ namespace MTL
 
 		using TResult = typename GetAbiType<typename IAsyncOperation<TArgument>::TResult_complex>::type;
 
+		ComPtr<IAsyncInfo> asyncInfo;
+		Check(asyncOperation->template QueryInterface<IAsyncInfo>(&asyncInfo));
+
 		task_completion_event<TResult> taskCompletitionEvent;
 		cancellation_token_source cancellationTokenSource;
+		auto token = cancellationTokenSource.get_token();
+
+		token.register_callback(
+			[asyncInfo]
+			()->
+			void
+			{
+				asyncInfo->Cancel();
+			});
 
 		auto callback = CreateCallback<IAsyncOperationCompletedHandler<TArgument>>(
 			[taskCompletitionEvent, cancellationTokenSource]
@@ -1201,7 +1214,7 @@ namespace MTL
 
 		Check(asyncOperation->put_Completed(callback.Get()));
 
-		return task<TResult>(taskCompletitionEvent, cancellationTokenSource.get_token());
+		return task<TResult>(taskCompletitionEvent, token);
 	}
 
 	template <typename TArgument, typename TProgress>
@@ -1214,8 +1227,20 @@ namespace MTL
 
 		using TResult = typename GetAbiType<typename IAsyncOperationWithProgress<TArgument, TProgress>::TResult_complex>::type;
 
+		ComPtr<IAsyncInfo> asyncInfo;
+		Check(asyncOperation->template QueryInterface<IAsyncInfo>(&asyncInfo));
+
 		task_completion_event<TResult> taskCompletitionEvent;
 		cancellation_token_source cancellationTokenSource;
+		auto token = cancellationTokenSource.get_token();
+
+		token.register_callback(
+			[asyncInfo]
+			()->
+			void
+			{
+				asyncInfo->Cancel();
+			});
 
 		auto callback = CreateCallback<IAsyncOperationWithProgressCompletedHandler<TArgument, TProgress>>(
 			[taskCompletitionEvent, cancellationTokenSource]
@@ -1254,7 +1279,7 @@ namespace MTL
 
 		Check(asyncOperation->put_Completed(callback.Get()));
 
-		return task<TResult>(taskCompletitionEvent, cancellationTokenSource.get_token());
+		return task<TResult>(taskCompletitionEvent, token);
 	}
 
 	inline void Check(HRESULT hr)
