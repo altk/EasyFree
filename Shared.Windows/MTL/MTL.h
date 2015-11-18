@@ -633,7 +633,7 @@ namespace MTL
 			return remaining;
 		}
 
-		STDMETHODIMP QueryInterface(const GUID& guid, void** result) NOEXCEPT override final
+		STDMETHODIMP QueryInterface(const GUID& guid, void** result) NOEXCEPT override
 		{
 			if (guid == __uuidof(TDefaultInterface) ||
 				guid == __uuidof(IUnknown) ||
@@ -775,6 +775,15 @@ namespace MTL
 		explicit operator bool() const NOEXCEPT
 		{
 			return nullptr != _pointer;
+		}
+
+		explicit operator TClass*()
+		{
+			if(nullptr != _pointer)
+			{
+				_pointer->AddRef();
+			}
+			return _pointer;
 		}
 
 		friend bool operator==(const ComPtr& lhs, const ComPtr& rhs) NOEXCEPT
