@@ -21,6 +21,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.h">
       <Filter>Implementations</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Services\RetryHttpFilter.h">
+      <Filter>Services</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)AutoLogin.Background.idl" />
@@ -31,6 +34,9 @@
     </Filter>
     <Filter Include="CrossPlatform">
       <UniqueIdentifier>{091c254a-7d03-4ec6-b0f9-68fe5513c7d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Services">
+      <UniqueIdentifier>{ebf5e940-143a-402d-8e3f-227aa114c019}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

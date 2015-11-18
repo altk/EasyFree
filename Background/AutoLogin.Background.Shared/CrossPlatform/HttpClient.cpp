@@ -2,6 +2,7 @@
 #include <HttpClient.h>
 #include <windows.web.http.h>
 #include <windows.networking.connectivity.h>
+#include <Services\RetryHttpFilter.h>
 
 using namespace std;
 using namespace Concurrency;
@@ -14,6 +15,7 @@ using namespace ABI::Windows::Web::Http;
 using namespace ABI::Windows::Storage::Streams;
 using namespace MTL;
 using namespace AutoLogin::CrossPlatform;
+using namespace AutoLogin::Background::Services;
 
 template <>
 class AutoLogin::CrossPlatform::HttpClient<IHttpResponseMessage*>::HttpClientImpl final
@@ -24,7 +26,6 @@ public:
 		ComPtr<IHttpClientFactory> httpClientFactory;
 		ComPtr<IHttpFilter> httpFilter;
 		ComPtr<IHttpBaseProtocolFilter> httpBaseProtocolFilter;
-		ComPtr<IHttpClient> httpClient;
 
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpClient).Get(),
 								   &httpClientFactory));
@@ -36,8 +37,10 @@ public:
 
 		Check(httpBaseProtocolFilter.As(&httpFilter));
 
-		Check(httpClientFactory->Create(httpFilter.Get(),
-										&httpClient));
+		ComPtr<IHttpFilter> retryFilter(new RetryHttpFilter(httpFilter.Get()));
+
+		Check(httpClientFactory->Create(retryFilter.Get(),
+										&_httpClient));
 	}
 
 	task<IHttpResponseMessage*> GetAsync(wstring url) const NOEXCEPT
