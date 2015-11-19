@@ -368,15 +368,15 @@ namespace MTL
 
 #pragma region ComException
 
-	//TODO Реализовать наследование от std::exception
-	class ComException final
+	class ComException final : public std::exception
 	{
 	public:
 		explicit ComException(HRESULT hr) NOEXCEPT
-			: _hr(hr)
+			: exception(std::string("ComException occured. HRESULT code: ").append(std::to_string(hr)).append("\r\n").data())
+			  ,_hr(hr)
 		{
 #ifdef _DEBUG
-			OutputDebugStringW(GetErrorMessage().data());
+			OutputDebugStringA(std::string("ComException occured. HRESULT code: ").append(std::to_string(hr)).append("\r\n").data());
 #endif
 		}
 
@@ -391,29 +391,6 @@ namespace MTL
 			}
 
 			return *this;
-		}
-
-		std::wstring GetErrorMessage() const NOEXCEPT
-		{
-			using namespace std;
-
-			wstring result;
-			auto langId = MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT);
-			auto hr = _hr;
-			wchar_t* errorMessage = nullptr;
-
-			if (FACILITY_WINDOWS == HRESULT_FACILITY(hr))
-			{
-				hr = HRESULT_CODE(hr);
-			}
-
-			if (FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, hr, langId, errorMessage, 0, nullptr) != 0)
-			{
-				result.append(errorMessage);
-				HeapFree(GetProcessHeap(), 0, errorMessage);
-			}
-
-			return result;
 		}
 
 		HRESULT GetResult() const NOEXCEPT
