@@ -88,7 +88,7 @@ namespace AutoLogin
 			{
 				using namespace std;
 
-				wstring result;
+				string result;
 
 				auto children = &formNode->v.element.children;
 				for (unsigned i = 0; i < children->length; ++i)
@@ -96,18 +96,18 @@ namespace AutoLogin
 					auto child = static_cast<GumboNode*>(children->data[i]);
 					if (GUMBO_TAG_INPUT == child->v.element.tag)
 					{
-						wstring name, value;
+						string name, value;
 						auto attributes = &child->v.element.attributes;
 						for (unsigned j = 0; j < attributes->length; ++j)
 						{
 							auto attribute = static_cast<GumboAttribute*>(attributes->data[j]);
 							if (_stricmp(attribute->name, "name") == 0)
 							{
-								name.append(reinterpret_cast<const wchar_t*>(attribute->value));
+								name.append(attribute->value);
 							}
 							else if (_stricmp(attribute->name, "value") == 0)
 							{
-								value.append(reinterpret_cast<const wchar_t*>(attribute->value));
+								value.append(attribute->value);
 							}
 							//Ключ и значение найдены, можно прерывать цикл
 							if (!name.empty() && !value.empty())
@@ -117,9 +117,9 @@ namespace AutoLogin
 						}
 
 						result.append(name)
-							  .append(L"=")
+							  .append("=")
 							  .append(value)
-							  .append(L"&");
+							  .append("&");
 					}
 				}
 
@@ -128,14 +128,14 @@ namespace AutoLogin
 					result = result.substr(0, result.size() - 1);
 				}
 
-				return result;
+				return wstring(begin(result), end(result));
 			}
 
 			static std::wstring GetUrl(const GumboNode* headNode) NOEXCEPT
 			{
 				using namespace std;
 
-				wstring result;
+				string result;
 
 				auto children = &headNode->v.element.children;
 				for (unsigned i = 0; i < children->length; ++i)
@@ -158,14 +158,14 @@ namespace AutoLogin
 								auto first = strstr(attribute->value, term);
 								if (nullptr != first)
 								{
-									result.append(reinterpret_cast<const wchar_t*>(first));
+									result.append(first);
 								}
 							}
 						}
 					}
 				}
 
-				return result;
+				return wstring(begin(result), end(result));
 			}
 		};
 	}
