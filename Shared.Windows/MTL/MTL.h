@@ -586,6 +586,15 @@ namespace MTL
 
 #pragma endregion
 
+	struct Module
+	{
+		static bool CanUnload() NOEXCEPT;
+
+		static void Increment() NOEXCEPT;
+
+		static void Decrement() NOEXCEPT;
+	};
+
 #pragma region ComClass
 
 	//TODO вынести поддержку подсчета ссылок в отдельный класс
@@ -633,6 +642,16 @@ namespace MTL
 		}
 
 	protected:
+		ComClass() NOEXCEPT
+		{
+			Module::Increment();
+		}
+
+		virtual ~ComClass() NOEXCEPT
+		{
+			Module::Decrement();
+		}
+
 		template <typename U, typename ... Us>
 		void* QueryInterfaceImpl(const GUID& guid) NOEXCEPT
 		{
@@ -1263,9 +1282,7 @@ namespace MTL
 	{
 		if (IS_ERROR(hr))
 		{
-			auto exception = ComException(hr);
-			OutputDebugStringW(exception.GetErrorMessage().data());
-			throw exception;
+			throw ComException(hr);
 		}
 	}
 }

@@ -5,6 +5,7 @@
 #include <MTL.h>
 #include <Implementations\LoginTask.h>
 
+
 BOOL APIENTRY DllMain(HMODULE, DWORD, LPVOID) NOEXCEPT
 {
 	return TRUE;
@@ -13,9 +14,9 @@ BOOL APIENTRY DllMain(HMODULE, DWORD, LPVOID) NOEXCEPT
 HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId,
 									   IActivationFactory** factory) NOEXCEPT
 {
+	using namespace MTL;
 	using namespace ABI::AutoLogin;
 	using namespace AutoLogin::Background::Implementations;
-	using namespace MTL;
 
 	*factory = nullptr;
 	
@@ -39,6 +40,5 @@ HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId,
 
 HRESULT WINAPI DllCanUnloadNow() NOEXCEPT
 {
-	//TODO реализовать правильное уведомление
-	return S_OK;
+	return MTL::Module::CanUnload();
 }
