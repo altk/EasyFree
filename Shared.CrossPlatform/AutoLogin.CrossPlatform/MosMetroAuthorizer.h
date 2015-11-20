@@ -35,7 +35,7 @@ namespace AutoLogin
 				using namespace Concurrency;
 				using namespace Resources;
 
-				wstring bindUrl = L"http://httpbin.org/status/200";
+				wstring bindUrl = L"http://httpbin.org/status/500";
 
 				try
 				{
@@ -78,7 +78,7 @@ namespace AutoLogin
 																  })
 															  .then([](TResponse response)
 																  {
-																	  return CheckAsync(move(response));
+																	  return CheckAsync(move(response), 500);
 																  })
 															  .then([authUrl](bool checkResult)
 																  {
@@ -106,7 +106,7 @@ namespace AutoLogin
 				return L"https://login.wi-fi.ru/am/UI/Login";
 			}
 
-			static Concurrency::task<bool> CheckAsync(TResponse response) NOEXCEPT;
+			static Concurrency::task<bool> CheckAsync(TResponse response, uint_fast16_t statusCode) NOEXCEPT;
 
 			static Concurrency::task<std::string> GetContentAsync(TResponse response) NOEXCEPT;
 		};

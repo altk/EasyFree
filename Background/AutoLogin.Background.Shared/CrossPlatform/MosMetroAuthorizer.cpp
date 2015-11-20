@@ -20,12 +20,13 @@ using namespace MTL;
 using namespace AutoLogin::CrossPlatform;
 
 template <>
-task<bool> MosMetroAuthorizer<IHttpResponseMessage*>::CheckAsync(IHttpResponseMessage* response) NOEXCEPT
+task<bool> MosMetroAuthorizer<IHttpResponseMessage*>::CheckAsync(IHttpResponseMessage* response,
+																 uint_fast16_t statusCode) NOEXCEPT
 {
-	boolean isSuccessStatusCode;
-	Check(response->get_IsSuccessStatusCode(&isSuccessStatusCode));
+	HttpStatusCode responseStatusCode;
+	Check(response->get_StatusCode(&responseStatusCode));
 
-	return task_from_result(isSuccessStatusCode == 0);
+	return task_from_result(statusCode == responseStatusCode);
 }
 
 template <>
@@ -38,7 +39,10 @@ task<string> MosMetroAuthorizer<IHttpResponseMessage*>::GetContentAsync(IHttpRes
 
 	Check(httpContent->ReadAsBufferAsync(&readAsBufferOperation));
 
-	return GetTask(readAsBufferOperation.Get()).then([](IBuffer* buffer) -> string
+	return GetTask(readAsBufferOperation.Get()).then(
+		[]
+		(IBuffer* buffer) ->
+		string
 		{
 			if (nullptr == buffer)
 			{
