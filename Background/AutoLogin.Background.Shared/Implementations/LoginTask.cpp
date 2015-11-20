@@ -112,10 +112,11 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 					Check(taskInstance->GetDeferral(&taskDefferal));
 
 					authorizer->AuthAsync()
-							.then([taskDefferal, authorizer](wstring authResult) NOEXCEPT-> void
+							.then([taskDefferal, authorizer](task<wstring> authResultTask) NOEXCEPT-> void
 								{
 									try
 									{
+										auto authResult = authResultTask.get();
 										if (!authResult.empty())
 										{
 											if (authResult == AuthStatus::launchAttributeSuccess)

@@ -2,7 +2,6 @@
 #include <IAuthorizer.h>
 #include <AuthStatus.h>
 #include <HttpClient.h>
-#include <MosMetroResponseParcer.h>
 #include <MTL.h>
 
 namespace AutoLogin
@@ -44,11 +43,7 @@ namespace AutoLogin
 					return httpClient.GetAsync(bindUrl)
 									 .then([](TResponse response)
 										 {
-											 return GetContentAsync(move(response));
-										 })
-									 .then([](string content)
-										 {
-											 return MosMetroResponseParser::GetFormUrl(move(content));
+											 return GetAuthUrlAsync(move(response));
 										 })
 									 .then([httpClient, bindUrl](wstring authUrl) -> task<wstring>
 										 {
@@ -66,11 +61,7 @@ namespace AutoLogin
 											 return httpClient.GetAsync(authUrl)
 															  .then([](TResponse response)
 																  {
-																	  return GetContentAsync(move(response));
-																  })
-															  .then([](string content)
-																  {
-																	  return MosMetroResponseParser::GetPostString(move(content));
+																	  return GetPostContentAsync(move(response));
 																  })
 															  .then([httpClient, authUrl](wstring postContent)
 																  {
@@ -106,9 +97,12 @@ namespace AutoLogin
 				return L"https://login.wi-fi.ru/am/UI/Login";
 			}
 
-			static Concurrency::task<bool> CheckAsync(TResponse response, uint_fast16_t statusCode) NOEXCEPT;
+			static Concurrency::task<bool> CheckAsync(TResponse response,
+													  uint_fast16_t statusCode) NOEXCEPT;
 
-			static Concurrency::task<std::string> GetContentAsync(TResponse response) NOEXCEPT;
+			static Concurrency::task<std::wstring> GetAuthUrlAsync(TResponse response) NOEXCEPT;
+
+			static Concurrency::task<std::wstring> GetPostContentAsync(TResponse response) NOEXCEPT;
 		};
 	}
 }

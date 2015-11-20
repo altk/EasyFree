@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "MosMetroAuthorizer.h"
+#include <MosMetroResponseParcer.h>
+#include <algorithm>
 #include <robuffer.h>
 #include <windows.web.http.h>
 #include <windows.storage.streams.h>
@@ -30,10 +32,10 @@ task<bool> MosMetroAuthorizer<IHttpResponseMessage*>::CheckAsync(IHttpResponseMe
 }
 
 template <>
-task<string> MosMetroAuthorizer<IHttpResponseMessage*>::GetContentAsync(IHttpResponseMessage* response) NOEXCEPT
+task<wstring> MosMetroAuthorizer<IHttpResponseMessage*>::GetAuthUrlAsync(IHttpResponseMessage* response) NOEXCEPT
 {
 	ComPtr<IHttpContent> httpContent;
-	ComPtr<IAsyncOperationWithProgress<IBuffer*, ULONGLONG>> readAsBufferOperation;
+	ComPtr<IAsyncOperationWithProgress<IBuffer*, UINT64>> readAsBufferOperation;
 
 	Check(response->get_Content(&httpContent));
 
@@ -42,12 +44,9 @@ task<string> MosMetroAuthorizer<IHttpResponseMessage*>::GetContentAsync(IHttpRes
 	return GetTask(readAsBufferOperation.Get()).then(
 		[]
 		(IBuffer* buffer) ->
-		string
+		wstring
 		{
-			if (nullptr == buffer)
-			{
-				return string();
-			}
+			if (nullptr == buffer) return wstring();
 
 			ComPtr<IBufferByteAccess> bufferByteAccess;
 			Check(buffer->QueryInterface<IBufferByteAccess>(&bufferByteAccess));
@@ -55,9 +54,53 @@ task<string> MosMetroAuthorizer<IHttpResponseMessage*>::GetContentAsync(IHttpRes
 			byte* content;
 			Check(bufferByteAccess->Buffer(&content));
 
+			return wstring(L"https://login.wi-fi.ru/am/UI/Login?org=mac&service=coa&client_mac=c8-d1-0b-01-24-e1&ForceAuth=true");
+
+			//return MosMetroResponseParser::GetAuthUrl(reinterpret_cast<const char*>(content));
+		});
+}
+
+template <>
+task<wstring> MosMetroAuthorizer<IHttpResponseMessage*>::GetPostContentAsync(IHttpResponseMessage* response) NOEXCEPT
+{
+	HttpStatusCode responseStatusCode;
+	Check(response->get_StatusCode(&responseStatusCode));
+
+	ComPtr<IHttpContent> httpContent;
+	ComPtr<IAsyncOperationWithProgress<IBuffer*, UINT64>> readAsBufferOperation;
+
+	Check(response->get_Content(&httpContent));
+
+	Check(httpContent->ReadAsBufferAsync(&readAsBufferOperation));
+
+	return GetTask(readAsBufferOperation.Get()).then(
+		[]
+		(IBuffer* buffer) ->
+		wstring
+		{
+			if (nullptr == buffer) return wstring();
+
+			ComPtr<IBufferByteAccess> bufferByteAccess;
+			Check(buffer->QueryInterface<IBufferByteAccess>(&bufferByteAccess));
+
+			byte* content;
+			Check(bufferByteAccess->Buffer(&content));
+			
 			UINT32 lenght;
 			Check(buffer->get_Length(&lenght));
 
-			return string(content, content + lenght);
+			reverse_iterator<const char*> start(reinterpret_cast<char*>(content) + lenght);
+			reverse_iterator<const char*> end(reinterpret_cast<char*>(content));
+
+			string formOpenTag("<form");
+			string formCloseTag("form>");
+			
+			auto closeIterator = search(start, end, rbegin(formCloseTag), rend(formCloseTag));
+			auto openIterator = search(closeIterator, end, rbegin(formOpenTag), rend(formOpenTag));
+
+			auto fs = (openIterator + formOpenTag.length()).base();
+			auto fe = (closeIterator).base();
+
+			return MosMetroResponseParser::GetPostString(string(fs, fe).data());
 		});
 }

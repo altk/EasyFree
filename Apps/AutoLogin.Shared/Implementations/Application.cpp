@@ -9,6 +9,7 @@
 #include <windows.applicationmodel.background.h>
 #include <Labels.h>
 #include <MTL.h>
+#include <AuthStatus.h>
 
 using namespace AutoLogin::Implementations;
 using namespace AutoLogin::Resources;
@@ -83,17 +84,13 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 
 								if (nullptr != schemeRaw)
 								{
-									if (wcscmp(schemeRaw, AuthStatus::launchAttributeScheme) == 0)
+									if (AuthStatus::launchAttributeScheme.compare(schemeRaw) == 0)
 									{
 										const auto argumentRaw = argument.GetRawBuffer();
 
-										if (wcscmp(argumentRaw, AuthStatus::launchAttributeSuccess) == 0)
+										if (AuthStatus::launchAttributeSuccess.compare(argumentRaw) == 0)
 										{
-											_launchArgument = AuthStatus::Success;
-										}
-										else if (wcscmp(argumentRaw, AuthStatus::launchAttributeFail) == 0)
-										{
-											_launchArgument = AuthStatus::Fail;
+											_description = Labels::AuthSuccess;
 										}
 									}
 									else if (wcsncmp(schemeRaw, L"http", 4))
@@ -112,7 +109,7 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 							}
 							else
 							{
-								_launchArgument = AuthStatus::None;
+								_description = Labels::Description;
 							}
 
 							break;
@@ -459,8 +456,8 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize, D2D1_
 	}
 
 	ComPtr<IDWriteTextLayout> titleTextLayout;
-	Check(_dwriteFactory->CreateTextLayout(Labels::Title,
-										   wcslen(Labels::Title),
+	Check(_dwriteFactory->CreateTextLayout(Labels::Title.data(),
+										   Labels::Title.size(),
 										   _titleTextFormat.Get(),
 										   size.width,
 										   size.height,
@@ -488,24 +485,9 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize,
 											   &_descriptionTextFormat));
 	}
 
-	const wchar_t* description;
-
-	switch (_launchArgument)
-	{
-	case AuthStatus::Success:
-		description = Labels::AuthSuccess;;
-		break;
-	case AuthStatus::Fail:
-		description = Labels::AuthFail;
-		break;
-	default:
-		description = Labels::Description;
-		break;
-	}
-		
 	ComPtr<IDWriteTextLayout> descriptionTextLayout;
-	Check(_dwriteFactory->CreateTextLayout(description,
-										   wcslen(description),
+	Check(_dwriteFactory->CreateTextLayout(_description.data(),
+										   _description.size(),
 										   _descriptionTextFormat.Get(),
 										   size.width,
 										   size.height,

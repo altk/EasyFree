@@ -5,7 +5,6 @@
 #include <dwrite.h>
 #include <windows.applicationmodel.core.h>
 #include <macro.h>
-#include <AuthStatus.h>
 #include <MTL.h>
 
 namespace AutoLogin
@@ -25,7 +24,7 @@ namespace AutoLogin
 			STDMETHODIMP Run() NOEXCEPT override final;
 			STDMETHODIMP Uninitialize() NOEXCEPT override final;
 		private:
-			Resources::AuthStatus::Enum _launchArgument = Resources::AuthStatus::None;
+			std::wstring _description;
 
 			MTL::ComPtr<ABI::Windows::UI::Core::ICoreWindow> _coreWindow;
 			MTL::ComPtr<ID2D1DeviceContext> _deviceContext;
