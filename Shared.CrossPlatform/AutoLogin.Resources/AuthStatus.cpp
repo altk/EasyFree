@@ -3,10 +3,8 @@
 
 using namespace AutoLogin::Resources;
 
-const wchar_t* const AuthStatus::launchAttributeSuccess = L"autologin://success";
+const std::wstring AuthStatus::launchAttributeSuccess = L"autologin://success";
 
-const wchar_t* const AuthStatus::launchAttributeFail = L"autologin://fail";
+const std::wstring AuthStatus::launchAttributeUnlicensed = L"autologin://unlicensed";
 
-const wchar_t* const AuthStatus::launchAttributeUnlicensed = L"autologin://unlicensed";
-
-const wchar_t* const AuthStatus::launchAttributeScheme = L"autologin";
+const std::wstring AuthStatus::launchAttributeScheme = L"autologin";

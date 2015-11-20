@@ -9,6 +9,7 @@
 #include <NetworkInfoProvider.h>
 #include <LicenseChecker.h>
 #include <Labels.h>
+#include <AuthStatus.h>
 
 using namespace std;
 using namespace Concurrency;
@@ -24,40 +25,9 @@ using namespace AutoLogin::CrossPlatform;
 using namespace AutoLogin::Windows;
 using namespace AutoLogin::Resources;
 
-class NotificationHelper final
+struct NotificationHelper final
 {
-public:
-	static void PromtSuccessNotification()
-	{
-		PromtNotification(AuthStatus::launchAttributeSuccess,
-						  Labels::Title,
-						  Labels::AuthSuccess);
-	}
-
-	static void PromtFailNotification()
-	{
-		PromtNotification(AuthStatus::launchAttributeFail,
-						  Labels::Title,
-						  Labels::AuthFail);
-	}
-
-	static void PromtUnauthorizedNotification(wstring launchAttribute)
-	{
-		PromtNotification(move(launchAttribute),
-						  Labels::Title,
-						  Labels::RegistrationNeed);
-	}
-
-	static void PromtUnlicensedNotification()
-	{
-		PromtNotification(AuthStatus::launchAttributeUnlicensed,
-						  Labels::Title,
-						  Labels::Unlicensed);
-	}
-
-private:
 	static void PromtNotification(wstring launchAttribute,
-								  wstring title,
 								  wstring description)
 	{
 		try
@@ -79,7 +49,7 @@ private:
 
 			auto toastXml = wstring(L"<toast launch=\"").append(move(launchAttribute))
 														.append(L"\"><visual><binding template=\"ToastText02\"><text id=\"1\">")
-														.append(move(title))
+														.append(Labels::Title)
 														.append(L"</text><text id=\"2\">")
 														.append(move(description))
 														.append(L"</text></binding></visual></toast>");
@@ -142,23 +112,27 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 					Check(taskInstance->GetDeferral(&taskDefferal));
 
 					authorizer->AuthAsync()
-							.then([taskDefferal, authorizer](AuthStatus::Enum authResult) NOEXCEPT-> void
+							.then([taskDefferal, authorizer](wstring authResult) NOEXCEPT-> void
 								{
 									try
 									{
-										switch (authResult)
+										if (!authResult.empty())
 										{
-											case AuthStatus::Success:
-												NotificationHelper::PromtSuccessNotification();
-												break;
-											case AuthStatus::Fail:
-												NotificationHelper::PromtFailNotification();
-												break;
-											case AuthStatus::Unauthorized:
-												NotificationHelper::PromtUnauthorizedNotification(authorizer->GetAuthUrl());
-												break;
-											default:
-												break;
+											if (authResult == AuthStatus::launchAttributeSuccess)
+											{
+												NotificationHelper::PromtNotification(AuthStatus::launchAttributeSuccess,
+																					  Labels::AuthSuccess);
+											}
+											else if (authResult == authorizer->GetRegistrationUrl())
+											{
+												NotificationHelper::PromtNotification(move(authResult),
+																					  Labels::RegistrationNeed);
+											}
+											else
+											{
+												NotificationHelper::PromtNotification(move(authResult),
+																					  Labels::AuthFail);
+											}
 										}
 
 										Check(taskDefferal->Complete());
@@ -168,7 +142,8 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 				}
 				else
 				{
-					NotificationHelper::PromtUnlicensedNotification();
+					NotificationHelper::PromtNotification(AuthStatus::launchAttributeUnlicensed,
+														  Labels::Unlicensed);
 				}
 			}
 		}

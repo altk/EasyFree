@@ -6,22 +6,11 @@ namespace AutoLogin
 	{
 		struct AuthStatus final
 		{
-			enum Enum
-			{
-				Success,
-				Fail,
-				Unauthorized,
-				Unlicensed,
-				None
-			};
-
-			static const wchar_t* const launchAttributeSuccess;
+			static const std::wstring launchAttributeSuccess;
 			
-			static const wchar_t* const launchAttributeFail;
-			
-			static const wchar_t* const launchAttributeUnlicensed;
+			static const std::wstring launchAttributeUnlicensed;
 
-			static const wchar_t* const launchAttributeScheme;
+			static const std::wstring launchAttributeScheme;
 		};
 	}
 }

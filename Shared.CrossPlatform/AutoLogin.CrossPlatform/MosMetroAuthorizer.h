@@ -29,7 +29,7 @@ namespace AutoLogin
 				return *this;
 			}
 
-			virtual Concurrency::task<Resources::AuthStatus::Enum> AuthAsync() NOEXCEPT override
+			virtual Concurrency::task<std::wstring> AuthAsync() NOEXCEPT override
 			{
 				using namespace std;
 				using namespace Concurrency;
@@ -50,16 +50,17 @@ namespace AutoLogin
 										 {
 											 return MosMetroResponseParser::GetFormUrl(move(content));
 										 })
-									 .then([httpClient, bindUrl](wstring authUrl) -> task<AuthStatus::Enum>
+									 .then([httpClient, bindUrl](wstring authUrl) -> task<wstring>
 										 {
 											 if (authUrl.empty())
 											 {
-												 return task_from_result(AuthStatus::None);
+												 return task_from_result(wstring());
 											 }
 
-											 if (authUrl == GetAuthUrlImpl())
+											 auto registrationUrl = GetRegistrationUrlImpl();
+											 if (authUrl == registrationUrl)
 											 {
-												 return task_from_result(AuthStatus::Unauthorized);
+												 return task_from_result(move(registrationUrl));
 											 }
 
 											 return httpClient.GetAsync(authUrl)
@@ -69,24 +70,24 @@ namespace AutoLogin
 																  })
 															  .then([](string content)
 																  {
-																	  return MosMetroResponseParser::GetPostString(content);
+																	  return MosMetroResponseParser::GetPostString(move(content));
 																  })
 															  .then([httpClient, authUrl](wstring postContent)
 																  {
 																	  return httpClient.PostAsync(move(authUrl), move(postContent));
 																  })
-															  .then([httpClient, bindUrl](TResponse response)
+															  .then([](TResponse response)
 																  {
 																	  return CheckAsync(move(response));
 																  })
-															  .then([](bool checkResult)
+															  .then([authUrl](bool checkResult)
 																  {
-																	  return checkResult ? AuthStatus::Success : AuthStatus::Fail;
+																	  return checkResult ? wstring(AuthStatus::launchAttributeSuccess) : authUrl;
 																  });
 										 });
 				}
 				catch (...) { }
-				return task_from_result(AuthStatus::None);
+				return task_from_result(wstring());
 			}
 
 			virtual bool CanAuth(std::wstring connectionName) const NOEXCEPT override
@@ -94,13 +95,13 @@ namespace AutoLogin
 				return connectionName.compare(L"MosMetro_Free") == 0;
 			}
 
-			virtual std::wstring GetAuthUrl() const NOEXCEPT override
+			virtual std::wstring GetRegistrationUrl() const NOEXCEPT override
 			{
-				return GetAuthUrlImpl();
+				return GetRegistrationUrlImpl();
 			}
 
 		private:
-			static std::wstring GetAuthUrlImpl() NOEXCEPT
+			static std::wstring GetRegistrationUrlImpl() NOEXCEPT
 			{
 				return L"https://login.wi-fi.ru/am/UI/Login";
 			}

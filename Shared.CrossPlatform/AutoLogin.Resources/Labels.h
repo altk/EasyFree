@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <string>
 
 namespace AutoLogin
 {
@@ -6,17 +7,17 @@ namespace AutoLogin
 	{
 		struct Labels final
 		{
-			static const wchar_t* const Title;
+			static const std::wstring Title;
 
-			static const wchar_t* const Description;
+			static const std::wstring Description;
 			
-			static const wchar_t* const AuthSuccess;
+			static const std::wstring AuthSuccess;
 
-			static const wchar_t* const AuthFail;
+			static const std::wstring AuthFail;
 
-			static const wchar_t* const RegistrationNeed;
+			static const std::wstring RegistrationNeed;
 
-			static const wchar_t* const Unlicensed;
+			static const std::wstring Unlicensed;
 		};
 	}
 }
