@@ -88,5 +88,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Package.StoreAssociation.xml" />
+    <None Include="AutoLogin.UWP_StoreKey.pfx" />
   </ItemGroup>
 </Project>

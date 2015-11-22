@@ -106,7 +106,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <PackageCertificateKeyFile>AutoLogin.UWP_StoreKey.pfx</PackageCertificateKeyFile>
-    <PackageCertificateThumbprint>BAD7BB3DEF1A4874A70FA032BF74CB0855B086D5</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>63EE64734A35A62C1A5F2BF37520D4BD73745381</PackageCertificateThumbprint>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
     <AppxBundle>Always</AppxBundle>
@@ -336,6 +336,9 @@
     <ProjectReference Include="..\..\Background\AutoLogin.Background.UWP\AutoLogin.Background.UWP.vcxproj">
       <Project>{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AutoLogin.UWP_StoreKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Package.StoreAssociation.xml" />
