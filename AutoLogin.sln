@@ -35,6 +35,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin.Windows", "Shared
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin.Resources", "Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems", "{752C07D3-BEC7-435D-AA11-FBBC00B75233}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0858D8C9-D518-4B91-82CA-4DE973CF8D6F}"
+	ProjectSection(SolutionItems) = preProject
+		Тексты.txt = Тексты.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Shared.CrossPlatform\cryptopp\cryptopp.vcxitems*{568ec50b-0796-4514-9d13-c48c2245bbc6}*SharedItemsImports = 9
