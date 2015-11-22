@@ -34,11 +34,11 @@ namespace AutoLogin
 				using namespace Concurrency;
 				using namespace Resources;
 
-				wstring bindUrl = L"http://httpbin.org/status/500";
-
 				try
 				{
 					const HttpClient<TResponse> httpClient;
+
+					wstring bindUrl = L"http://httpbin.org/status/500";
 
 					return httpClient.GetAsync(bindUrl)
 									 .then([](TResponse response)
@@ -66,6 +66,10 @@ namespace AutoLogin
 															  .then([httpClient, authUrl](wstring postContent)
 																  {
 																	  return httpClient.PostAsync(move(authUrl), move(postContent));
+																  })
+															  .then([httpClient, bindUrl](TResponse)
+																  {
+																	  return httpClient.GetAsync(move(bindUrl));
 																  })
 															  .then([](TResponse response)
 																  {

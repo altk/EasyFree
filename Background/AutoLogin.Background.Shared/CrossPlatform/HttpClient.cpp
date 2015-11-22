@@ -1,21 +1,21 @@
 #include <pch.h>
 #include <HttpClient.h>
 #include <windows.web.http.h>
-#include <windows.networking.connectivity.h>
-#include <Services\RetryHttpFilter.h>
+#include <windows.foundation.collections.h>
 
 using namespace std;
 using namespace Concurrency;
 using namespace ABI::Windows::Networking::Connectivity;
 using namespace ABI::Windows::ApplicationModel::Background;
+using namespace ABI::Windows::Foundation::Collections;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Web::Http::Headers;
 using namespace ABI::Windows::Web::Http::Filters;
 using namespace ABI::Windows::Web::Http;
 using namespace ABI::Windows::Storage::Streams;
+using namespace ABI::Windows::Security::Cryptography::Certificates;
 using namespace MTL;
 using namespace AutoLogin::CrossPlatform;
-using namespace AutoLogin::Background::Services;
 
 template <>
 class AutoLogin::CrossPlatform::HttpClient<IHttpResponseMessage*>::HttpClientImpl final
@@ -26,12 +26,30 @@ public:
 		ComPtr<IHttpClientFactory> httpClientFactory;
 		ComPtr<IHttpFilter> httpFilter;
 		ComPtr<IHttpBaseProtocolFilter> httpBaseProtocolFilter;
+		ComPtr<IHttpCacheControl> httpCacheControl;
+		ComPtr<IVector<ChainValidationResult>> validationResultVector;
 
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpClient).Get(),
 								   &httpClientFactory));
 
 		Check(ActivateInstance<IHttpBaseProtocolFilter>(HStringReference(RuntimeClass_Windows_Web_Http_Filters_HttpBaseProtocolFilter).Get(),
 														&httpBaseProtocolFilter));
+
+		Check(httpBaseProtocolFilter->get_CacheControl(&httpCacheControl));
+
+		Check(httpBaseProtocolFilter->put_AllowUI(false));
+
+		Check(httpBaseProtocolFilter->get_IgnorableServerCertificateErrors(&validationResultVector));
+
+		Check(validationResultVector->Append(ChainValidationResult_Expired));
+		
+		Check(validationResultVector->Append(ChainValidationResult_Untrusted));
+		
+		Check(validationResultVector->Append(ChainValidationResult_InvalidName));
+
+		Check(httpCacheControl->put_ReadBehavior(HttpCacheReadBehavior_MostRecent));
+
+		Check(httpCacheControl->put_WriteBehavior(HttpCacheWriteBehavior_NoCache));
 
 		Check(httpBaseProtocolFilter->put_AllowAutoRedirect(true));
 

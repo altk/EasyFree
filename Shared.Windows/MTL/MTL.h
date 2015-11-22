@@ -171,7 +171,7 @@ namespace MTL
 				NOVTABLE RemoveIUnknown abstract : TInterface
 		{
 			static_assert(std::is_base_of<IUnknown, TInterface>::value, "TInterface must inherit IUnknown");
-		public:
+
 			operator TInterface*() NOEXCEPT
 			{
 				return this;
@@ -442,6 +442,9 @@ namespace MTL
 		explicit HString(const wchar_t* const string)
 			: HString(string, wcslen(string)) { }
 
+		explicit HString(std::wstring string)
+			: HString(string.data(), string.size()) { }
+
 		template <unsigned Length>
 		explicit HString(const wchar_t (&string)[Length])
 			: HString(string, Length - 1) { }
@@ -557,6 +560,9 @@ namespace MTL
 											   &_stringHeader,
 											   &_string));
 		}
+
+		explicit HStringReference(const wchar_t* const string)
+			: HStringReference(string, wcslen(string)) { }
 
 		template <unsigned Length>
 		explicit HStringReference(const wchar_t (&string)[Length])
@@ -1173,8 +1179,10 @@ namespace MTL
 				asyncInfo->Cancel();
 			});
 
+		auto asyncOperationPointer = CreateComPtr(asyncOperation);
+
 		auto callback = CreateCallback<IAsyncOperationCompletedHandler<TArgument>>(
-			[taskCompletitionEvent, cancellationTokenSource]
+			[asyncOperationPointer, taskCompletitionEvent, cancellationTokenSource]
 			(IAsyncOperation<TArgument>* operation, AsyncStatus status)->
 			HRESULT
 			{
@@ -1238,8 +1246,10 @@ namespace MTL
 				asyncInfo->Cancel();
 			});
 
+		auto asyncOperationPointer = CreateComPtr(asyncOperation);
+
 		auto callback = CreateCallback<IAsyncOperationWithProgressCompletedHandler<TArgument, TProgress>>(
-			[taskCompletitionEvent, cancellationTokenSource]
+			[asyncOperationPointer, taskCompletitionEvent, cancellationTokenSource]
 			(IAsyncOperationWithProgress<TArgument, TProgress>* operation, AsyncStatus status)->
 			HRESULT
 			{

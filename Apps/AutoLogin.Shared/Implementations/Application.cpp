@@ -10,9 +10,11 @@
 #include <Labels.h>
 #include <MTL.h>
 #include <AuthStatus.h>
+#include <UriUtilities.h>
 
 using namespace AutoLogin::Implementations;
 using namespace AutoLogin::Resources;
+using namespace AutoLogin::Windows;
 
 HRESULT Application::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 {
@@ -46,7 +48,10 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 	using namespace MTL;
 
 	EventRegistrationToken token;
-	auto callback = CreateCallback<ITypedEventHandler<CoreApplicationView*, IActivatedEventArgs*>>([this](ICoreApplicationView* coreApplicationView, IActivatedEventArgs* args)-> HRESULT
+	auto callback = CreateCallback<ITypedEventHandler<CoreApplicationView*, IActivatedEventArgs*>>(
+		[this]
+		(ICoreApplicationView* coreApplicationView, IActivatedEventArgs* args) ->
+		HRESULT
 		{
 			try
 			{
@@ -69,41 +74,47 @@ HRESULT Application::Initialize(ABI::Windows::ApplicationModel::Core::ICoreAppli
 
 							if (argument)
 							{
+								auto unescapedArgument = UriUtilities().Unescape(argument.Get());
+
 								ComPtr<IUriRuntimeClassFactory> uriFactory;
 								Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
 														   &uriFactory));
 
 								ComPtr<IUriRuntimeClass> launchUri;
-								Check(uriFactory->CreateUri(argument.Get(),
+								Check(uriFactory->CreateUri(unescapedArgument.Get(),
 															&launchUri));
 
 								HString scheme;
 								Check(launchUri->get_SchemeName(&scheme));
 
-								const auto schemeRaw = scheme.GetRawBuffer();
-
-								if (nullptr != schemeRaw)
+								if (scheme)
 								{
+									auto schemeRaw = scheme.GetRawBuffer();
 									if (AuthStatus::launchAttributeScheme.compare(schemeRaw) == 0)
 									{
-										const auto argumentRaw = argument.GetRawBuffer();
-
-										if (AuthStatus::launchAttributeSuccess.compare(argumentRaw) == 0)
+										if (AuthStatus::launchAttributeSuccess.compare(unescapedArgument.GetRawBuffer()) == 0)
 										{
 											_description = Labels::AuthSuccess;
 										}
+										else if (AuthStatus::launchAttributeUnlicensed.compare(unescapedArgument.GetRawBuffer()) == 0)
+										{
+											_description = Labels::Unlicensed;
+										}
 									}
-									else if (wcsncmp(schemeRaw, L"http", 4))
+									else
 									{
-										ComPtr<ILauncherStatics> launcherStatics;
-										Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_System_Launcher).Get(),
-																   &launcherStatics));
+										_description = Labels::Description;
 
-										ComPtr<IAsyncOperation<bool>> launchAsyncOperation;
-										Check(launcherStatics->LaunchUriAsync(launchUri.Get(),
-																			  &launchAsyncOperation));
+										if (wcsncmp(schemeRaw, L"http", 4) == 0)
+										{
+											ComPtr<ILauncherStatics> launcherStatics;
+											Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_System_Launcher).Get(),
+																	   &launcherStatics));
 
-										exit(0);
+											ComPtr<IAsyncOperation<bool>> launchAsyncOperation;
+											Check(launcherStatics->LaunchUriAsync(launchUri.Get(),
+																				  &launchAsyncOperation));
+										}
 									}
 								}
 							}
@@ -388,47 +399,51 @@ Concurrency::task<void> Application::RegisterBackgroundTask() NOEXCEPT
 		ComPtr<IAsyncOperation<BackgroundAccessStatus>> backgroundAccessStatusAsyncOperation;
 		Check(backgroundExecutionManagerStatics->RequestAccessAsync(&backgroundAccessStatusAsyncOperation));
 
-		return GetTask(backgroundAccessStatusAsyncOperation.Get()).then([](BackgroundAccessStatus status) NOEXCEPT -> void
-			{
-				try
-				{
-					if (status == BackgroundAccessStatus_Denied) return;
+		return GetTask(backgroundAccessStatusAsyncOperation.Get())
+				.then(
+					[]
+					(BackgroundAccessStatus status) NOEXCEPT ->
+					void
+					{
+						try
+						{
+							if (status == BackgroundAccessStatus_Denied) return;
 
-					ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
-					Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
-											   &backgroundTaskRegistrationStatics));
+							ComPtr<IBackgroundTaskRegistrationStatics> backgroundTaskRegistrationStatics;
+							Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskRegistration).Get(),
+													   &backgroundTaskRegistrationStatics));
 
-					ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
-					Check(backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations));
+							ComPtr<IMapView<GUID, IBackgroundTaskRegistration*>> taskRegistrations;
+							Check(backgroundTaskRegistrationStatics->get_AllTasks(&taskRegistrations));
 
-					if (begin(taskRegistrations.Get()) != end(taskRegistrations.Get())) return;
+							if (begin(taskRegistrations.Get()) != end(taskRegistrations.Get())) return;
 
-					ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
-					Check(ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
-																   &backgroundTaskBuilder));
+							ComPtr<IBackgroundTaskBuilder> backgroundTaskBuilder;
+							Check(ActivateInstance<IBackgroundTaskBuilder>(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_BackgroundTaskBuilder).Get(),
+																		   &backgroundTaskBuilder));
 
-					Check(backgroundTaskBuilder->put_Name(HStringReference(L"AutoLoginTask").Get()));
-					Check(backgroundTaskBuilder->put_TaskEntryPoint(HStringReference(L"AutoLogin.Background.LoginTask").Get()));
+							Check(backgroundTaskBuilder->put_Name(HStringReference(L"AutoLoginTask").Get()));
+							Check(backgroundTaskBuilder->put_TaskEntryPoint(HStringReference(L"AutoLogin.Background.LoginTask").Get()));
 
-					ComPtr<ISystemTriggerFactory> systemTriggerActivationFactory;
-					Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_SystemTrigger).Get(),
-											   &systemTriggerActivationFactory));
+							ComPtr<ISystemTriggerFactory> systemTriggerActivationFactory;
+							Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_ApplicationModel_Background_SystemTrigger).Get(),
+													   &systemTriggerActivationFactory));
 
-					ComPtr<ISystemTrigger> systemTrigger;
-					Check(systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
-																 false,
-																 &systemTrigger));
+							ComPtr<ISystemTrigger> systemTrigger;
+							Check(systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
+																		 false,
+																		 &systemTrigger));
 
-					ComPtr<IBackgroundTrigger> backgroundTrigger;
-					Check(systemTrigger.As(&backgroundTrigger));
+							ComPtr<IBackgroundTrigger> backgroundTrigger;
+							Check(systemTrigger.As(&backgroundTrigger));
 
-					Check(backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get()));
+							Check(backgroundTaskBuilder->SetTrigger(backgroundTrigger.Get()));
 
-					ComPtr<IBackgroundTaskRegistration> taskRegistration;
-					Check(backgroundTaskBuilder->Register(&taskRegistration));
-				}
-				catch (...) { }
-			});
+							ComPtr<IBackgroundTaskRegistration> taskRegistration;
+							Check(backgroundTaskBuilder->Register(&taskRegistration));
+						}
+						catch (...) { }
+					});
 	}
 	catch (...)
 	{

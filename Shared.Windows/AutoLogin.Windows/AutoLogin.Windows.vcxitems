@@ -15,5 +15,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)NetworkInfoProvider.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)UriUtilities.h" />
   </ItemGroup>
 </Project>

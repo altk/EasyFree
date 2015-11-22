@@ -10,6 +10,7 @@
 #include <LicenseChecker.h>
 #include <Labels.h>
 #include <AuthStatus.h>
+#include <UriUtilities.h>
 
 using namespace std;
 using namespace Concurrency;
@@ -19,6 +20,7 @@ using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Storage::Streams;
 using namespace ABI::Windows::Data::Xml::Dom;
 using namespace ABI::Windows::UI::Notifications;
+using namespace MTL::Internals;
 using namespace MTL;
 using namespace AutoLogin::Background::Implementations;
 using namespace AutoLogin::CrossPlatform;
@@ -78,9 +80,6 @@ HRESULT LoginTask::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 
 HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 {
-	using namespace std;
-	using namespace Internals;
-
 	try
 	{
 		auto currentNetwork = NetworkInfoProvider::GetNetworkConnectionProfile();
@@ -97,7 +96,9 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 
 			auto findIterator = find_if(begin(authorizers),
 										end(authorizers),
-										[connectionNameRaw](const shared_ptr<IAuthorizer>& authorizer)-> bool
+										[connectionNameRaw]
+										(const shared_ptr<IAuthorizer>& authorizer) ->
+										bool
 										{
 											return authorizer->CanAuth(connectionNameRaw);
 										});
@@ -112,33 +113,42 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 					Check(taskInstance->GetDeferral(&taskDefferal));
 
 					authorizer->AuthAsync()
-							.then([taskDefferal, authorizer](task<wstring> authResultTask) NOEXCEPT-> void
+							.then(
+								[taskDefferal, authorizer]
+								(task<wstring> authResultTask) NOEXCEPT ->
+								void
 								{
 									try
 									{
 										auto authResult = authResultTask.get();
 										if (!authResult.empty())
 										{
+											wstring launchArgument,
+													description;
+
 											if (authResult == AuthStatus::launchAttributeSuccess)
 											{
-												NotificationHelper::PromtNotification(AuthStatus::launchAttributeSuccess,
-																					  Labels::AuthSuccess);
+												launchArgument = AuthStatus::launchAttributeSuccess;
+												description = Labels::AuthSuccess;
 											}
 											else if (authResult == authorizer->GetRegistrationUrl())
 											{
-												NotificationHelper::PromtNotification(move(authResult),
-																					  Labels::RegistrationNeed);
+												launchArgument = authorizer->GetRegistrationUrl();
+												description = Labels::RegistrationNeed;
 											}
 											else
 											{
-												NotificationHelper::PromtNotification(move(authResult),
-																					  Labels::AuthFail);
+												launchArgument = authResult;
+												description = Labels::AuthFail;
 											}
-										}
 
-										Check(taskDefferal->Complete());
+											NotificationHelper::PromtNotification(UriUtilities().Escape(HStringReference(launchArgument.data(), launchArgument.size()).Get()).GetRawBuffer(),
+																				  description);
+										}
 									}
 									catch (...) {}
+
+									Check(taskDefferal->Complete());
 								});
 				}
 				else
