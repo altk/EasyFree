@@ -54,9 +54,7 @@ task<wstring> MosMetroAuthorizer<IHttpResponseMessage*>::GetAuthUrlAsync(IHttpRe
 			byte* content;
 			Check(bufferByteAccess->Buffer(&content));
 
-			return wstring(L"https://login.wi-fi.ru/am/UI/Login?org=mac&service=coa&client_mac=c8-d1-0b-01-24-e1&ForceAuth=true");
-
-			//return MosMetroResponseParser::GetAuthUrl(reinterpret_cast<const char*>(content));
+			return MosMetroResponseParser::GetAuthUrl(reinterpret_cast<const char*>(content));
 		});
 }
 
