@@ -61,9 +61,6 @@ task<wstring> MosMetroAuthorizer<IHttpResponseMessage*>::GetAuthUrlAsync(IHttpRe
 template <>
 task<wstring> MosMetroAuthorizer<IHttpResponseMessage*>::GetPostContentAsync(IHttpResponseMessage* response) NOEXCEPT
 {
-	HttpStatusCode responseStatusCode;
-	Check(response->get_StatusCode(&responseStatusCode));
-
 	ComPtr<IHttpContent> httpContent;
 	ComPtr<IAsyncOperationWithProgress<IBuffer*, UINT64>> readAsBufferOperation;
 
