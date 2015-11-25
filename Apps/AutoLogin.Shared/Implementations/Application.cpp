@@ -430,7 +430,7 @@ Concurrency::task<void> Application::RegisterBackgroundTask() NOEXCEPT
 													   &systemTriggerActivationFactory));
 
 							ComPtr<ISystemTrigger> systemTrigger;
-							Check(systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
+							Check(systemTriggerActivationFactory->Create(SystemTriggerType_TimeZoneChange,
 																		 false,
 																		 &systemTrigger));
 
