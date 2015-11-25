@@ -1,5 +1,4 @@
 #pragma once
-#include <string>
 #include <gumbo.h>
 #include <macro.h>
 
@@ -22,8 +21,10 @@ namespace AutoLogin
 
 				if (!output) return result;
 
-				auto formNode = FindNodeByTag(output->root,
-											  GUMBO_TAG_FORM);
+				auto formNode = FindNode(output->root,
+										 GUMBO_TAG_FORM,
+										 "id",
+										 "auth-form");
 
 				if (!formNode) return result;
 
@@ -47,8 +48,8 @@ namespace AutoLogin
 
 				if (!output) return result;
 
-				auto headNode = FindNodeByTag(output->root,
-											  GUMBO_TAG_HEAD);
+				auto headNode = FindNode(output->root,
+										 GUMBO_TAG_HEAD);
 
 				result = GetUrl(headNode);
 
@@ -59,8 +60,8 @@ namespace AutoLogin
 			}
 
 		private:
-			static const GumboNode* FindNodeByTag(const GumboNode* node,
-												  GumboTag tag) NOEXCEPT
+			static const GumboNode* FindNode(const GumboNode* node,
+											 GumboTag tag) NOEXCEPT
 			{
 				if (node->v.element.tag == tag)
 				{
@@ -73,7 +74,45 @@ namespace AutoLogin
 					auto child = static_cast<GumboNode*>(children->data[i]);
 					if (GUMBO_NODE_ELEMENT == child->type)
 					{
-						auto result = FindNodeByTag(child, tag);
+						auto result = FindNode(child, tag);
+						if (nullptr != result)
+						{
+							return result;
+						}
+					}
+				}
+
+				return nullptr;
+			}
+
+			static const GumboNode* FindNode(const GumboNode* node,
+											 GumboTag tag,
+											 const char* attributeId,
+											 const char* attributeValue) NOEXCEPT
+			{
+				if (node->v.element.tag == tag)
+				{
+					auto attributes = &node->v.element.attributes;
+					for (unsigned j = 0; j < attributes->length; ++j)
+					{
+						auto attribute = static_cast<GumboAttribute*>(attributes->data[j]);
+						if (_stricmp(attribute->name, attributeId) == 0 && _stricmp(attribute->value, attributeValue) == 0)
+						{
+							return node;
+						}
+					}
+				}
+
+				auto children = &node->v.element.children;
+				for (unsigned i = 0; i < children->length; ++i)
+				{
+					auto child = static_cast<GumboNode*>(children->data[i]);
+					if (GUMBO_NODE_ELEMENT == child->type)
+					{
+						auto result = FindNode(child,
+											   tag,
+											   attributeId,
+											   attributeValue);
 						if (nullptr != result)
 						{
 							return result;
