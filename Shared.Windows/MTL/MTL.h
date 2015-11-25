@@ -1112,6 +1112,28 @@ namespace MTL
 
 #pragma endregion
 
+	template <typename TArgument, bool = std::is_base_of<IUnknown, std::remove_pointer_t<TArgument>>::value>
+	struct GetTaskHelper;
+
+	template <typename TArgument>
+	struct GetTaskHelper<TArgument, true> final
+	{
+		using TResult = ComPtr<std::remove_pointer_t<TArgument>>;
+	};
+
+	/*
+	template<typename TArgument>
+	struct GetTaskHelper<TArgument, false> final
+	{
+		using TResult = TArgument;
+	};*/
+
+	template <typename TArgument>
+	using AsyncOperationAbiType = typename ABI::Windows::Foundation::Internal::GetAbiType<typename ABI::Windows::Foundation::IAsyncOperation<TArgument>::TResult_complex>::type;
+
+	template <typename TArgument, typename TProgress>
+	using AsyncOperationWithProgressAbiType = typename ABI::Windows::Foundation::Internal::GetAbiType<typename ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>::TResult_complex>::type;
+
 	template <typename TDelegateInterface,
 			  typename TCallback,
 			  typename ... TArgs>
@@ -1156,13 +1178,13 @@ namespace MTL
 
 	template <typename TArgument>
 	static auto GetTask(ABI::Windows::Foundation::IAsyncOperation<TArgument>* asyncOperation) ->
-	concurrency::task<typename ABI::Windows::Foundation::Internal::GetAbiType<typename ABI::Windows::Foundation::IAsyncOperation<TArgument>::TResult_complex>::type>
+	concurrency::task<typename GetTaskHelper<AsyncOperationAbiType<TArgument>>::TResult>
 	{
 		using namespace concurrency;
 		using namespace ABI::Windows::Foundation::Internal;
 		using namespace ABI::Windows::Foundation;
 
-		using TResult = typename GetAbiType<typename IAsyncOperation<TArgument>::TResult_complex>::type;
+		using TResult = typename GetTaskHelper<AsyncOperationAbiType<TArgument>>::TResult;
 
 		ComPtr<IAsyncInfo> asyncInfo;
 		Check(asyncOperation->template QueryInterface<IAsyncInfo>(&asyncInfo));
@@ -1223,13 +1245,13 @@ namespace MTL
 
 	template <typename TArgument, typename TProgress>
 	static auto GetTask(ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>* asyncOperation) ->
-	concurrency::task<typename ABI::Windows::Foundation::Internal::GetAbiType<typename ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>::TResult_complex>::type>
+	concurrency::task<typename GetTaskHelper<AsyncOperationWithProgressAbiType<TArgument, TProgress>>::TResult>
 	{
 		using namespace concurrency;
 		using namespace ABI::Windows::Foundation::Internal;
 		using namespace ABI::Windows::Foundation;
 
-		using TResult = typename GetAbiType<typename IAsyncOperationWithProgress<TArgument, TProgress>::TResult_complex>::type;
+		using TResult = typename GetTaskHelper<AsyncOperationWithProgressAbiType<TArgument, TProgress>>::TResult;
 
 		ComPtr<IAsyncInfo> asyncInfo;
 		Check(asyncOperation->template QueryInterface<IAsyncInfo>(&asyncInfo));
