@@ -81,21 +81,6 @@ task<wstring> MosMetroAuthorizer<IHttpResponseMessage*>::GetPostContentAsync(IHt
 			byte* content;
 			Check(bufferByteAccess->Buffer(&content));
 			
-			UINT32 lenght;
-			Check(buffer->get_Length(&lenght));
-
-			reverse_iterator<const char*> start(reinterpret_cast<char*>(content) + lenght);
-			reverse_iterator<const char*> end(reinterpret_cast<char*>(content));
-
-			string formOpenTag("<form");
-			string formCloseTag("form>");
-			
-			auto closeIterator = search(start, end, rbegin(formCloseTag), rend(formCloseTag));
-			auto openIterator = search(closeIterator, end, rbegin(formOpenTag), rend(formOpenTag));
-
-			auto fs = (openIterator + formOpenTag.length()).base();
-			auto fe = (closeIterator).base();
-
-			return MosMetroResponseParser::GetPostString(string(fs, fe).data());
+			return MosMetroResponseParser::GetPostString(reinterpret_cast<char*>(content));
 		});
 }
