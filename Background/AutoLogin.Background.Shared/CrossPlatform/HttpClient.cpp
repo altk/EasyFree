@@ -18,7 +18,7 @@ using namespace MTL;
 using namespace AutoLogin::CrossPlatform;
 
 template <>
-class AutoLogin::CrossPlatform::HttpClient<IHttpResponseMessage*>::HttpClientImpl final
+class AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::HttpClientImpl final
 {
 public:
 	HttpClientImpl()
@@ -42,9 +42,9 @@ public:
 		Check(httpBaseProtocolFilter->get_IgnorableServerCertificateErrors(&validationResultVector));
 
 		Check(validationResultVector->Append(ChainValidationResult_Expired));
-		
+
 		Check(validationResultVector->Append(ChainValidationResult_Untrusted));
-		
+
 		Check(validationResultVector->Append(ChainValidationResult_InvalidName));
 
 		Check(httpCacheControl->put_ReadBehavior(HttpCacheReadBehavior_MostRecent));
@@ -59,7 +59,7 @@ public:
 										&_httpClient));
 	}
 
-	task<IHttpResponseMessage*> GetAsync(wstring url) const NOEXCEPT
+	task<ComPtr<IHttpResponseMessage>> GetAsync(wstring url) const NOEXCEPT
 	{
 		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> getAsyncOperation;
 		Check(_httpClient->GetAsync(CreateUri(move(url)).Get(),
@@ -68,8 +68,8 @@ public:
 		return GetTask(getAsyncOperation.Get());
 	}
 
-	task<IHttpResponseMessage*> PostAsync(wstring url,
-										  wstring postContent) const NOEXCEPT
+	task<ComPtr<IHttpResponseMessage>> PostAsync(wstring url,
+												 wstring postContent) const NOEXCEPT
 	{
 		ComPtr<IHttpStringContentFactory> stringContentFactory;
 		ComPtr<IHttpContent> postHttpContent;
@@ -107,19 +107,19 @@ private:
 };
 
 template <>
-AutoLogin::CrossPlatform::HttpClient<IHttpResponseMessage*>::HttpClient() NOEXCEPT
+AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::HttpClient() NOEXCEPT
 	: _impl(new HttpClientImpl()) {}
 
 template <>
-AutoLogin::CrossPlatform::HttpClient<IHttpResponseMessage*>::~HttpClient() NOEXCEPT {}
+AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::~HttpClient() NOEXCEPT {}
 
-task<IHttpResponseMessage*> AutoLogin::CrossPlatform::HttpClient<IHttpResponseMessage*>::GetAsync(wstring url) const NOEXCEPT
+task<ComPtr<IHttpResponseMessage>> AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::GetAsync(wstring url) const NOEXCEPT
 {
 	return _impl->GetAsync(move(url));
 }
 
-task<IHttpResponseMessage*> AutoLogin::CrossPlatform::HttpClient<IHttpResponseMessage*>::PostAsync(wstring url, 
-																								   wstring postContent) const NOEXCEPT
+task<ComPtr<IHttpResponseMessage>> AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::PostAsync(wstring url,
+																												 wstring postContent) const NOEXCEPT
 {
 	return _impl->PostAsync(move(url),
 							move(postContent));

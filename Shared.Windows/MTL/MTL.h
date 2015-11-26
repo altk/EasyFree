@@ -364,6 +364,64 @@ namespace MTL
 		};
 
 #pragma endregion
+
+#pragma region AsyncOperationTaskHelper
+
+		template <typename TArgument, bool = std::is_base_of<IUnknown, std::remove_pointer_t<TArgument>>::value>
+		struct AsyncOperationTaskHelper;
+
+		template <typename TArgument>
+		struct AsyncOperationTaskHelper<TArgument, true> final
+		{
+			using TResult = ComPtr<std::remove_pointer_t<TArgument>>;
+		};
+
+		template <typename TArgument>
+		struct AsyncOperationTaskHelper<TArgument, false> final
+		{
+			using TResult = TArgument;
+		};
+
+#pragma endregion
+
+#pragma region AsynOperationHelper
+
+		template <typename TAsyncOperation>
+		struct AsynOperationHelper;
+
+		template <typename TArgument>
+		struct AsynOperationHelper<ABI::Windows::Foundation::IAsyncOperation<TArgument>> final
+		{
+			using TOperation = ABI::Windows::Foundation::IAsyncOperation<TArgument>;
+			using TResult = typename AsyncOperationTaskHelper<typename ABI::Windows::Foundation::Internal::GetAbiType<typename TOperation::TResult_complex>::type>::TResult;
+			using THandler = ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TArgument>;
+		};
+
+		template <typename TArgument>
+		struct AsynOperationHelper<RemoveIUnknown<ABI::Windows::Foundation::IAsyncOperation<TArgument>>> final
+		{
+			using TOperation = ABI::Windows::Foundation::IAsyncOperation<TArgument>;
+			using TResult = typename AsyncOperationTaskHelper<typename ABI::Windows::Foundation::Internal::GetAbiType<typename TOperation::TResult_complex>::type>::TResult;
+			using THandler = ABI::Windows::Foundation::IAsyncOperationCompletedHandler<TArgument>;
+		};
+
+		template <typename TArgument, typename TProgress>
+		struct AsynOperationHelper<ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>> final
+		{
+			using TOperation = ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>;
+			using TResult = typename AsyncOperationTaskHelper<typename ABI::Windows::Foundation::Internal::GetAbiType<typename TOperation::TResult_complex>::type>::TResult;
+			using THandler = ABI::Windows::Foundation::IAsyncOperationWithProgressCompletedHandler<TArgument, TProgress>;
+		};
+
+		template <typename TArgument, typename TProgress>
+		struct AsynOperationHelper<RemoveIUnknown<ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>>> final
+		{
+			using TOperation = ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>;
+			using TResult = typename AsyncOperationTaskHelper<typename ABI::Windows::Foundation::Internal::GetAbiType<typename TOperation::TResult_complex>::type>::TResult;
+			using THandler = ABI::Windows::Foundation::IAsyncOperationWithProgressCompletedHandler<TArgument, TProgress>;
+		};
+
+#pragma endregion
 	}
 
 #pragma region ComException
@@ -592,6 +650,8 @@ namespace MTL
 
 #pragma endregion
 
+#pragma region Module
+
 	struct Module
 	{
 		static bool CanUnload() NOEXCEPT;
@@ -600,6 +660,8 @@ namespace MTL
 
 		static void Decrement() NOEXCEPT;
 	};
+
+#pragma endregion
 
 #pragma region ComClass
 
@@ -1112,28 +1174,6 @@ namespace MTL
 
 #pragma endregion
 
-	template <typename TArgument, bool = std::is_base_of<IUnknown, std::remove_pointer_t<TArgument>>::value>
-	struct GetTaskHelper;
-
-	template <typename TArgument>
-	struct GetTaskHelper<TArgument, true> final
-	{
-		using TResult = ComPtr<std::remove_pointer_t<TArgument>>;
-	};
-
-	/*
-	template<typename TArgument>
-	struct GetTaskHelper<TArgument, false> final
-	{
-		using TResult = TArgument;
-	};*/
-
-	template <typename TArgument>
-	using AsyncOperationAbiType = typename ABI::Windows::Foundation::Internal::GetAbiType<typename ABI::Windows::Foundation::IAsyncOperation<TArgument>::TResult_complex>::type;
-
-	template <typename TArgument, typename TProgress>
-	using AsyncOperationWithProgressAbiType = typename ABI::Windows::Foundation::Internal::GetAbiType<typename ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>::TResult_complex>::type;
-
 	template <typename TDelegateInterface,
 			  typename TCallback,
 			  typename ... TArgs>
@@ -1176,15 +1216,17 @@ namespace MTL
 		return ComPtr<TDelegateInterface>(new TDelegateType(std::move(delegate)));
 	};
 
-	template <typename TArgument>
-	static auto GetTask(ABI::Windows::Foundation::IAsyncOperation<TArgument>* asyncOperation) ->
-	concurrency::task<typename GetTaskHelper<AsyncOperationAbiType<TArgument>>::TResult>
+	template <typename TAsyncOperation>
+	inline auto GetTask(TAsyncOperation* asyncOperation) ->
+	Concurrency::task<typename Internals::AsynOperationHelper<TAsyncOperation>::TResult>
 	{
-		using namespace concurrency;
-		using namespace ABI::Windows::Foundation::Internal;
+		using namespace Internals;
+		using namespace Concurrency;
 		using namespace ABI::Windows::Foundation;
 
-		using TResult = typename GetTaskHelper<AsyncOperationAbiType<TArgument>>::TResult;
+		using TAsyncOperationHelper = AsynOperationHelper<TAsyncOperation>;
+		using TOperation = typename TAsyncOperationHelper::TOperation;
+		using TResult = typename TAsyncOperationHelper::TResult;
 
 		ComPtr<IAsyncInfo> asyncInfo;
 		Check(asyncOperation->template QueryInterface<IAsyncInfo>(&asyncInfo));
@@ -1193,19 +1235,16 @@ namespace MTL
 		cancellation_token_source cancellationTokenSource;
 		auto token = cancellationTokenSource.get_token();
 
-		token.register_callback(
-			[asyncInfo]
-			()->
-			void
+		token.register_callback([asyncInfo]()
 			{
 				asyncInfo->Cancel();
 			});
 
-		auto asyncOperationPointer = CreateComPtr(asyncOperation);
+		auto asyncOperationPointer = CreateComPtr(static_cast<TOperation*>(asyncOperation));
 
-		auto callback = CreateCallback<IAsyncOperationCompletedHandler<TArgument>>(
+		auto callback = CreateCallback<typename TAsyncOperationHelper::THandler>(
 			[asyncOperationPointer, taskCompletitionEvent, cancellationTokenSource]
-			(IAsyncOperation<TArgument>* operation, AsyncStatus status)->
+			(TOperation* operation, AsyncStatus status)->
 			HRESULT
 			{
 				try
@@ -1216,74 +1255,7 @@ namespace MTL
 							{
 								TResult result;
 								Check(operation->GetResults(&result));
-								taskCompletitionEvent.set(result);
-								break;
-							}
-						case AsyncStatus::Canceled:
-							{
-								cancellationTokenSource.cancel();
-								break;
-							}
-						case AsyncStatus::Error:
-							{
-								taskCompletitionEvent.set_exception(std::exception());
-								break;
-							}
-					}
-				}
-				catch (const ComException& exception)
-				{
-					taskCompletitionEvent.set_exception(exception);
-				}
-				return S_OK;
-			});
-
-		Check(asyncOperation->put_Completed(callback.Get()));
-
-		return task<TResult>(taskCompletitionEvent, token);
-	}
-
-	template <typename TArgument, typename TProgress>
-	static auto GetTask(ABI::Windows::Foundation::IAsyncOperationWithProgress<TArgument, TProgress>* asyncOperation) ->
-	concurrency::task<typename GetTaskHelper<AsyncOperationWithProgressAbiType<TArgument, TProgress>>::TResult>
-	{
-		using namespace concurrency;
-		using namespace ABI::Windows::Foundation::Internal;
-		using namespace ABI::Windows::Foundation;
-
-		using TResult = typename GetTaskHelper<AsyncOperationWithProgressAbiType<TArgument, TProgress>>::TResult;
-
-		ComPtr<IAsyncInfo> asyncInfo;
-		Check(asyncOperation->template QueryInterface<IAsyncInfo>(&asyncInfo));
-
-		task_completion_event<TResult> taskCompletitionEvent;
-		cancellation_token_source cancellationTokenSource;
-		auto token = cancellationTokenSource.get_token();
-
-		token.register_callback(
-			[asyncInfo]
-			()->
-			void
-			{
-				asyncInfo->Cancel();
-			});
-
-		auto asyncOperationPointer = CreateComPtr(asyncOperation);
-
-		auto callback = CreateCallback<IAsyncOperationWithProgressCompletedHandler<TArgument, TProgress>>(
-			[asyncOperationPointer, taskCompletitionEvent, cancellationTokenSource]
-			(IAsyncOperationWithProgress<TArgument, TProgress>* operation, AsyncStatus status)->
-			HRESULT
-			{
-				try
-				{
-					switch (status)
-					{
-						case AsyncStatus::Completed:
-							{
-								TResult result;
-								Check(operation->GetResults(&result));
-								taskCompletitionEvent.set(result);
+								taskCompletitionEvent.set(move(result));
 								break;
 							}
 						case AsyncStatus::Canceled:
