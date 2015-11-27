@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "MosMetroAuthorizer.h"
 #include <MosMetroResponseParcer.h>
-#include <algorithm>
 #include <robuffer.h>
 #include <windows.web.http.h>
 #include <windows.storage.streams.h>
@@ -22,8 +21,8 @@ using namespace MTL;
 using namespace AutoLogin::CrossPlatform;
 
 template <>
-task<bool> MosMetroAuthorizer<IHttpResponseMessage*>::CheckAsync(IHttpResponseMessage* response,
-																 uint_fast16_t statusCode) NOEXCEPT
+task<bool> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::CheckAsync(ComPtr<IHttpResponseMessage> response,
+																		uint_fast16_t statusCode) NOEXCEPT
 {
 	HttpStatusCode responseStatusCode;
 	Check(response->get_StatusCode(&responseStatusCode));
@@ -32,7 +31,7 @@ task<bool> MosMetroAuthorizer<IHttpResponseMessage*>::CheckAsync(IHttpResponseMe
 }
 
 template <>
-task<wstring> MosMetroAuthorizer<IHttpResponseMessage*>::GetAuthUrlAsync(IHttpResponseMessage* response) NOEXCEPT
+task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetAuthUrlAsync(ComPtr<IHttpResponseMessage> response) NOEXCEPT
 {
 	ComPtr<IHttpContent> httpContent;
 	ComPtr<IAsyncOperationWithProgress<IBuffer*, UINT64>> readAsBufferOperation;
@@ -43,13 +42,13 @@ task<wstring> MosMetroAuthorizer<IHttpResponseMessage*>::GetAuthUrlAsync(IHttpRe
 
 	return GetTask(readAsBufferOperation.Get()).then(
 		[]
-		(IBuffer* buffer) ->
+		(ComPtr<IBuffer> buffer) ->
 		wstring
 		{
-			if (nullptr == buffer) return wstring();
+			if (!buffer) return wstring();
 
 			ComPtr<IBufferByteAccess> bufferByteAccess;
-			Check(buffer->QueryInterface<IBufferByteAccess>(&bufferByteAccess));
+			Check(buffer.As(&bufferByteAccess));
 
 			byte* content;
 			Check(bufferByteAccess->Buffer(&content));
@@ -59,7 +58,7 @@ task<wstring> MosMetroAuthorizer<IHttpResponseMessage*>::GetAuthUrlAsync(IHttpRe
 }
 
 template <>
-task<wstring> MosMetroAuthorizer<IHttpResponseMessage*>::GetPostContentAsync(IHttpResponseMessage* response) NOEXCEPT
+task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetPostContentAsync(ComPtr<IHttpResponseMessage> response) NOEXCEPT
 {
 	ComPtr<IHttpContent> httpContent;
 	ComPtr<IAsyncOperationWithProgress<IBuffer*, UINT64>> readAsBufferOperation;
@@ -70,17 +69,17 @@ task<wstring> MosMetroAuthorizer<IHttpResponseMessage*>::GetPostContentAsync(IHt
 
 	return GetTask(readAsBufferOperation.Get()).then(
 		[]
-		(IBuffer* buffer) ->
+		(ComPtr<IBuffer> buffer) ->
 		wstring
 		{
-			if (nullptr == buffer) return wstring();
+			if (!buffer) return wstring();
 
 			ComPtr<IBufferByteAccess> bufferByteAccess;
 			Check(buffer->QueryInterface<IBufferByteAccess>(&bufferByteAccess));
 
 			byte* content;
 			Check(bufferByteAccess->Buffer(&content));
-			
+
 			return MosMetroResponseParser::GetPostString(reinterpret_cast<char*>(content));
 		});
 }

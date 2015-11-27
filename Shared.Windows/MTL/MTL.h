@@ -1255,7 +1255,7 @@ namespace MTL
 							{
 								TResult result;
 								Check(operation->GetResults(&result));
-								taskCompletitionEvent.set(move(result));
+								taskCompletitionEvent.set(std::move(result));
 								break;
 							}
 						case AsyncStatus::Canceled:

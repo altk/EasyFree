@@ -87,7 +87,7 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 		{
 			vector<shared_ptr<IAuthorizer>> authorizers
 					{
-						make_shared<MosMetroAuthorizer<IHttpResponseMessage*>>()
+						make_shared<MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>>()
 					};
 
 			HString connectionName;
