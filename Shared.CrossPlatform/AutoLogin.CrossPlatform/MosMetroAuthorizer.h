@@ -77,7 +77,7 @@ namespace AutoLogin
 																  })
 															  .then([authUrl](bool checkResult)
 																  {
-																	  return checkResult ? wstring(AuthStatus::launchAttributeSuccess) : authUrl;
+																	  return checkResult ? wstring(AuthStatus::launchAttributeSuccess) : move(authUrl);
 																  });
 										 });
 				}
