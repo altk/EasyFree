@@ -30,6 +30,9 @@ public:
 		ComPtr<IVector<ChainValidationResult>> validationResultVector;
 		ComPtr<IHttpMethodStatics> httpMethodStatics;
 
+		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
+								   &uriFactory));
+
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpClient).Get(),
 								   &httpClientFactory));
 
@@ -73,25 +76,11 @@ public:
 	task<ComPtr<IHttpResponseMessage>> GetAsync(wstring url,
 												vector<tuple<wstring, wstring>> headers) const NOEXCEPT
 	{
-		ComPtr<IHttpRequestMessage> httpRequestMessage;
-		ComPtr<IHttpRequestHeaderCollection> httpRequestHeaderCollection;
 		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> getAsyncOperation;
 
-		Check(_httpRequestMessageFactory->Create(_httpGetMethod.Get(),
-												 CreateUri(move(url)).Get(),
-												 &httpRequestMessage));
-
-		Check(httpRequestMessage->get_Headers(&httpRequestHeaderCollection));
-
-		for(auto&& header : headers)
-		{
-			boolean isSuccess;
-			HString key(get<0>(header));
-			HString value(get<1>(header));
-			Check(httpRequestHeaderCollection->TryAppendWithoutValidation(key.Get(),
-																		  value.Get(),
-																		  &isSuccess));
-		}
+		auto httpRequestMessage = CreateRequest(_httpGetMethod.Get(),
+												move(url),
+												move(headers));
 
 		Check(_httpClient->SendRequestAsync(httpRequestMessage.Get(),
 											&getAsyncOperation));
@@ -105,25 +94,11 @@ public:
 	{
 		ComPtr<IHttpStringContentFactory> stringContentFactory;
 		ComPtr<IHttpContent> postHttpContent;
-		ComPtr<IHttpRequestMessage> httpRequestMessage;
-		ComPtr<IHttpRequestHeaderCollection> httpRequestHeaderCollection;
 		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> postAsyncOperation;
 
-		Check(_httpRequestMessageFactory->Create(_httpPostMethod.Get(),
-												 CreateUri(move(url)).Get(),
-												 &httpRequestMessage));
-
-		Check(httpRequestMessage->get_Headers(&httpRequestHeaderCollection));
-
-		for (auto&& header : headers)
-		{
-			boolean isSuccess;
-			HString key(get<0>(header));
-			HString value(get<1>(header));
-			Check(httpRequestHeaderCollection->TryAppendWithoutValidation(key.Get(),
-																		  value.Get(),
-																		  &isSuccess));
-		}
+		auto httpRequestMessage = CreateRequest(_httpPostMethod.Get(),
+												move(url),
+												move(headers));
 
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
 								   &stringContentFactory));
@@ -140,23 +115,46 @@ public:
 	}
 
 private:
+	ComPtr<IUriRuntimeClassFactory> uriFactory;
 	ComPtr<IHttpClient> _httpClient;
 	ComPtr<IHttpRequestMessageFactory> _httpRequestMessageFactory;
 	ComPtr<IHttpMethod> _httpGetMethod;
 	ComPtr<IHttpMethod> _httpPostMethod;
 
-	static ComPtr<IUriRuntimeClass> CreateUri(wstring url)
+	ComPtr<IUriRuntimeClass> CreateUri(wstring url) const
 	{
-		ComPtr<IUriRuntimeClassFactory> uriFactory;
 		ComPtr<IUriRuntimeClass> uri;
-
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
-								   &uriFactory));
 
 		Check(uriFactory->CreateUri(HStringReference(url.data(), url.size()).Get(),
 									&uri));
 
 		return uri;
+	}
+
+	ComPtr<IHttpRequestMessage> CreateRequest(IHttpMethod* method,
+											  wstring url,
+											  vector<tuple<wstring, wstring>> headers) const
+	{
+		ComPtr<IHttpRequestMessage> httpRequestMessage;
+		ComPtr<IHttpRequestHeaderCollection> httpRequestHeaderCollection;
+
+		Check(_httpRequestMessageFactory->Create(method,
+												 CreateUri(move(url)).Get(),
+												 &httpRequestMessage));
+
+		Check(httpRequestMessage->get_Headers(&httpRequestHeaderCollection));
+
+		for (auto&& header : headers)
+		{
+			boolean isSuccess;
+			HString key(get<0>(header));
+			HString value(get<1>(header));
+			Check(httpRequestHeaderCollection->TryAppendWithoutValidation(key.Get(),
+																		  value.Get(),
+																		  &isSuccess));
+		}
+
+		return httpRequestMessage;
 	}
 };
 

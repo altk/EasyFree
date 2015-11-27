@@ -40,7 +40,7 @@ namespace AutoLogin
 
 					wstring bindUrl = L"http://httpbin.org/status/500";
 
-					return httpClient.GetAsync(bindUrl)
+					return httpClient.GetAsync(bindUrl, vector<tuple<wstring, wstring>>())
 									 .then([](TResponse response)
 										 {
 											 return GetAuthUrlAsync(move(response));
@@ -58,18 +58,36 @@ namespace AutoLogin
 												 return task_from_result(move(registrationUrl));
 											 }
 
-											 return httpClient.GetAsync(authUrl)
+											 vector<tuple<wstring, wstring>> getHeaders
+													 {
+														 make_tuple(L"Accept", L"text/html"),
+														 make_tuple(L"User-Agent", L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36")
+													 };
+
+											 return httpClient.GetAsync(authUrl,
+																		move(getHeaders))
 															  .then([](TResponse response)
 																  {
 																	  return GetPostContentAsync(move(response));
 																  })
 															  .then([httpClient, authUrl](wstring postContent)
 																  {
-																	  return httpClient.PostAsync(move(authUrl), move(postContent));
+																	  vector<tuple<wstring, wstring>> postHeaders
+																			  {
+																				  make_tuple(L"Accept", L"text/html"),
+																				  make_tuple(L"Origin", L"https://login.wi-fi.ru"),
+																				  make_tuple(L"User-Agent", L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36"),
+																				  make_tuple(L"Content-Type", L"application/x-www-form-urlencoded"),
+																				  make_tuple(L"Referer", authUrl)
+																			  };
+
+																	  return httpClient.PostAsync(move(authUrl),
+																								  move(postHeaders),
+																								  move(postContent));
 																  })
 															  .then([httpClient, bindUrl](TResponse)
 																  {
-																	  return httpClient.GetAsync(move(bindUrl));
+																	  return httpClient.GetAsync(move(bindUrl), vector<tuple<wstring, wstring>>());
 																  })
 															  .then([](TResponse response)
 																  {
