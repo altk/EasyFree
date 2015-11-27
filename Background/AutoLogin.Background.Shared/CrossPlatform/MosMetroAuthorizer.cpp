@@ -21,17 +21,16 @@ using namespace MTL;
 using namespace AutoLogin::CrossPlatform;
 
 template <>
-task<bool> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::CheckAsync(ComPtr<IHttpResponseMessage> response,
-																		uint_fast16_t statusCode) NOEXCEPT
+task<uint_fast16_t> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetStatusCodeAsync(ComPtr<IHttpResponseMessage> response)
 {
 	HttpStatusCode responseStatusCode;
 	Check(response->get_StatusCode(&responseStatusCode));
 
-	return task_from_result(statusCode == responseStatusCode);
+	return task_from_result(static_cast<uint_fast16_t>(responseStatusCode));
 }
 
 template <>
-task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetAuthUrlAsync(ComPtr<IHttpResponseMessage> response) NOEXCEPT
+task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetAuthUrlAsync(ComPtr<IHttpResponseMessage> response) 
 {
 	ComPtr<IHttpContent> httpContent;
 	ComPtr<IAsyncOperationWithProgress<IBuffer*, UINT64>> readAsBufferOperation;
@@ -58,7 +57,7 @@ task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetAuthUrlAsync(
 }
 
 template <>
-task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetPostContentAsync(ComPtr<IHttpResponseMessage> response) NOEXCEPT
+task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetPostContentAsync(ComPtr<IHttpResponseMessage> response) 
 {
 	ComPtr<IHttpContent> httpContent;
 	ComPtr<IAsyncOperationWithProgress<IBuffer*, UINT64>> readAsBufferOperation;

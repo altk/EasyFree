@@ -91,11 +91,11 @@ namespace AutoLogin
 																  })
 															  .then([](TResponse response)
 																  {
-																	  return CheckAsync(move(response), 500);
+																	  return GetStatusCodeAsync(move(response));
 																  })
-															  .then([authUrl](bool checkResult)
+															  .then([authUrl](uint_fast16_t statusCode)
 																  {
-																	  return checkResult ? wstring(AuthStatus::launchAttributeSuccess) : move(authUrl);
+																	  return statusCode == 500 ? wstring(AuthStatus::launchAttributeSuccess) : move(authUrl);
 																  });
 										 });
 				}
@@ -119,12 +119,11 @@ namespace AutoLogin
 				return L"https://login.wi-fi.ru/am/UI/Login";
 			}
 
-			static Concurrency::task<bool> CheckAsync(TResponse response,
-													  uint_fast16_t statusCode) NOEXCEPT;
+			static Concurrency::task<uint_fast16_t> GetStatusCodeAsync(TResponse response);
 
-			static Concurrency::task<std::wstring> GetAuthUrlAsync(TResponse response) NOEXCEPT;
+			static Concurrency::task<std::wstring> GetAuthUrlAsync(TResponse response);
 
-			static Concurrency::task<std::wstring> GetPostContentAsync(TResponse response) NOEXCEPT;
+			static Concurrency::task<std::wstring> GetPostContentAsync(TResponse response);
 		};
 	}
 }
