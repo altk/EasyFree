@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <vector>
+#include <tuple>
 #include <memory>
 #include <ppltasks.h>
 #include <macro.h>
@@ -40,9 +42,11 @@ namespace AutoLogin
 				return *this;
 			}
 
-			Concurrency::task<TResponse> GetAsync(std::wstring url) const NOEXCEPT;
+			Concurrency::task<TResponse> GetAsync(std::wstring url,
+												  std::vector<std::tuple<std::wstring, std::wstring>> headers) const NOEXCEPT;
 
 			Concurrency::task<TResponse> PostAsync(std::wstring url,
+												   std::vector<std::tuple<std::wstring, std::wstring>> headers,
 												   std::wstring postContent) const NOEXCEPT;
 		private:
 			class HttpClientImpl;
