@@ -1,5 +1,7 @@
 #pragma once
 #include <gumbo.h>
+#include <string>
+#include <algorithm>
 #include <macro.h>
 
 namespace AutoLogin
@@ -17,14 +19,33 @@ namespace AutoLogin
 
 				if (nullptr == source) return result;
 
-				auto output = gumbo_parse(source);
+				char authFormAttribute[] = "auth-form";
+				const auto authFormLen = extent<decltype(authFormAttribute)>::value - 1;
+				const auto sourceLen = strlen(source);
+
+				auto authFormPointer = find_end(source, source + sourceLen,
+												authFormAttribute, authFormAttribute + authFormLen);
+
+				if (source + sourceLen == authFormPointer) return result;
+
+				char formBeginTag[] = "<form";
+				const auto formBeginTagLen = extent<decltype(formBeginTag)>::value - 1;
+
+				char formEndTag[] = "</form>";
+				const auto formEndTagLen = extent<decltype(formEndTag)>::value - 1;
+
+				auto formBeginTagPointer = find_end(source, authFormPointer,
+													formBeginTag, formBeginTag + formBeginTagLen);
+
+				auto formEndTagPointer = search(authFormPointer, source + sourceLen,
+												formEndTag, formEndTag + formEndTagLen);
+
+				auto output = gumbo_parse(string(formBeginTagPointer, formEndTagPointer + formEndTagLen).data());
 
 				if (!output) return result;
 
 				auto formNode = FindNode(output->root,
-										 GUMBO_TAG_FORM,
-										 "id",
-										 "auth-form");
+										 GUMBO_TAG_FORM);
 
 				if (!formNode) return result;
 
