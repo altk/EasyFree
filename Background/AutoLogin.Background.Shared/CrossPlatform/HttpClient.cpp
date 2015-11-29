@@ -2,6 +2,7 @@
 #include <HttpClient.h>
 #include <windows.web.http.h>
 #include <windows.foundation.collections.h>
+#include <HttpRequestHeaders.h>
 
 using namespace std;
 using namespace Concurrency;
@@ -73,8 +74,14 @@ public:
 		Check(httpMethodStatics->get_Post(&_httpPostMethod));
 	}
 
+	task<ComPtr<IHttpResponseMessage>> GetAsync(wstring url) const
+	{
+		return GetAsync(move(url),
+						unordered_map<wstring, wstring>());
+	}
+
 	task<ComPtr<IHttpResponseMessage>> GetAsync(wstring url,
-												vector<tuple<wstring, wstring>> headers) const NOEXCEPT
+												unordered_map<wstring, wstring> headers) const
 	{
 		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> getAsyncOperation;
 
@@ -89,22 +96,45 @@ public:
 	}
 
 	task<ComPtr<IHttpResponseMessage>> PostAsync(wstring url,
-												 vector<tuple<wstring, wstring>> headers,
-												 wstring postContent) const NOEXCEPT
+												 wstring postContent) const
+	{
+		return PostAsync(move(url),
+						 unordered_map<wstring, wstring>(),
+						 move(postContent));
+	}
+
+	task<ComPtr<IHttpResponseMessage>> PostAsync(wstring url,
+												 unordered_map<wstring, wstring> headers,
+												 wstring postContent) const
 	{
 		ComPtr<IHttpStringContentFactory> stringContentFactory;
 		ComPtr<IHttpContent> postHttpContent;
 		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> postAsyncOperation;
 
-		auto httpRequestMessage = CreateRequest(_httpPostMethod.Get(),
-												move(url),
-												move(headers));
+		HString hstringPostContent(move(postContent));
 
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
 								   &stringContentFactory));
 
-		Check(stringContentFactory->CreateFromString(HStringReference(postContent.data(), postContent.size()).Get(),
-													 &postHttpContent));
+		auto contentTypeHeaderIterator = headers.find(HttpRequestHeaders::ContentType);
+		if (contentTypeHeaderIterator != headers.end())
+		{
+			
+			Check(stringContentFactory->CreateFromStringWithEncodingAndMediaType(hstringPostContent.Get(),
+																				 UnicodeEncoding_Utf8,
+																				 HString(contentTypeHeaderIterator->second).Get(),
+																				 &postHttpContent));
+			headers.erase(HttpRequestHeaders::ContentType);
+		}
+		else
+		{
+			Check(stringContentFactory->CreateFromString(hstringPostContent.Get(),
+														 &postHttpContent));
+		}
+
+		auto httpRequestMessage = CreateRequest(_httpPostMethod.Get(),
+												move(url),
+												move(headers));
 
 		Check(httpRequestMessage->put_Content(postHttpContent.Get()));
 
@@ -133,7 +163,7 @@ private:
 
 	ComPtr<IHttpRequestMessage> CreateRequest(IHttpMethod* method,
 											  wstring url,
-											  vector<tuple<wstring, wstring>> headers) const
+											  unordered_map<wstring, wstring> headers) const
 	{
 		ComPtr<IHttpRequestMessage> httpRequestMessage;
 		ComPtr<IHttpRequestHeaderCollection> httpRequestHeaderCollection;
@@ -144,13 +174,11 @@ private:
 
 		Check(httpRequestMessage->get_Headers(&httpRequestHeaderCollection));
 
-		for (auto&& header : headers)
+		for (auto& header : headers)
 		{
 			boolean isSuccess;
-			HString key(get<0>(header));
-			HString value(get<1>(header));
-			Check(httpRequestHeaderCollection->TryAppendWithoutValidation(key.Get(),
-																		  value.Get(),
+			Check(httpRequestHeaderCollection->TryAppendWithoutValidation(HString(header.first).Get(),
+																		  HString(header.second).Get(),
 																		  &isSuccess));
 		}
 
@@ -165,16 +193,28 @@ AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::HttpClient()
 template <>
 AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::~HttpClient() NOEXCEPT {}
 
+task<ComPtr<IHttpResponseMessage>> AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::GetAsync(wstring url) const
+{
+	return _impl->GetAsync(move(url));
+}
+
 task<ComPtr<IHttpResponseMessage>> AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::GetAsync(wstring url,
-																												vector<tuple<wstring, wstring>> headers) const NOEXCEPT
+																												unordered_map<wstring, wstring> headers) const
 {
 	return _impl->GetAsync(move(url),
 						   move(headers));
 }
 
 task<ComPtr<IHttpResponseMessage>> AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::PostAsync(wstring url,
-																												 vector<tuple<wstring, wstring>> headers,
-																												 wstring postContent) const NOEXCEPT
+																												 wstring postContent) const
+{
+	return _impl->PostAsync(move(url),
+							move(postContent));
+}
+
+task<ComPtr<IHttpResponseMessage>> AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::PostAsync(wstring url,
+																												 unordered_map<wstring, wstring> headers,
+																												 wstring postContent) const
 {
 	return _impl->PostAsync(move(url),
 							move(headers),
