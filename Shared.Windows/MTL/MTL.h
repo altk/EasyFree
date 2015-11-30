@@ -1228,22 +1228,12 @@ namespace MTL
 		using TOperation = typename TAsyncOperationHelper::TOperation;
 		using TResult = typename TAsyncOperationHelper::TResult;
 
-		ComPtr<IAsyncInfo> asyncInfo;
-		Check(asyncOperation->template QueryInterface<IAsyncInfo>(&asyncInfo));
-
 		task_completion_event<TResult> taskCompletitionEvent;
-		cancellation_token_source cancellationTokenSource;
-		auto token = cancellationTokenSource.get_token();
-
-		token.register_callback([asyncInfo]()
-			{
-				asyncInfo->Cancel();
-			});
 
 		auto asyncOperationPointer = CreateComPtr(static_cast<TOperation*>(asyncOperation));
 
 		auto callback = CreateCallback<typename TAsyncOperationHelper::THandler>(
-			[asyncOperationPointer, taskCompletitionEvent, cancellationTokenSource]
+			[asyncOperationPointer, taskCompletitionEvent]
 			(TOperation* operation, AsyncStatus status)->
 			HRESULT
 			{
@@ -1260,7 +1250,7 @@ namespace MTL
 							}
 						case AsyncStatus::Canceled:
 							{
-								cancellationTokenSource.cancel();
+								taskCompletitionEvent.set_exception(task_canceled());
 								break;
 							}
 						case AsyncStatus::Error:
@@ -1279,7 +1269,7 @@ namespace MTL
 
 		Check(asyncOperation->put_Completed(callback.Get()));
 
-		return task<TResult>(taskCompletitionEvent, token);
+		return task<TResult>(taskCompletitionEvent);
 	}
 
 	inline void Check(HRESULT hr)
