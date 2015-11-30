@@ -1234,17 +1234,21 @@ namespace MTL
 
 		auto callback = CreateCallback<typename TAsyncOperationHelper::THandler>(
 			[asyncOperationPointer, taskCompletitionEvent]
-			(TOperation* operation, AsyncStatus status)->
+			(TOperation* operation, AsyncStatus status) mutable ->
 			HRESULT
 			{
 				try
 				{
+					ComPtr<IAsyncInfo> asyncInfo;
+					Check(asyncOperationPointer.As(&asyncInfo));
+
 					switch (status)
 					{
 						case AsyncStatus::Completed:
 							{
 								TResult result;
 								Check(operation->GetResults(&result));
+
 								taskCompletitionEvent.set(std::move(result));
 								break;
 							}
@@ -1255,15 +1259,26 @@ namespace MTL
 							}
 						case AsyncStatus::Error:
 							{
-								taskCompletitionEvent.set_exception(std::exception());
+								HRESULT errorCode;
+								Check(asyncInfo->get_ErrorCode(&errorCode));
+
+								taskCompletitionEvent.set_exception(ComException(errorCode));
 								break;
 							}
+						case AsyncStatus::Started:
+							break;
+						default:
+							break;
 					}
+
+					asyncOperationPointer.Release();
+					Check(asyncInfo->Close());
 				}
 				catch (const ComException& exception)
 				{
 					taskCompletitionEvent.set_exception(exception);
 				}
+
 				return S_OK;
 			});
 

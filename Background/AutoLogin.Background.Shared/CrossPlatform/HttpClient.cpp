@@ -3,6 +3,7 @@
 #include <windows.web.http.h>
 #include <windows.foundation.collections.h>
 #include <HttpRequestHeaders.h>
+#include <MTL.h>
 
 using namespace std;
 using namespace Concurrency;

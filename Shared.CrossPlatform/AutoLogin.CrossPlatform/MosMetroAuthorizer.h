@@ -3,7 +3,6 @@
 #include <AuthStatus.h>
 #include <HttpClient.h>
 #include <HttpRequestHeaders.h>
-#include <MTL.h>
 
 namespace AutoLogin
 {
@@ -41,7 +40,14 @@ namespace AutoLogin
 
 					wstring bindUrl = L"http://httpbin.org/status/500";
 
-					return httpClient.GetAsync(bindUrl)
+					return httpClient.GetAsync(bindUrl,
+											   unordered_map<wstring, wstring>
+											   {
+												   {
+													   HttpRequestHeaders::Connection,
+													   L"close"
+												   }
+											   })
 									 .then([](TResponse response)
 										 {
 											 return GetAuthUrlAsync(move(response));
@@ -68,6 +74,10 @@ namespace AutoLogin
 														 {
 															 HttpRequestHeaders::UserAgent,
 															 L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36"
+														 },
+														 {
+															 HttpRequestHeaders::Connection,
+															 L"close"
 														 }
 													 };
 
@@ -100,6 +110,10 @@ namespace AutoLogin
 																				  {
 																					  HttpRequestHeaders::Referer,
 																					  authUrl
+																				  },
+																				  {
+																					  HttpRequestHeaders::Connection,
+																					  L"close"
 																				  }
 																			  };
 
@@ -109,7 +123,14 @@ namespace AutoLogin
 																  })
 															  .then([httpClient, bindUrl](TResponse)
 																  {
-																	  return httpClient.GetAsync(move(bindUrl));
+																	  return httpClient.GetAsync(move(bindUrl),
+																								 unordered_map<wstring, wstring>
+																								 {
+																									 {
+																										 HttpRequestHeaders::Connection,
+																										 L"close"
+																									 }
+																								 });
 																  })
 															  .then([](TResponse response)
 																  {

@@ -12,6 +12,7 @@ namespace AutoLogin
 			static const std::wstring Origin;
 			static const std::wstring Referer;
 			static const std::wstring UserAgent;
+			static const std::wstring Connection;
 		};
 	}
 }
