@@ -41,9 +41,9 @@ public:
 		Check(ActivateInstance<IHttpBaseProtocolFilter>(HStringReference(RuntimeClass_Windows_Web_Http_Filters_HttpBaseProtocolFilter).Get(),
 														&httpBaseProtocolFilter));
 
-		Check(httpBaseProtocolFilter->get_CacheControl(&httpCacheControl));
-
 		Check(httpBaseProtocolFilter->put_AllowUI(false));
+
+		Check(httpBaseProtocolFilter->put_AllowAutoRedirect(false));
 
 		Check(httpBaseProtocolFilter->get_IgnorableServerCertificateErrors(&validationResultVector));
 
@@ -53,11 +53,11 @@ public:
 
 		Check(validationResultVector->Append(ChainValidationResult_InvalidName));
 
+		Check(httpBaseProtocolFilter->get_CacheControl(&httpCacheControl));
+		
 		Check(httpCacheControl->put_ReadBehavior(HttpCacheReadBehavior_MostRecent));
 
 		Check(httpCacheControl->put_WriteBehavior(HttpCacheWriteBehavior_NoCache));
-
-		Check(httpBaseProtocolFilter->put_AllowAutoRedirect(true));
 
 		Check(httpBaseProtocolFilter.As(&httpFilter));
 
