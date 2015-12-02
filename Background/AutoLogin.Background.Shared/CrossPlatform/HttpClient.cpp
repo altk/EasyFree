@@ -23,7 +23,8 @@ template <>
 class AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::HttpClientImpl final
 {
 public:
-	HttpClientImpl()
+	explicit HttpClientImpl(uint_fast16_t maxRetryCount = 3)
+		: _maxRetryCount(maxRetryCount)
 	{
 		ComPtr<IHttpClientFactory> httpClientFactory;
 		ComPtr<IHttpFilter> httpFilter;
@@ -54,7 +55,7 @@ public:
 		Check(validationResultVector->Append(ChainValidationResult_InvalidName));
 
 		Check(httpBaseProtocolFilter->get_CacheControl(&httpCacheControl));
-		
+
 		Check(httpCacheControl->put_ReadBehavior(HttpCacheReadBehavior_MostRecent));
 
 		Check(httpCacheControl->put_WriteBehavior(HttpCacheWriteBehavior_NoCache));
@@ -84,16 +85,14 @@ public:
 	task<ComPtr<IHttpResponseMessage>> GetAsync(wstring url,
 												unordered_map<wstring, wstring> headers) const
 	{
-		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> getAsyncOperation;
+		task_completion_event<ComPtr<IHttpResponseMessage>> taskCompletionEvent;
 
-		auto httpRequestMessage = CreateRequest(_httpGetMethod.Get(),
-												move(url),
-												move(headers));
+		GetAsync(make_shared<wstring>(move(url)),
+				 make_shared<unordered_map<wstring, wstring>>(move(headers)),
+				 taskCompletionEvent,
+				 1);
 
-		Check(_httpClient->SendRequestAsync(httpRequestMessage.Get(),
-											&getAsyncOperation));
-
-		return GetTask(getAsyncOperation.Get());
+		return task<ComPtr<IHttpResponseMessage>>(taskCompletionEvent);
 	}
 
 	task<ComPtr<IHttpResponseMessage>> PostAsync(wstring url,
@@ -108,69 +107,44 @@ public:
 												 unordered_map<wstring, wstring> headers,
 												 wstring postContent) const
 	{
-		ComPtr<IHttpStringContentFactory> stringContentFactory;
-		ComPtr<IHttpContent> postHttpContent;
-		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> postAsyncOperation;
+		task_completion_event<ComPtr<IHttpResponseMessage>> taskCompletionEvent;
 
-		HString hstringPostContent(move(postContent));
+		PostAsync(make_shared<wstring>(move(url)),
+				  make_shared<unordered_map<wstring, wstring>>(move(headers)),
+				  make_shared<wstring>(move(postContent)),
+				  taskCompletionEvent,
+				  1);
 
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
-								   &stringContentFactory));
-
-		auto contentTypeHeaderIterator = headers.find(HttpRequestHeaders::ContentType);
-		if (contentTypeHeaderIterator != headers.end())
-		{
-			
-			Check(stringContentFactory->CreateFromStringWithEncodingAndMediaType(hstringPostContent.Get(),
-																				 UnicodeEncoding_Utf8,
-																				 HString(contentTypeHeaderIterator->second).Get(),
-																				 &postHttpContent));
-			headers.erase(HttpRequestHeaders::ContentType);
-		}
-		else
-		{
-			Check(stringContentFactory->CreateFromString(hstringPostContent.Get(),
-														 &postHttpContent));
-		}
-
-		auto httpRequestMessage = CreateRequest(_httpPostMethod.Get(),
-												move(url),
-												move(headers));
-
-		Check(httpRequestMessage->put_Content(postHttpContent.Get()));
-
-		Check(_httpClient->SendRequestAsync(httpRequestMessage.Get(),
-											&postAsyncOperation));
-
-		return GetTask(postAsyncOperation.Get());
+		return task<ComPtr<IHttpResponseMessage>>(taskCompletionEvent);
 	}
 
 private:
+	uint_fast16_t _maxRetryCount;
+
 	ComPtr<IUriRuntimeClassFactory> uriFactory;
 	ComPtr<IHttpClient> _httpClient;
 	ComPtr<IHttpRequestMessageFactory> _httpRequestMessageFactory;
 	ComPtr<IHttpMethod> _httpGetMethod;
 	ComPtr<IHttpMethod> _httpPostMethod;
 
-	ComPtr<IUriRuntimeClass> CreateUri(wstring url) const
+	ComPtr<IUriRuntimeClass> CreateUri(const wstring& url) const
 	{
 		ComPtr<IUriRuntimeClass> uri;
-
-		Check(uriFactory->CreateUri(HStringReference(url.data(), url.size()).Get(),
+		Check(uriFactory->CreateUri(HString(url).Get(),
 									&uri));
 
 		return uri;
 	}
 
 	ComPtr<IHttpRequestMessage> CreateRequest(IHttpMethod* method,
-											  wstring url,
-											  unordered_map<wstring, wstring> headers) const
+											  const wstring& url,
+											  const unordered_map<wstring, wstring>& headers) const
 	{
 		ComPtr<IHttpRequestMessage> httpRequestMessage;
 		ComPtr<IHttpRequestHeaderCollection> httpRequestHeaderCollection;
 
 		Check(_httpRequestMessageFactory->Create(method,
-												 CreateUri(move(url)).Get(),
+												 CreateUri(url).Get(),
 												 &httpRequestMessage));
 
 		Check(httpRequestMessage->get_Headers(&httpRequestHeaderCollection));
@@ -184,6 +158,110 @@ private:
 		}
 
 		return httpRequestMessage;
+	}
+
+	void GetAsync(shared_ptr<wstring> url,
+				  shared_ptr<unordered_map<wstring, wstring>> headers,
+				  task_completion_event<ComPtr<IHttpResponseMessage>> taskCompletionEvent,
+				  uint_fast16_t tryCount) const
+	{
+		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> getAsyncOperation;
+
+		auto httpRequestMessage = CreateRequest(_httpGetMethod.Get(),
+												*url,
+												*headers);
+
+		Check(_httpClient->SendRequestAsync(httpRequestMessage.Get(),
+											&getAsyncOperation));
+
+		GetTask(getAsyncOperation.Get()).then(
+			[this, url, headers, taskCompletionEvent, tryCount]
+			(task<ComPtr<IHttpResponseMessage>> task)
+			{
+				try
+				{
+					taskCompletionEvent.set(task.get());
+				}
+				catch (const exception& ex)
+				{
+					if (tryCount == _maxRetryCount)
+					{
+						taskCompletionEvent.set_exception(ex);
+					}
+					else
+					{
+						GetAsync(url,
+								 headers,
+								 taskCompletionEvent,
+								 tryCount + 1);
+					}
+				}
+			});
+	}
+
+	void PostAsync(shared_ptr<wstring> url,
+				   shared_ptr<unordered_map<wstring, wstring>> headers,
+				   shared_ptr<wstring> postContent,
+				   task_completion_event<ComPtr<IHttpResponseMessage>> taskCompletionEvent,
+				   uint_fast16_t tryCount) const
+	{
+		ComPtr<IHttpStringContentFactory> stringContentFactory;
+		ComPtr<IHttpContent> postHttpContent;
+		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> postAsyncOperation;
+
+		HString hstringPostContent(*postContent);
+
+		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
+								   &stringContentFactory));
+
+		auto contentTypeHeaderIterator = headers->find(HttpRequestHeaders::ContentType);
+		if (contentTypeHeaderIterator != headers->end())
+		{
+			Check(stringContentFactory->CreateFromStringWithEncodingAndMediaType(hstringPostContent.Get(),
+																				 UnicodeEncoding_Utf8,
+																				 HString(contentTypeHeaderIterator->second).Get(),
+																				 &postHttpContent));
+			headers->erase(HttpRequestHeaders::ContentType);
+		}
+		else
+		{
+			Check(stringContentFactory->CreateFromString(hstringPostContent.Get(),
+														 &postHttpContent));
+		}
+
+		auto httpRequestMessage = CreateRequest(_httpPostMethod.Get(),
+												*url,
+												*headers);
+
+		Check(httpRequestMessage->put_Content(postHttpContent.Get()));
+
+		Check(_httpClient->SendRequestAsync(httpRequestMessage.Get(),
+											&postAsyncOperation));
+
+		GetTask(postAsyncOperation.Get()).then(
+			[this, url, headers, postContent, taskCompletionEvent, tryCount]
+			(task<ComPtr<IHttpResponseMessage>> task)
+			{
+				try
+				{
+					taskCompletionEvent.set(task.get());
+				}
+				catch (const exception& ex)
+				{
+					if (tryCount == _maxRetryCount)
+					{
+						taskCompletionEvent.set_exception(ex);
+					}
+					else
+					{
+						PostAsync(url,
+								  headers,
+								  postContent,
+								  taskCompletionEvent,
+								  tryCount + 1);
+					}
+				}
+			});
 	}
 };
 
