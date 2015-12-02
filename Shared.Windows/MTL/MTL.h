@@ -500,7 +500,10 @@ namespace MTL
 		explicit HString(const wchar_t* const string)
 			: HString(string, wcslen(string)) { }
 
-		explicit HString(std::wstring string)
+		explicit HString(const std::wstring& string)
+			: HString(string.data(), string.size()) { }
+
+		explicit HString(std::wstring&& string)
 			: HString(string.data(), string.size()) { }
 
 		template <unsigned Length>
@@ -625,6 +628,9 @@ namespace MTL
 		template <unsigned Length>
 		explicit HStringReference(const wchar_t (&string)[Length])
 			: HStringReference(string, Length - 1) { }
+
+		explicit HStringReference(const std::wstring& string)
+			: HStringReference(string.data(), string.size()) {}
 
 		HStringReference(const HStringReference&) = delete;
 
