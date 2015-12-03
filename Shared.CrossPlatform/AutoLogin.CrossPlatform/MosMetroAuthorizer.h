@@ -38,24 +38,20 @@ namespace AutoLogin
 				{
 					const HttpClient<TResponse> httpClient;
 
-					auto bindUrlPtr = make_shared<wstring>(L"http://httpbin.org/status/500");
-
-					return httpClient.GetAsync(*bindUrlPtr)
+					return httpClient.GetAsync(L"http://wi-fi.ru")
 									 .then([](TResponse& response)
 										 {
 											 return GetAuthUrlAsync(move(response));
 										 })
-									 .then([httpClient, bindUrlPtr](wstring& authUrl) -> task<wstring>
+									 .then([httpClient](wstring& authUrl) -> task<wstring>
 										 {
-											 auto authUrlPtr = make_shared<wstring>(move(authUrl));
-
-											 if (authUrlPtr->empty())
+											 if (authUrl.empty())
 											 {
 												 return task_from_result(wstring());
 											 }
 
 											 auto registrationUrl = GetRegistrationUrlImpl();
-											 if (*authUrlPtr == registrationUrl)
+											 if (authUrl == registrationUrl)
 											 {
 												 return task_from_result(move(registrationUrl));
 											 }
@@ -75,6 +71,8 @@ namespace AutoLogin
 															 L"close"
 														 }
 													 };
+
+											 auto authUrlPtr = make_shared<wstring>(move(authUrl));
 
 											 return httpClient.GetAsync(*authUrlPtr,
 																		move(getHeaders))
@@ -116,19 +114,11 @@ namespace AutoLogin
 																								  move(postContent),
 																								  move(postHeaders));
 																  })
-															  .then([httpClient, bindUrlPtr](TResponse)
+															  .then([httpClient, authUrlPtr](TResponse& response) -> wstring
 																  {
-																	  return httpClient.GetAsync(*bindUrlPtr);
-																  })
-															  .then([](TResponse& response)
-																  {
-																	  return GetStatusCodeAsync(move(response));
-																  })
-															  .then([authUrl](uint_fast16_t statusCode)
-																  {
-																	  return statusCode == 500
-																				 ? wstring(AuthStatus::launchAttributeSuccess)
-																				 : move(authUrl);
+																	  return GetStatusCode(move(response)) == 401
+																				 ? AuthStatus::launchAttributeSuccess
+																				 : *authUrlPtr;
 																  });
 										 });
 				}
@@ -152,7 +142,7 @@ namespace AutoLogin
 				return L"https://login.wi-fi.ru/am/UI/Login";
 			}
 
-			static Concurrency::task<uint_fast16_t> GetStatusCodeAsync(TResponse response);
+			static uint_fast16_t GetStatusCode(TResponse response);
 
 			static Concurrency::task<std::wstring> GetAuthUrlAsync(TResponse response);
 

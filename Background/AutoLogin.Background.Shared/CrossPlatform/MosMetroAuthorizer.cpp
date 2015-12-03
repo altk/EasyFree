@@ -21,12 +21,12 @@ using namespace MTL;
 using namespace AutoLogin::CrossPlatform;
 
 template <>
-task<uint_fast16_t> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetStatusCodeAsync(ComPtr<IHttpResponseMessage> response)
+uint_fast16_t MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetStatusCode(ComPtr<IHttpResponseMessage> response)
 {
 	HttpStatusCode responseStatusCode;
 	Check(response->get_StatusCode(&responseStatusCode));
 
-	return task_from_result(static_cast<uint_fast16_t>(responseStatusCode));
+	return responseStatusCode;
 }
 
 template <>
