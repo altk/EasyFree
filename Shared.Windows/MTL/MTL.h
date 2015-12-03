@@ -9,6 +9,8 @@
 #include <windows.foundation.h>
 #include <windows.foundation.collections.h>
 #include <macro.h>
+#include <sstream>
+#include <iomanip>
 
 namespace MTL
 {
@@ -430,11 +432,11 @@ namespace MTL
 	{
 	public:
 		explicit ComException(HRESULT hr) NOEXCEPT
-			: exception(std::string("ComException occured. HRESULT code: ").append(std::to_string(hr)).append("\r\n").data())
+			: exception(GetString(hr).data())
 			  ,_hr(hr)
 		{
-#ifdef _DEBUG
-			OutputDebugStringA(std::string("ComException occured. HRESULT code: ").append(std::to_string(hr)).append("\r\n").data());
+#ifdef TEST
+			OutputDebugStringA(std::string(exception::what()).append("\r\n").data());
 #endif
 		}
 
@@ -458,6 +460,15 @@ namespace MTL
 
 	private:
 		HRESULT _hr;
+
+		static std::string GetString(HRESULT hr) NOEXCEPT
+		{
+			using namespace std;
+			
+			stringstream stream;
+			stream << "ComException: " << hex << hr;
+			return stream.str();
+		}
 	};
 
 #pragma endregion
@@ -1295,10 +1306,12 @@ namespace MTL
 
 	inline void Check(HRESULT hr)
 	{
+#ifdef TEST
 		if (IS_ERROR(hr))
 		{
 			throw ComException(hr);
 		}
+#endif
 	}
 }
 

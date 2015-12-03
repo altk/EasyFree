@@ -12,6 +12,11 @@
 #include <AuthStatus.h>
 #include <UriUtilities.h>
 
+#ifdef TEST
+#include <chrono>
+#endif
+
+
 using namespace std;
 using namespace Concurrency;
 using namespace ABI::Windows::Web::Http;
@@ -70,6 +75,56 @@ struct NotificationHelper final
 		}
 		catch (...) {}
 	}
+#ifdef TEST
+
+	static void PromtStart()
+	{
+		using namespace chrono;
+
+		auto now = system_clock::to_time_t(system_clock::now());
+		tm nowLocal;
+		localtime_s(&nowLocal, &now);
+
+		PromtNotification(wstring(),
+						  wstring(L"Start ").append(to_wstring(nowLocal.tm_hour))
+											.append(L":")
+											.append(to_wstring(nowLocal.tm_min))
+											.append(L":")
+											.append(to_wstring(nowLocal.tm_sec)));
+	}
+
+
+	static void PromtEnd()
+	{
+		using namespace chrono;
+
+		auto now = system_clock::to_time_t(system_clock::now());
+		tm nowLocal;
+		localtime_s(&nowLocal, &now);
+
+		PromtNotification(wstring(),
+						  wstring(L"End ").append(to_wstring(nowLocal.tm_hour))
+										  .append(L":")
+										  .append(to_wstring(nowLocal.tm_min))
+										  .append(L":")
+										  .append(to_wstring(nowLocal.tm_sec)));
+	}
+
+	static void PromtException(const exception& ex)
+	{
+		string message(ex.what());
+
+		PromtNotification(wstring(),
+						  wstring(begin(message), end(message)));
+	}
+
+#else
+	static void PromtStart() { }
+
+	static void PromtEnd() { }
+
+	static void PromtException(exception) { }
+#endif 
 };
 
 HRESULT LoginTask::GetRuntimeClassName(HSTRING* className) NOEXCEPT
@@ -82,6 +137,8 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 {
 	try
 	{
+		NotificationHelper::PromtStart();
+
 		auto currentNetwork = NetworkInfoProvider::GetNetworkConnectionProfile();
 		if (currentNetwork)
 		{
@@ -144,7 +201,13 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 
 											NotificationHelper::PromtNotification(UriUtilities().Escape(HStringReference(launchArgument.data(), launchArgument.size()).Get()).GetRawBuffer(),
 																				  description);
+
+											NotificationHelper::PromtEnd();
 										}
+									}
+									catch (const exception& ex)
+									{
+										NotificationHelper::PromtException(ex);
 									}
 									catch (...) {}
 
@@ -159,7 +222,11 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 			}
 		}
 	}
-	catch (...) {}
+	catch (const exception& ex)
+	{
+		NotificationHelper::PromtException(ex);
+	}
+	catch (...) { }
 
 	return S_OK;
 }
