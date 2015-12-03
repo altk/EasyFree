@@ -30,7 +30,7 @@ task<uint_fast16_t> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetStatusC
 }
 
 template <>
-task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetAuthUrlAsync(ComPtr<IHttpResponseMessage> response) 
+task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetAuthUrlAsync(ComPtr<IHttpResponseMessage> response)
 {
 	ComPtr<IHttpContent> httpContent;
 	ComPtr<IAsyncOperationWithProgress<IBuffer*, UINT64>> readAsBufferOperation;
@@ -39,10 +39,7 @@ task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetAuthUrlAsync(
 
 	Check(httpContent->ReadAsBufferAsync(&readAsBufferOperation));
 
-	return GetTask(readAsBufferOperation.Get()).then(
-		[]
-		(ComPtr<IBuffer> buffer) ->
-		wstring
+	return GetTask(readAsBufferOperation.Get()).then([] (ComPtr<IBuffer>& buffer) -> wstring
 		{
 			if (!buffer) return wstring();
 
@@ -57,7 +54,7 @@ task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetAuthUrlAsync(
 }
 
 template <>
-task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetPostContentAsync(ComPtr<IHttpResponseMessage> response) 
+task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetPostContentAsync(ComPtr<IHttpResponseMessage> response)
 {
 	ComPtr<IHttpContent> httpContent;
 	ComPtr<IAsyncOperationWithProgress<IBuffer*, UINT64>> readAsBufferOperation;
@@ -66,10 +63,7 @@ task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetPostContentAs
 
 	Check(httpContent->ReadAsBufferAsync(&readAsBufferOperation));
 
-	return GetTask(readAsBufferOperation.Get()).then(
-		[]
-		(ComPtr<IBuffer> buffer) ->
-		wstring
+	return GetTask(readAsBufferOperation.Get()).then([] (ComPtr<IBuffer>& buffer) -> wstring
 		{
 			if (!buffer) return wstring();
 

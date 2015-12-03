@@ -34,8 +34,8 @@ using namespace AutoLogin::Resources;
 
 struct NotificationHelper final
 {
-	static void PromtNotification(wstring launchAttribute,
-								  wstring description)
+	static void PromtNotification(const wstring& launchAttribute,
+								  const wstring& description)
 	{
 		try
 		{
@@ -54,11 +54,11 @@ struct NotificationHelper final
 
 			Check(document.As(&documentIO));
 
-			auto toastXml = wstring(L"<toast launch=\"").append(move(launchAttribute))
+			auto toastXml = wstring(L"<toast launch=\"").append(launchAttribute)
 														.append(L"\"><visual><binding template=\"ToastText02\"><text id=\"1\">")
 														.append(Labels::Title)
 														.append(L"</text><text id=\"2\">")
-														.append(move(description))
+														.append(description)
 														.append(L"</text></binding></visual></toast>");
 
 			Check(documentIO->LoadXml(HStringReference(toastXml.data(), toastXml.size()).Get()));
@@ -92,7 +92,6 @@ struct NotificationHelper final
 											.append(L":")
 											.append(to_wstring(nowLocal.tm_sec)));
 	}
-
 
 	static void PromtEnd()
 	{
@@ -137,8 +136,6 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 {
 	try
 	{
-		NotificationHelper::PromtStart();
-
 		auto currentNetwork = NetworkInfoProvider::GetNetworkConnectionProfile();
 		if (currentNetwork)
 		{
@@ -162,6 +159,8 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 
 			if (findIterator != end(authorizers))
 			{
+				NotificationHelper::PromtStart();
+
 				if (LicenseChecker::Check())
 				{
 					auto authorizer = *findIterator;

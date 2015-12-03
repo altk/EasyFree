@@ -41,17 +41,12 @@ namespace AutoLogin
 				return *this;
 			}
 
-			Concurrency::task<TResponse> GetAsync(std::wstring url) const ;
-
 			Concurrency::task<TResponse> GetAsync(std::wstring url,
-												  std::unordered_map<std::wstring, std::wstring> headers) const ;
+												  std::unordered_map<std::wstring, std::wstring> headers = std::unordered_map<std::wstring, std::wstring>()) const;
 
 			Concurrency::task<TResponse> PostAsync(std::wstring url,
-												   std::wstring postContent) const ;
-
-			Concurrency::task<TResponse> PostAsync(std::wstring url,
-												   std::unordered_map<std::wstring, std::wstring> headers,
-												   std::wstring postContent) const ;
+												   std::wstring postContent,
+												   std::unordered_map<std::wstring, std::wstring> headers = std::unordered_map<std::wstring, std::wstring>()) const;
 		private:
 			class HttpClientImpl;
 

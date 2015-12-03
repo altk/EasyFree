@@ -211,3 +211,5 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 *.opendb
+/Intermediate/ARM/ReleaseTest
+/Output/ARM/ReleaseTest

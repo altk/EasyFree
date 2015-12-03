@@ -511,10 +511,7 @@ namespace MTL
 		explicit HString(const wchar_t* const string)
 			: HString(string, wcslen(string)) { }
 
-		explicit HString(const std::wstring& string)
-			: HString(string.data(), string.size()) { }
-
-		explicit HString(std::wstring&& string)
+		explicit HString(std::wstring string)
 			: HString(string.data(), string.size()) { }
 
 		template <unsigned Length>

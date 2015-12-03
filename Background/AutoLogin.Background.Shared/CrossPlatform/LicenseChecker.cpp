@@ -41,7 +41,7 @@ bool LicenseChecker::Check() NOEXCEPT
 			.append(L".")
 			.append(to_wstring(packageVersion.Minor));
 		
-		std::array<byte, SHA3_512::DIGESTSIZE> digest;
+		array<byte, SHA3_512::DIGESTSIZE> digest;
 
 		SHA3_512().CalculateDigest(digest.data(),
 								   reinterpret_cast<const byte*>(identity.data()),

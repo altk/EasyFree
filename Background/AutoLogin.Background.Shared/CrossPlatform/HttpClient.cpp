@@ -76,12 +76,6 @@ public:
 		Check(httpMethodStatics->get_Post(&_httpPostMethod));
 	}
 
-	task<ComPtr<IHttpResponseMessage>> GetAsync(wstring url) const
-	{
-		return GetAsync(move(url),
-						unordered_map<wstring, wstring>());
-	}
-
 	task<ComPtr<IHttpResponseMessage>> GetAsync(wstring url,
 												unordered_map<wstring, wstring> headers) const
 	{
@@ -96,16 +90,8 @@ public:
 	}
 
 	task<ComPtr<IHttpResponseMessage>> PostAsync(wstring url,
-												 wstring postContent) const
-	{
-		return PostAsync(move(url),
-						 unordered_map<wstring, wstring>(),
-						 move(postContent));
-	}
-
-	task<ComPtr<IHttpResponseMessage>> PostAsync(wstring url,
-												 unordered_map<wstring, wstring> headers,
-												 wstring postContent) const
+												 wstring postContent,
+												 unordered_map<wstring, wstring> headers) const
 	{
 		task_completion_event<ComPtr<IHttpResponseMessage>> taskCompletionEvent;
 
@@ -127,18 +113,18 @@ private:
 	ComPtr<IHttpMethod> _httpGetMethod;
 	ComPtr<IHttpMethod> _httpPostMethod;
 
-	ComPtr<IUriRuntimeClass> CreateUri(const wstring& url) const
+	ComPtr<IUriRuntimeClass> CreateUri(wstring url) const
 	{
 		ComPtr<IUriRuntimeClass> uri;
-		Check(uriFactory->CreateUri(HString(url).Get(),
+		Check(uriFactory->CreateUri(HString(move(url)).Get(),
 									&uri));
 
 		return uri;
 	}
 
 	ComPtr<IHttpRequestMessage> CreateRequest(IHttpMethod* method,
-											  const wstring& url,
-											  const unordered_map<wstring, wstring>& headers) const
+											  wstring url,
+											  unordered_map<wstring, wstring> headers) const
 	{
 		ComPtr<IHttpRequestMessage> httpRequestMessage;
 		ComPtr<IHttpRequestHeaderCollection> httpRequestHeaderCollection;
@@ -152,8 +138,8 @@ private:
 		for (auto& header : headers)
 		{
 			boolean isSuccess;
-			Check(httpRequestHeaderCollection->TryAppendWithoutValidation(HString(header.first).Get(),
-																		  HString(header.second).Get(),
+			Check(httpRequestHeaderCollection->TryAppendWithoutValidation(HString(move(header.first)).Get(),
+																		  HString(move(header.second)).Get(),
 																		  &isSuccess));
 		}
 
@@ -272,30 +258,18 @@ AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::HttpClient()
 template <>
 AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::~HttpClient() NOEXCEPT {}
 
-task<ComPtr<IHttpResponseMessage>> AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::GetAsync(wstring url) const
-{
-	return _impl->GetAsync(move(url));
-}
-
 task<ComPtr<IHttpResponseMessage>> AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::GetAsync(wstring url,
 																												unordered_map<wstring, wstring> headers) const
 {
-	return _impl->GetAsync(move(url),
-						   move(headers));
+	return _impl->GetAsync(url,
+						   headers);
 }
 
 task<ComPtr<IHttpResponseMessage>> AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::PostAsync(wstring url,
-																												 wstring postContent) const
+																												 wstring postContent,
+																												 unordered_map<wstring, wstring> headers) const
 {
-	return _impl->PostAsync(move(url),
-							move(postContent));
-}
-
-task<ComPtr<IHttpResponseMessage>> AutoLogin::CrossPlatform::HttpClient<ComPtr<IHttpResponseMessage>>::PostAsync(wstring url,
-																												 unordered_map<wstring, wstring> headers,
-																												 wstring postContent) const
-{
-	return _impl->PostAsync(move(url),
-							move(headers),
-							move(postContent));
+	return _impl->PostAsync(url,
+							postContent,
+							headers);
 }

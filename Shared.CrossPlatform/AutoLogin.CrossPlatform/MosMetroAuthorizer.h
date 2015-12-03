@@ -38,29 +38,24 @@ namespace AutoLogin
 				{
 					const HttpClient<TResponse> httpClient;
 
-					wstring bindUrl = L"http://httpbin.org/status/500";
+					auto bindUrlPtr = make_shared<wstring>(L"http://httpbin.org/status/500");
 
-					return httpClient.GetAsync(bindUrl,
-											   unordered_map<wstring, wstring>
-											   {
-												   {
-													   HttpRequestHeaders::Connection,
-													   L"close"
-												   }
-											   })
-									 .then([](TResponse response)
+					return httpClient.GetAsync(*bindUrlPtr)
+									 .then([](TResponse& response)
 										 {
 											 return GetAuthUrlAsync(move(response));
 										 })
-									 .then([httpClient, bindUrl](wstring authUrl) -> task<wstring>
+									 .then([httpClient, bindUrlPtr](wstring& authUrl) -> task<wstring>
 										 {
-											 if (authUrl.empty())
+											 auto authUrlPtr = make_shared<wstring>(move(authUrl));
+
+											 if (authUrlPtr->empty())
 											 {
 												 return task_from_result(wstring());
 											 }
 
 											 auto registrationUrl = GetRegistrationUrlImpl();
-											 if (authUrl == registrationUrl)
+											 if (*authUrlPtr == registrationUrl)
 											 {
 												 return task_from_result(move(registrationUrl));
 											 }
@@ -81,13 +76,13 @@ namespace AutoLogin
 														 }
 													 };
 
-											 return httpClient.GetAsync(authUrl,
+											 return httpClient.GetAsync(*authUrlPtr,
 																		move(getHeaders))
-															  .then([](TResponse response)
+															  .then([](TResponse& response)
 																  {
 																	  return GetPostContentAsync(move(response));
 																  })
-															  .then([httpClient, authUrl](wstring postContent)
+															  .then([httpClient, authUrlPtr](wstring& postContent)
 																  {
 																	  unordered_map<wstring, wstring> postHeaders
 																			  {
@@ -109,7 +104,7 @@ namespace AutoLogin
 																				  },
 																				  {
 																					  HttpRequestHeaders::Referer,
-																					  authUrl
+																					  *authUrlPtr
 																				  },
 																				  {
 																					  HttpRequestHeaders::Connection,
@@ -117,28 +112,23 @@ namespace AutoLogin
 																				  }
 																			  };
 
-																	  return httpClient.PostAsync(move(authUrl),
-																								  move(postHeaders),
-																								  move(postContent));
+																	  return httpClient.PostAsync(*authUrlPtr,
+																								  move(postContent),
+																								  move(postHeaders));
 																  })
-															  .then([httpClient, bindUrl](TResponse)
+															  .then([httpClient, bindUrlPtr](TResponse)
 																  {
-																	  return httpClient.GetAsync(move(bindUrl),
-																								 unordered_map<wstring, wstring>
-																								 {
-																									 {
-																										 HttpRequestHeaders::Connection,
-																										 L"close"
-																									 }
-																								 });
+																	  return httpClient.GetAsync(*bindUrlPtr);
 																  })
-															  .then([](TResponse response)
+															  .then([](TResponse& response)
 																  {
 																	  return GetStatusCodeAsync(move(response));
 																  })
 															  .then([authUrl](uint_fast16_t statusCode)
 																  {
-																	  return statusCode == 500 ? wstring(AuthStatus::launchAttributeSuccess) : move(authUrl);
+																	  return statusCode == 500
+																				 ? wstring(AuthStatus::launchAttributeSuccess)
+																				 : move(authUrl);
 																  });
 										 });
 				}
@@ -146,7 +136,7 @@ namespace AutoLogin
 				return task_from_result(wstring());
 			}
 
-			virtual bool CanAuth(std::wstring connectionName) const NOEXCEPT override
+			virtual bool CanAuth(const std::wstring& connectionName) const NOEXCEPT override
 			{
 				return connectionName.compare(L"MosMetro_Free") == 0;
 			}
