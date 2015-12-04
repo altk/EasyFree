@@ -116,7 +116,7 @@ namespace AutoLogin
 																  })
 															  .then([httpClient, authUrlPtr](TResponse& response) -> wstring
 																  {
-																	  return GetStatusCode(move(response)) == 401
+																	  return GetStatusCode(move(response)) != 401
 																				 ? AuthStatus::launchAttributeSuccess
 																				 : *authUrlPtr;
 																  });
