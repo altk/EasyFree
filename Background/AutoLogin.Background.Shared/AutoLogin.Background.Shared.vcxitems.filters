@@ -16,6 +16,9 @@
       <Filter>CrossPlatform</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Module.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SettingsProvider.cpp">
+      <Filter>CrossPlatform</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
