@@ -6,6 +6,7 @@
 using namespace std;
 using namespace AutoLogin::CrossPlatform;
 using namespace ABI::Windows::Foundation::Collections;
+using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::Storage;
 using namespace MTL;
 
@@ -37,12 +38,19 @@ public:
 
 		try
 		{
-			HString value;
+			ComPtr<IInspectable> inspectable;
 			Check(_propertyMap->Lookup(HStringReference(key).Get(),
-									   &value));
-			
-			if (value)
+									   &inspectable));
+
+			if (inspectable)
 			{
+				ComPtr<IPropertyValue> propertyValue;
+				HString value;
+
+				Check(inspectable.As(&propertyValue));
+
+				Check(propertyValue->GetString(&value));
+
 				result.append(value.GetRawBuffer());
 			}
 		}
@@ -57,8 +65,18 @@ public:
 		try
 		{
 			boolean isReplaced;
+
+			ComPtr<IPropertyValueStatics> propertyValueStatics;
+			ComPtr<IPropertyValue> propertyValue;
+
+			Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_PropertyValue).Get(),
+									   &propertyValueStatics));
+
+			Check(propertyValueStatics->CreateString(HString(value).Get(),
+													 &propertyValue));
+
 			Check(_propertyMap->Insert(HStringReference(key).Get(),
-									   HStringReference(value).Get(),
+									   propertyValue.Get(),
 									   &isReplaced));
 		}
 		catch (...)
@@ -70,7 +88,7 @@ public:
 	}
 
 private:
-	ComPtr<IMap<HSTRING, HSTRING>> _propertyMap;
+	ComPtr<IMap<HSTRING, IInspectable*>> _propertyMap;
 };
 
 SettingsProvider::SettingsProvider()

@@ -53,7 +53,10 @@ namespace AutoLogin
 													   })
 												   .then([settingsProvider, authSettingKeyPtr](wstring& authUrl)
 													   {
-														   settingsProvider.Set(*authSettingKeyPtr, authUrl);
+														   if (!authUrl.empty())
+														   {
+															   settingsProvider.Set(*authSettingKeyPtr, authUrl);
+														   }
 														   return authUrl;
 													   });
 					}
@@ -141,8 +144,10 @@ namespace AutoLogin
 												 });
 						});
 				}
-				catch (...) { }
-				return task_from_result(wstring());
+				catch (...)
+				{
+					return task_from_result(wstring());
+				}
 			}
 
 			virtual bool CanAuth(const std::wstring& connectionName) const NOEXCEPT override

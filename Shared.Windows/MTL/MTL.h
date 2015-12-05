@@ -192,43 +192,52 @@ namespace MTL
 		template <typename TClass>
 		class ComPtrRef final
 		{
+			friend class ComPtr<TClass>;
 		public:
-			explicit ComPtrRef(ComPtr<TClass>& reference) NOEXCEPT
-				: _reference(reference) { }
 
-			ComPtrRef(const ComPtrRef& other) NOEXCEPT
-				: _reference(other._reference) {}
+			ComPtrRef(const ComPtrRef& other)
+				: _pointer(other._pointer) {}
 
-			ComPtrRef(ComPtrRef&& other) NOEXCEPT
-				: _reference(std::move(other._reference)) {}
+			ComPtrRef(ComPtrRef&& other)
+				: _pointer(other._pointer) {}
 
 			ComPtrRef& operator=(const ComPtrRef&) = delete;
 
-			ComPtrRef& operator=(ComPtrRef&& other) = delete;
+			ComPtrRef& operator=(ComPtrRef&&) = delete;
 
-			operator IUnknown**() NOEXCEPT
+			template <typename TResult>
+			operator TResult**() const NOEXCEPT
 			{
-				return reinterpret_cast<IUnknown**>(&_reference._pointer);
+				return ConvertTo<TResult>();
 			}
 
-			operator IInspectable**() NOEXCEPT
+			operator TClass**() const NOEXCEPT
 			{
-				return reinterpret_cast<IInspectable**>(&_reference._pointer);
+				return _pointer;
 			}
 
-			operator TClass**() NOEXCEPT
+			operator void**() const NOEXCEPT
 			{
-				return &_reference._pointer;
-			}
-
-			operator void**() NOEXCEPT
-			{
-				return reinterpret_cast<void**>(&_reference._pointer);
+				return reinterpret_cast<void**>(_pointer);
 			}
 
 		private:
+			explicit ComPtrRef(TClass** pointer) NOEXCEPT
+				: _pointer(pointer) { }
 
-			ComPtr<TClass>& _reference;
+			TClass** _pointer;
+
+			template <typename TResult>
+			IUnknown** ConvertTo(typename std::enable_if<std::is_base_of<IUnknown, TResult>::value && std::is_base_of<IInspectable, TResult>::value == false>::type* = nullptr) const NOEXCEPT
+			{
+				return reinterpret_cast<IUnknown**>(_pointer);
+			}
+
+			template <typename TResult>
+			IInspectable** ConvertTo(typename std::enable_if<std::is_base_of<IInspectable, TResult>::value>::type* = nullptr) const NOEXCEPT
+			{
+				return reinterpret_cast<IInspectable**>(_pointer);
+			}
 		};
 
 #pragma endregion
@@ -464,7 +473,7 @@ namespace MTL
 		static std::string GetString(HRESULT hr) NOEXCEPT
 		{
 			using namespace std;
-			
+
 			stringstream stream;
 			stream << "ComException: " << hex << hr;
 			return stream.str();
@@ -875,7 +884,7 @@ namespace MTL
 
 		Internals::ComPtrRef<TClass> operator&() NOEXCEPT
 		{
-			return Internals::ComPtrRef<TClass>(*this);
+			return Internals::ComPtrRef<TClass>(&_pointer);
 		}
 
 		Internals::RemoveIUnknown<TClass>* Get() const NOEXCEPT
