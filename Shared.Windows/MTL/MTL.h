@@ -568,8 +568,10 @@ namespace MTL
 
 		friend bool operator==(const HString& lhs, const HString& rhs)
 		{
-			INT32 compareResult;
-			Check(WindowsCompareStringOrdinal(lhs.Get(), rhs.Get(), &compareResult));
+			auto compareResult = 0;
+			Check(WindowsCompareStringOrdinal(lhs.Get(), 
+											  rhs.Get(), 
+											  &compareResult));
 			return compareResult == 0;
 		}
 

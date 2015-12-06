@@ -40,5 +40,5 @@ HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId,
 
 HRESULT WINAPI DllCanUnloadNow() NOEXCEPT
 {
-	return MTL::Module::CanUnload();
+	return MTL::Module::CanUnload() ? S_OK : S_FALSE;
 }

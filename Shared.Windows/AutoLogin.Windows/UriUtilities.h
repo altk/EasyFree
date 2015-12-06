@@ -42,9 +42,12 @@ namespace AutoLogin
 				return *this;
 			}
 
-			HRESULT Escape(HSTRING source, HSTRING* destination) NOEXCEPT
+			void Escape(HSTRING source,
+						HSTRING* destination)
 			{
-				return _uriStatics->EscapeComponent(source, destination);
+				using namespace MTL;
+
+				Check(_uriStatics->EscapeComponent(source, destination));
 			}
 
 			MTL::HString Escape(HSTRING source)
@@ -56,9 +59,12 @@ namespace AutoLogin
 				return result;
 			}
 
-			HRESULT Unescape(HSTRING source, HSTRING* destination) NOEXCEPT
+			void Unescape(HSTRING source,
+						  HSTRING* destination)
 			{
-				return _uriStatics->UnescapeComponent(source, destination);
+				using namespace MTL;
+
+				Check(_uriStatics->UnescapeComponent(source, destination));
 			}
 
 			MTL::HString Unescape(HSTRING source)

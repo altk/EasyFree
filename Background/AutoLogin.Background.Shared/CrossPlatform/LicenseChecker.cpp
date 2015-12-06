@@ -37,10 +37,10 @@ bool LicenseChecker::Check() NOEXCEPT
 		MTL::Check(packageId->get_Version(&packageVersion));
 
 		auto identity = wstring(packageFamilyName.GetRawBuffer()).append(publisherId.GetRawBuffer())
-			.append(to_wstring(packageVersion.Major))
-			.append(L".")
-			.append(to_wstring(packageVersion.Minor));
-		
+																 .append(to_wstring(packageVersion.Major))
+																 .append(L".")
+																 .append(to_wstring(packageVersion.Minor));
+
 		array<byte, SHA3_512::DIGESTSIZE> digest;
 
 		SHA3_512().CalculateDigest(digest.data(),
