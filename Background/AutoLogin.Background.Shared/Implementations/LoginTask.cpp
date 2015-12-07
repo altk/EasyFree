@@ -11,11 +11,7 @@
 #include <Labels.h>
 #include <AuthStatus.h>
 #include <UriUtilities.h>
-
-#ifdef TEST
 #include <chrono>
-#endif
-
 
 using namespace std;
 using namespace Concurrency;
