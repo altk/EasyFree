@@ -459,7 +459,8 @@ Concurrency::task<void> Application::RegisterBackgroundTask() NOEXCEPT
 	}
 }
 
-MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize, D2D1_SIZE_F size)
+MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize, 
+														   D2D1_SIZE_F size)
 {
 	using namespace std;
 	using namespace D2D1;
@@ -489,7 +490,8 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize, D2D1_
 	return titleTextLayout;
 }
 
-MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize, D2D1_SIZE_F size)
+MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize, 
+																 D2D1_SIZE_F size)
 {
 	using namespace std;
 	using namespace D2D1;
