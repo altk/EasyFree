@@ -569,8 +569,8 @@ namespace MTL
 		friend bool operator==(const HString& lhs, const HString& rhs)
 		{
 			auto compareResult = 0;
-			Check(WindowsCompareStringOrdinal(lhs.Get(), 
-											  rhs.Get(), 
+			Check(WindowsCompareStringOrdinal(lhs.Get(),
+											  rhs.Get(),
 											  &compareResult));
 			return compareResult == 0;
 		}
@@ -1314,12 +1314,10 @@ namespace MTL
 
 	inline void Check(HRESULT hr)
 	{
-#ifdef TEST
 		if (IS_ERROR(hr))
 		{
 			throw ComException(hr);
 		}
-#endif
 	}
 }
 

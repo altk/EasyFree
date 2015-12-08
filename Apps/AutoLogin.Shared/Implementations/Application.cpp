@@ -176,20 +176,24 @@ HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEX
 				boolean isVisible;
 				Check(args->get_Visible(&isVisible));
 
-				if (!isVisible)
+				if (isVisible)
+				{
+					if (!_deviceContext)
+					{
+						InitContext();
+					}
+					if (static_cast<bool>(_deviceContext) && static_cast<bool>(_swapChain))
+					{
+						Draw();
+					}
+				}
+				else
 				{
 					_deviceContext.Release();
 					_swapChain.Release();
 					_dwriteFactory.Release();
 				}
-				if (!_deviceContext)
-				{
-					InitContext();
-				}
-				if (_deviceContext)
-				{
-					Draw();
-				}
+				
 
 				return S_OK;
 			}
@@ -352,11 +356,15 @@ void Application::Draw() NOEXCEPT
 
 	auto size = _deviceContext->GetSize();
 
-	auto margin = 4.0f;
-	auto width = size.width - 2 * margin;
+	FLOAT dpiX, dpiY;
+	_deviceContext->GetDpi(&dpiX, &dpiY);
 
-	auto titleTextLayout = GetTitleLayout(14.0f, SizeF(width));
-	auto descriptionTextLayout = GetDescriptionLayout(9.0f, SizeF(width));
+	auto multiplier = dpiX <= 144 ? 2.0f : 1.0f;
+	auto margin = 8.0f * multiplier;
+	auto width = min(size.width, size.height) - 2 * margin;
+
+	auto titleTextLayout = GetTitleLayout(14.0f * multiplier, SizeF(width));
+	auto descriptionTextLayout = GetDescriptionLayout(9.0f * multiplier, SizeF(width));
 
 	ComPtr<ID2D1SolidColorBrush> brush;
 	Check(_deviceContext->CreateSolidColorBrush(ColorF(ColorF::White),
@@ -369,11 +377,11 @@ void Application::Draw() NOEXCEPT
 
 	_deviceContext->Clear();
 
-	_deviceContext->DrawTextLayout(Point2F(margin, margin + margin),
+	_deviceContext->DrawTextLayout(Point2F(margin, margin),
 								   titleTextLayout.Get(),
 								   brush.Get());
 
-	_deviceContext->DrawTextLayout(Point2F(margin, margin + margin + titleMetrics.height),
+	_deviceContext->DrawTextLayout(Point2F(margin, margin + titleMetrics.height),
 								   descriptionTextLayout.Get(),
 								   brush.Get());
 
