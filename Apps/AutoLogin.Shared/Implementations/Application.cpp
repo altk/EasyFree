@@ -193,7 +193,7 @@ HRESULT Application::SetWindow(ABI::Windows::UI::Core::ICoreWindow* window) NOEX
 					_swapChain.Release();
 					_dwriteFactory.Release();
 				}
-				
+
 
 				return S_OK;
 			}
@@ -359,7 +359,19 @@ void Application::Draw() NOEXCEPT
 	FLOAT dpiX, dpiY;
 	_deviceContext->GetDpi(&dpiX, &dpiY);
 
-	auto multiplier = dpiX <= 144 ? 2.0f : 1.0f;
+	FLOAT multiplier;
+	if(dpiX >= 192)
+	{
+		multiplier = 1.0f;
+	}
+	else if(dpiX >= 144)
+	{
+		multiplier = 1.5f;
+	}
+	else
+	{
+		multiplier = 2.0f;
+	}
 	auto margin = 8.0f * multiplier;
 	auto width = min(size.width, size.height) - 2 * margin;
 
@@ -381,7 +393,7 @@ void Application::Draw() NOEXCEPT
 								   titleTextLayout.Get(),
 								   brush.Get());
 
-	_deviceContext->DrawTextLayout(Point2F(margin, margin + titleMetrics.height),
+	_deviceContext->DrawTextLayout(Point2F(margin, 2.0 * margin + titleMetrics.height),
 								   descriptionTextLayout.Get(),
 								   brush.Get());
 
@@ -459,7 +471,7 @@ Concurrency::task<void> Application::RegisterBackgroundTask() NOEXCEPT
 	}
 }
 
-MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize, 
+MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize,
 														   D2D1_SIZE_F size)
 {
 	using namespace std;
@@ -490,7 +502,7 @@ MTL::ComPtr<IDWriteTextLayout> Application::GetTitleLayout(FLOAT fontSize,
 	return titleTextLayout;
 }
 
-MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize, 
+MTL::ComPtr<IDWriteTextLayout> Application::GetDescriptionLayout(FLOAT fontSize,
 																 D2D1_SIZE_F size)
 {
 	using namespace std;
