@@ -354,24 +354,54 @@ void Application::Draw() NOEXCEPT
 	using namespace MTL;
 	using namespace std;
 
-	auto size = _deviceContext->GetSize();
-
 	FLOAT dpiX, dpiY;
+	
+	auto size = _deviceContext->GetSize();
+	
+	auto pixelSize = _deviceContext->GetPixelSize();
+	
 	_deviceContext->GetDpi(&dpiX, &dpiY);
 
+	auto diagonal = roundf(sqrtf(powf(pixelSize.width / dpiX, 2.0f) + powf(pixelSize.height / dpiY, 2.0f)));
+
 	FLOAT multiplier;
-	if(dpiX >= 192)
+	if (diagonal >= 42.0f)
 	{
-		multiplier = 1.0f;
+		multiplier = 3.0f;
 	}
-	else if(dpiX >= 144)
+	else if (diagonal >= 37.0f)
 	{
-		multiplier = 1.5f;
+		multiplier = 2.75f;
 	}
-	else
+	else if (diagonal >= 32.0f)
+	{
+		multiplier = 2.5f;
+	}
+	else if (diagonal >= 27.0f)
+	{
+		multiplier = 2.25f;
+	}
+	else if (diagonal >= 23.0f)
 	{
 		multiplier = 2.0f;
 	}
+	else if (diagonal >= 19.0f)
+	{
+		multiplier = 1.75f;
+	}
+	else if (diagonal >= 15.0f)
+	{
+		multiplier = 1.5f;
+	}
+	else if (diagonal >= 10.0f)
+	{
+		multiplier = 1.25f;
+	}
+	else
+	{
+		multiplier = 1.0f;
+	}
+
 	auto margin = 8.0f * multiplier;
 	auto width = min(size.width, size.height) - 2 * margin;
 
@@ -393,7 +423,7 @@ void Application::Draw() NOEXCEPT
 								   titleTextLayout.Get(),
 								   brush.Get());
 
-	_deviceContext->DrawTextLayout(Point2F(margin, 2.0 * margin + titleMetrics.height),
+	_deviceContext->DrawTextLayout(Point2F(margin, 2.0f * margin + titleMetrics.height),
 								   descriptionTextLayout.Get(),
 								   brush.Get());
 
