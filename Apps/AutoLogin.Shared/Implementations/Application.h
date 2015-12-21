@@ -24,7 +24,7 @@ namespace AutoLogin
 			STDMETHODIMP Run() NOEXCEPT override final;
 			STDMETHODIMP Uninitialize() NOEXCEPT override final;
 		private:
-			std::wstring _description;
+			MTL::HString _launchArgument;
 
 			MTL::ComPtr<ABI::Windows::UI::Core::ICoreWindow> _coreWindow;
 			MTL::ComPtr<ID2D1DeviceContext> _deviceContext;
@@ -34,11 +34,15 @@ namespace AutoLogin
 			MTL::ComPtr<IDWriteTextFormat> _descriptionTextFormat;
 
 			void InitContext() NOEXCEPT;
-			void Draw() NOEXCEPT;
-			Concurrency::task<void> RegisterBackgroundTask() NOEXCEPT;
-			
-			MTL::ComPtr<IDWriteTextLayout> GetTitleLayout(FLOAT fontSize, D2D1_SIZE_F size);
-			MTL::ComPtr<IDWriteTextLayout> GetDescriptionLayout(FLOAT fontSize, D2D1_SIZE_F size);
+			void Draw(const std::wstring&) NOEXCEPT;
+
+			MTL::ComPtr<IDWriteTextLayout> GetTextLayout(const std::wstring&,
+														 D2D1_SIZE_F,
+														 IDWriteTextFormat*) NOEXCEPT;
+
+			static FLOAT GetScaleFactor(ID2D1DeviceContext*) NOEXCEPT;
+
+			static Concurrency::task<std::wstring> RegisterBackgroundTask() NOEXCEPT;
 		};
 	}
 }
