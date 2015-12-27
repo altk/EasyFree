@@ -12,12 +12,17 @@
 #include <AuthStatus.h>
 #include <UriUtilities.h>
 
-using namespace ABI::Windows::ApplicationModel::Core;
-using namespace ABI::Windows::System;
-using namespace ABI::Windows::Foundation;
+using namespace D2D1;
+using namespace ABI::Windows::ApplicationModel::Background;
 using namespace ABI::Windows::ApplicationModel::Core;
 using namespace ABI::Windows::ApplicationModel::Activation;
+using namespace ABI::Windows::ApplicationModel;
 using namespace ABI::Windows::UI::Core;
+using namespace ABI::Windows::Graphics::Display;
+using namespace ABI::Windows::Foundation::Collections;
+using namespace ABI::Windows::Foundation;
+using namespace ABI::Windows::System;
+using namespace ABI::Windows::Foundation;
 using namespace Concurrency;
 using namespace std;
 using namespace MTL;
@@ -100,13 +105,6 @@ HRESULT Application::Initialize(ICoreApplicationView* applicationView) NOEXCEPT
 
 HRESULT Application::SetWindow(ICoreWindow* window) NOEXCEPT
 {
-	using namespace std;
-	using namespace ABI::Windows::Foundation;
-	using namespace ABI::Windows::ApplicationModel::Core;
-	using namespace ABI::Windows::ApplicationModel::Activation;
-	using namespace ABI::Windows::UI::Core;
-	using namespace MTL;
-
 	_coreWindow.Attach(window);
 
 	auto visibilityChangedCallback = CreateCallback<ITypedEventHandler<CoreWindow*, VisibilityChangedEventArgs*>>(
@@ -257,13 +255,6 @@ HRESULT Application::Uninitialize() NOEXCEPT
 
 void Application::InitContext() NOEXCEPT
 {
-	using namespace D2D1;
-	using namespace ABI::Windows::ApplicationModel::Core;
-	using namespace ABI::Windows::UI::Core;
-	using namespace ABI::Windows::Graphics::Display;
-	using namespace ABI::Windows::Foundation;
-	using namespace MTL;
-
 	try
 	{
 		ComPtr<IDisplayInformationStatics> displayInformationStatics;
@@ -377,8 +368,6 @@ void Application::InitContext() NOEXCEPT
 void Application::Draw(const wstring& description) NOEXCEPT
 {
 	using namespace D2D1;
-	using namespace MTL;
-	using namespace std;
 
 	try
 	{
@@ -485,7 +474,7 @@ FLOAT Application::GetScaleFactor(ID2D1DeviceContext* deviceContext) NOEXCEPT
 	{
 		multiplier = 2.75f;
 	}
-	if (diagonal < 42.0f)
+	else if (diagonal < 42.0f)
 	{
 		multiplier = 3.0f;
 	}
@@ -495,12 +484,6 @@ FLOAT Application::GetScaleFactor(ID2D1DeviceContext* deviceContext) NOEXCEPT
 
 task<wstring> Application::RegisterBackgroundTask() NOEXCEPT
 {
-	using namespace ABI::Windows::ApplicationModel::Background;
-	using namespace Collections;
-	using namespace ABI::Windows::Foundation;
-	using namespace MTL;
-	using namespace MTL;
-
 	try
 	{
 		ComPtr<IBackgroundExecutionManagerStatics> backgroundExecutionManagerStatics;
@@ -572,12 +555,6 @@ int CALLBACK WinMain(HINSTANCE,
 					 LPSTR,
 					 int) NOEXCEPT
 {
-	using namespace ABI::Windows::Foundation;
-	using namespace ABI::Windows::ApplicationModel::Core;
-	using namespace ABI::Windows::ApplicationModel;
-	using namespace MTL;
-	using namespace MTL;
-
 	try
 	{
 		Check(RoInitialize(RO_INIT_MULTITHREADED));
@@ -588,12 +565,5 @@ int CALLBACK WinMain(HINSTANCE,
 
 		Check(coreApplication->Run(new Application()));
 	}
-	catch (const ComException&)
-	{
-		//TODO WriteLog
-	}
-	catch (const bad_alloc&)
-	{
-		//TODO WriteLog
-	}
+	catch (const exception&) { }
 }
