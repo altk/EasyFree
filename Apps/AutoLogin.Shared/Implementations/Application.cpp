@@ -32,8 +32,6 @@ using namespace AutoLogin::Windows;
 
 HRESULT Application::GetRuntimeClassName(HSTRING* className) NOEXCEPT
 {
-	using namespace MTL;
-
 	try
 	{
 		*className = HString(RuntimeClass_AutoLogin_Application).Detach();
@@ -225,9 +223,6 @@ HRESULT Application::Load(HSTRING) NOEXCEPT
 
 HRESULT Application::Run() NOEXCEPT
 {
-	using namespace ABI::Windows::UI::Core;
-	using namespace MTL;
-
 	try
 	{
 		ComPtr<ICoreDispatcher> coreDispatcher;
