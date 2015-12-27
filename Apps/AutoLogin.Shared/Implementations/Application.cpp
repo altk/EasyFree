@@ -187,6 +187,8 @@ HRESULT Application::SetWindow(ICoreWindow* window) NOEXCEPT
 				}
 				else
 				{
+					lock_guard<mutex> lock(_deviceContextMutex);
+
 					_deviceContext.Release();
 					_swapChain.Release();
 					_dwriteFactory.Release();
@@ -366,6 +368,8 @@ void Application::Draw(const wstring& description) NOEXCEPT
 
 	try
 	{
+		lock_guard<mutex> lock(_deviceContextMutex);
+
 		auto scaleFactor = GetScaleFactor(_deviceContext.Get());
 
 		auto size = _deviceContext->GetSize();

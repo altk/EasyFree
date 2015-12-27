@@ -1,11 +1,12 @@
 ﻿#pragma once
 #include <AutoLogin_h.h>
+#include <windows.applicationmodel.core.h>
 #include <d2d1_1.h>
 #include <dxgi1_2.h>
 #include <dwrite.h>
-#include <windows.applicationmodel.core.h>
-#include <macro.h>
+#include <mutex>
 #include <MTL.h>
+#include <macro.h>
 
 namespace AutoLogin
 {
@@ -25,6 +26,7 @@ namespace AutoLogin
 			STDMETHODIMP Uninitialize() NOEXCEPT override final;
 		private:
 			MTL::HString _launchArgument;
+			std::mutex _deviceContextMutex;
 
 			MTL::ComPtr<ABI::Windows::UI::Core::ICoreWindow> _coreWindow;
 			MTL::ComPtr<ID2D1DeviceContext> _deviceContext;
