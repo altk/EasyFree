@@ -3,7 +3,7 @@
   <Identity Name="10697altk.AutoLogin" Publisher="CN=D89AF1F6-F2EE-4703-B7DA-78CA9BB3AF11" Version="1.0.10002.0" />
   <mp:PhoneIdentity PhoneProductId="bd62d30d-f830-4ab6-8a13-afca375d4bf5" PhonePublisherId="8f9c8123-e8c2-42f5-a24c-31f78912e065" />
   <Properties>
-    <DisplayName>Auto Login</DisplayName>
+    <DisplayName>Автовход Wi-Fi</DisplayName>
     <PublisherDisplayName>Tech Software</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>

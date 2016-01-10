@@ -364,6 +364,12 @@
       <ReservedName>Auto@Login</ReservedName>
       <ReservedName>Авто Логин</ReservedName>
       <ReservedName>Авто@Логин</ReservedName>
+      <ReservedName>Authorizer</ReservedName>
+      <ReservedName>Авторизатор</ReservedName>
+      <ReservedName>Авторизатор Wi-Fi</ReservedName>
+      <ReservedName>Authorizer Wi-Fi</ReservedName>
+      <ReservedName>Autologin Wi-Fi</ReservedName>
+      <ReservedName>Автовход Wi-Fi</ReservedName>
     </ReservedNames>
   </ProductReservedInfo>
   <AccountPackageIdentityNames>
