@@ -150,6 +150,10 @@ HRESULT Application::SetWindow(ICoreWindow* window) NOEXCEPT
 								{
 									Draw(Labels::Unlicensed);
 								}
+								else if(AuthStatus::launchAttributeFail.compare(unescapedArgument.GetRawBuffer()) == 0)
+								{
+									Draw(Labels::AuthFail);
+								}
 							}
 							else
 							{

@@ -11,7 +11,6 @@
 #include <Labels.h>
 #include <AuthStatus.h>
 #include <UriUtilities.h>
-#include <chrono>
 
 using namespace std;
 using namespace Concurrency;
@@ -30,7 +29,8 @@ using namespace AutoLogin::Resources;
 
 struct NotificationHelper final
 {
-	static void PromtNotification(const wstring& launchAttribute,
+	static void PromtNotification(const wstring& title,
+								  const wstring& launchAttribute,
 								  const wstring& description)
 	{
 		try
@@ -52,7 +52,7 @@ struct NotificationHelper final
 
 			auto toastXml = wstring(L"<toast launch=\"").append(launchAttribute)
 														.append(L"\"><visual><binding template=\"ToastText02\"><text id=\"1\">")
-														.append(Labels::Title)
+														.append(title)
 														.append(L"</text><text id=\"2\">")
 														.append(description)
 														.append(L"</text></binding></visual></toast>");
@@ -71,55 +71,6 @@ struct NotificationHelper final
 		}
 		catch (...) {}
 	}
-#ifdef TEST
-
-	static void PromtStart()
-	{
-		using namespace chrono;
-
-		auto now = system_clock::to_time_t(system_clock::now());
-		tm nowLocal;
-		localtime_s(&nowLocal, &now);
-
-		PromtNotification(wstring(),
-						  wstring(L"Start ").append(to_wstring(nowLocal.tm_hour))
-											.append(L":")
-											.append(to_wstring(nowLocal.tm_min))
-											.append(L":")
-											.append(to_wstring(nowLocal.tm_sec)));
-	}
-
-	static void PromtEnd()
-	{
-		using namespace chrono;
-
-		auto now = system_clock::to_time_t(system_clock::now());
-		tm nowLocal;
-		localtime_s(&nowLocal, &now);
-
-		PromtNotification(wstring(),
-						  wstring(L"End ").append(to_wstring(nowLocal.tm_hour))
-										  .append(L":")
-										  .append(to_wstring(nowLocal.tm_min))
-										  .append(L":")
-										  .append(to_wstring(nowLocal.tm_sec)));
-	}
-
-	static void PromtException(const exception& ex)
-	{
-		string message(ex.what());
-
-		PromtNotification(wstring(),
-						  wstring(begin(message), end(message)));
-	}
-
-#else
-	static void PromtStart() { }
-
-	static void PromtEnd() { }
-
-	static void PromtException(exception) { }
-#endif 
 };
 
 HRESULT LoginTask::GetRuntimeClassName(HSTRING* className) NOEXCEPT
@@ -142,21 +93,19 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 
 			HString connectionName;
 			Check(currentNetwork->get_ProfileName(&connectionName));
-			auto connectionNameRaw = connectionName.GetRawBuffer();
+			auto connectionNameStr = wstring(connectionName.GetRawBuffer());
 
 			auto findIterator = find_if(begin(authorizers),
 										end(authorizers),
-										[connectionNameRaw]
+										[&connectionNameStr]
 										(const shared_ptr<IAuthorizer>& authorizer) ->
 										bool
 										{
-											return authorizer->CanAuth(connectionNameRaw);
+											return authorizer->CanAuth(connectionNameStr);
 										});
 
 			if (findIterator != end(authorizers))
 			{
-				NotificationHelper::PromtStart();
-
 				if (LicenseChecker::Check())
 				{
 					auto authorizer = *findIterator;
@@ -164,64 +113,65 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 					ComPtr<IBackgroundTaskDeferral> taskDefferal;
 					Check(taskInstance->GetDeferral(&taskDefferal));
 
-					authorizer->AuthAsync()
-							.then(
-								[taskDefferal, authorizer]
-								(task<wstring> authResultTask) NOEXCEPT ->
-								void
+					authorizer->AuthAsync().then(
+						[connectionNameStr, taskDefferal, authorizer]
+						(task<wstring> authResultTask) NOEXCEPT ->
+						void
+						{
+							try
+							{
+								auto authResult = authResultTask.get();
+								if (!authResult.empty())
 								{
-									try
+									wstring launchArgument,
+											description;
+
+									if (authResult == AuthStatus::launchAttributeSuccess)
 									{
-										auto authResult = authResultTask.get();
-										if (!authResult.empty())
-										{
-											wstring launchArgument,
-													description;
-
-											if (authResult == AuthStatus::launchAttributeSuccess)
-											{
-												launchArgument = AuthStatus::launchAttributeSuccess;
-												description = Labels::AuthSuccess;
-											}
-											else if (authResult == authorizer->GetRegistrationUrl())
-											{
-												launchArgument = authorizer->GetRegistrationUrl();
-												description = Labels::RegistrationNeed;
-											}
-											else
-											{
-												launchArgument = authResult;
-												description = Labels::AuthFail;
-											}
-
-											NotificationHelper::PromtNotification(UriUtilities().Escape(HStringReference(launchArgument.data(), launchArgument.size()).Get()).GetRawBuffer(),
-																				  description);
-
-											NotificationHelper::PromtEnd();
-										}
+										launchArgument = AuthStatus::launchAttributeSuccess;
+										description = Labels::AuthSuccess;
 									}
-									catch (const exception& ex)
+									else if (authResult == authorizer->GetRegistrationUrl())
 									{
-										NotificationHelper::PromtException(ex);
+										launchArgument = authorizer->GetRegistrationUrl();
+										description = Labels::RegistrationNeed;
 									}
-									catch (...) {}
+									else
+									{
+										launchArgument = authResult;
+										description = Labels::AuthFail;
+									}
 
-									Check(taskDefferal->Complete());
-								});
+									NotificationHelper::PromtNotification(connectionNameStr,
+																		  UriUtilities().Escape(launchArgument).GetRawBuffer(),
+																		  description);
+								}
+							}
+							catch (...)
+							{
+								NotificationHelper::PromtNotification(Labels::Title,
+																	  UriUtilities().Escape(AuthStatus::launchAttributeFail).GetRawBuffer(),
+																	  Labels::AuthFail);
+							}
+
+							Check(taskDefferal->Complete());
+						});
 				}
 				else
 				{
-					NotificationHelper::PromtNotification(AuthStatus::launchAttributeUnlicensed,
+					NotificationHelper::PromtNotification(Labels::Title,
+														  UriUtilities().Escape(AuthStatus::launchAttributeUnlicensed).GetRawBuffer(),
 														  Labels::Unlicensed);
 				}
 			}
 		}
 	}
-	catch (const exception& ex)
+	catch (...)
 	{
-		NotificationHelper::PromtException(ex);
+		NotificationHelper::PromtNotification(Labels::Title,
+											  UriUtilities().Escape(AuthStatus::launchAttributeFail).GetRawBuffer(),
+											  Labels::AuthFail);
 	}
-	catch (...) { }
 
 	return S_OK;
 }

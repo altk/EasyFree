@@ -10,6 +10,8 @@ namespace AutoLogin
 			
 			static const std::wstring launchAttributeUnlicensed;
 
+			static const std::wstring launchAttributeFail;
+
 			static const std::wstring launchAttributeScheme;
 		};
 	}

@@ -3,7 +3,7 @@
 
 using namespace AutoLogin::Resources;
 
-const std::wstring Labels::Title = L"Auto Login";
+const std::wstring Labels::Title = L"Автовход Wi-Fi";
 
 const std::wstring Labels::AuthSuccess =
 L"Авторизация выполнена успешно.\r\n"

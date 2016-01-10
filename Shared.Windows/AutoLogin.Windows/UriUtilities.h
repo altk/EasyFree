@@ -43,14 +43,14 @@ namespace AutoLogin
 			}
 
 			void Escape(HSTRING source,
-						HSTRING* destination)
+						HSTRING* destination) const
 			{
 				using namespace MTL;
 
 				Check(_uriStatics->EscapeComponent(source, destination));
 			}
-
-			MTL::HString Escape(HSTRING source)
+			
+			MTL::HString Escape(HSTRING source) const
 			{
 				using namespace MTL;
 
@@ -59,21 +59,35 @@ namespace AutoLogin
 				return result;
 			}
 
+			MTL::HString Escape(const std::wstring& source) const
+			{
+				using namespace MTL;
+			
+				return Escape(HStringReference(source).Get());
+			}
+
 			void Unescape(HSTRING source,
-						  HSTRING* destination)
+						  HSTRING* destination) const
 			{
 				using namespace MTL;
 
 				Check(_uriStatics->UnescapeComponent(source, destination));
 			}
 
-			MTL::HString Unescape(HSTRING source)
+			MTL::HString Unescape(HSTRING source) const
 			{
 				using namespace MTL;
 
 				HString result;
 				Check(_uriStatics->UnescapeComponent(source, &result));
 				return result;
+			}
+
+			MTL::HString Unescape(std::wstring source) const
+			{
+				using namespace MTL;
+
+				return Unescape(HStringReference(source).Get());
 			}
 
 		private:
