@@ -191,13 +191,7 @@ HRESULT Application::SetWindow(ICoreWindow* window) NOEXCEPT
 				}
 				else
 				{
-					lock_guard<mutex> lock(_deviceContextMutex);
-
-					_deviceContext.Release();
-					_swapChain.Release();
-					_dwriteFactory.Release();
-					_titleTextFormat.Release();
-					_descriptionTextFormat.Release();
+					ClearContext();
 				}
 
 				return S_OK;
@@ -245,11 +239,7 @@ HRESULT Application::Run() NOEXCEPT
 
 HRESULT Application::Uninitialize() NOEXCEPT
 {
-	_deviceContext.Release();
-	_swapChain.Release();
-	_dwriteFactory.Release();
-	_titleTextFormat.Release();
-	_descriptionTextFormat.Release();
+	ClearContext();
 	_coreWindow.Release();
 	return S_OK;
 }
@@ -364,6 +354,17 @@ void Application::InitContext() NOEXCEPT
 											   &_descriptionTextFormat));
 	}
 	catch (...) { }
+}
+
+void Application::ClearContext() NOEXCEPT
+{
+	lock_guard<mutex> lock(_deviceContextMutex);
+
+	_deviceContext.Release();
+	_swapChain.Release();
+	_dwriteFactory.Release();
+	_titleTextFormat.Release();
+	_descriptionTextFormat.Release();
 }
 
 void Application::Draw(const wstring& description) NOEXCEPT

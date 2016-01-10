@@ -837,14 +837,19 @@ namespace MTL
 		ComPtr() NOEXCEPT
 			: _pointer(nullptr) { };
 
-		explicit ComPtr(TClass* defaultInterface) NOEXCEPT
-			: _pointer(defaultInterface) { }
+		~ComPtr() NOEXCEPT
+		{
+			InternalRelease();
+		}
 
-		ComPtr(const ComPtr& other) NOEXCEPT
-			: _pointer(other._pointer)
+		explicit ComPtr(TClass* defaultInterface) NOEXCEPT
+			: _pointer(defaultInterface)
 		{
 			InternalAddRef();
 		}
+
+		ComPtr(const ComPtr& other) NOEXCEPT
+			: ComPtr(other._pointer) { }
 
 		ComPtr(ComPtr&& other) NOEXCEPT
 			: _pointer(other._pointer)

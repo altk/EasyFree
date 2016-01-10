@@ -36,6 +36,7 @@ namespace AutoLogin
 			MTL::ComPtr<IDWriteTextFormat> _descriptionTextFormat;
 
 			void InitContext() NOEXCEPT;
+			void ClearContext() NOEXCEPT;
 			void Draw(const std::wstring&) NOEXCEPT;
 
 			MTL::ComPtr<IDWriteTextLayout> GetTextLayout(const std::wstring&,
