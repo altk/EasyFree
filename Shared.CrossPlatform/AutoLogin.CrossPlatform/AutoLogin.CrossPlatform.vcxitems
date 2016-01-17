@@ -16,6 +16,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AuthResult.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Base64.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)HttpClient.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)HttpRequestHeaders.h" />

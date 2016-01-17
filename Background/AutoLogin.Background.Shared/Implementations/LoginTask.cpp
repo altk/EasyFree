@@ -29,9 +29,9 @@ using namespace AutoLogin::Resources;
 
 struct NotificationHelper final
 {
-	static void PromtNotification(const wstring& title,
-								  const wstring& launchAttribute,
-								  const wstring& description)
+	static void PromtNotification(const wstring &title,
+								  const wstring &launchAttribute,
+								  const wstring &description)
 	{
 		try
 		{
@@ -73,13 +73,13 @@ struct NotificationHelper final
 	}
 };
 
-HRESULT LoginTask::GetRuntimeClassName(HSTRING* className) NOEXCEPT
+HRESULT LoginTask::GetRuntimeClassName(HSTRING *className) NOEXCEPT
 {
 	*className = HString(RuntimeClass_AutoLogin_Background_LoginTask).Detach();
 	return S_OK;
 }
 
-HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
+HRESULT LoginTask::Run(IBackgroundTaskInstance *taskInstance) NOEXCEPT
 {
 	try
 	{
@@ -98,7 +98,7 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 			auto findIterator = find_if(begin(authorizers),
 										end(authorizers),
 										[&connectionNameStr]
-										(const shared_ptr<IAuthorizer>& authorizer) ->
+										(const shared_ptr<IAuthorizer> &authorizer) ->
 										bool
 										{
 											return authorizer->CanAuth(connectionNameStr);
@@ -115,37 +115,35 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance* taskInstance) NOEXCEPT
 
 					authorizer->AuthAsync().then(
 						[connectionNameStr, taskDefferal, authorizer]
-						(task<wstring> authResultTask) NOEXCEPT ->
+						(task<AuthResult> authResultTask) NOEXCEPT ->
 						void
 						{
 							try
 							{
-								auto authResult = authResultTask.get();
-								if (!authResult.empty())
-								{
-									wstring launchArgument,
-											description;
+								wstring launchArgument,
+										description;
 
-									if (authResult == AuthStatus::launchAttributeSuccess)
-									{
+								switch (authResultTask.get())
+								{
+									case AutoLogin::CrossPlatform::AuthResult::Success:
 										launchArgument = AuthStatus::launchAttributeSuccess;
 										description = Labels::AuthSuccess;
-									}
-									else if (authResult == authorizer->GetRegistrationUrl())
-									{
+										break;
+									case AutoLogin::CrossPlatform::AuthResult::Fail:
+										launchArgument = AuthStatus::launchAttributeFail;
+										description = Labels::AuthFail;
+										break;
+									case AutoLogin::CrossPlatform::AuthResult::Unregistered:
 										launchArgument = authorizer->GetRegistrationUrl();
 										description = Labels::RegistrationNeed;
-									}
-									else
-									{
-										launchArgument = authResult;
-										description = Labels::AuthFail;
-									}
-
-									NotificationHelper::PromtNotification(connectionNameStr,
-																		  UriUtilities().Escape(launchArgument).GetRawBuffer(),
-																		  description);
+										break;
+									default:
+										return;
 								}
+
+								NotificationHelper::PromtNotification(connectionNameStr,
+																	  UriUtilities().Escape(launchArgument).GetRawBuffer(),
+																	  description);
 							}
 							catch (...)
 							{

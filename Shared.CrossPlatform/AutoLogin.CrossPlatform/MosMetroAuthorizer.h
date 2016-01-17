@@ -13,23 +13,7 @@ namespace AutoLogin
 		class MosMetroAuthorizer final : public IAuthorizer
 		{
 		public:
-			MosMetroAuthorizer() NOEXCEPT {}
-
-			MosMetroAuthorizer(const MosMetroAuthorizer&) NOEXCEPT {}
-
-			MosMetroAuthorizer(MosMetroAuthorizer&&) {}
-
-			MosMetroAuthorizer& operator=(const MosMetroAuthorizer&) NOEXCEPT
-			{
-				return *this;
-			}
-
-			MosMetroAuthorizer& operator=(MosMetroAuthorizer&&) NOEXCEPT
-			{
-				return *this;
-			}
-
-			virtual Concurrency::task<std::wstring> AuthAsync() NOEXCEPT override
+			virtual Concurrency::task<AuthResult> AuthAsync() NOEXCEPT override
 			{
 				using namespace std;
 				using namespace Concurrency;
@@ -38,20 +22,21 @@ namespace AutoLogin
 				try
 				{
 					const HttpClient<TResponse> httpClient;
-					auto pAuthUrlKey = make_shared<wstring>(L"AuthUrl");
-					task<wstring> getAuthUrlTask;
-					SettingsProvider settingsProvider;
-					auto savedAuthUrl = settingsProvider.Get(*pAuthUrlKey);
 
 					auto checkInternetAvailabilityTask = httpClient.GetAsync(L"http://wi-fi.ru")
-																   .then([](TResponse& response)
+																   .then([](TResponse &response)
 																	   {
 																		   return GetAuthUrlAsync(move(response));
 																	   });
 
+					SettingsProvider settingsProvider;
+					auto pAuthUrlKey = make_shared<wstring>(L"AuthUrl");
+					auto savedAuthUrl = settingsProvider.Get(*pAuthUrlKey);
+
+					task<wstring> getAuthUrlTask;
 					if (savedAuthUrl.empty())
 					{
-						getAuthUrlTask = checkInternetAvailabilityTask.then([settingsProvider, pAuthUrlKey](wstring& authUrl)
+						getAuthUrlTask = checkInternetAvailabilityTask.then([settingsProvider, pAuthUrlKey](wstring &authUrl)
 							{
 								if (!authUrl.empty())
 								{
@@ -65,20 +50,19 @@ namespace AutoLogin
 						getAuthUrlTask = task_from_result(savedAuthUrl);
 					}
 
-					auto authTask = getAuthUrlTask.then([httpClient](wstring& authUrl) -> task<wstring>
+					auto authTask = getAuthUrlTask.then([httpClient](wstring &authUrl) mutable -> task<AuthResult>
 						{
 							if (authUrl.empty())
 							{
-								return task_from_result(wstring());
+								return task_from_result(AuthResult::None);
 							}
 
-							auto registrationUrl = GetRegistrationUrlImpl();
-							if (authUrl == registrationUrl)
+							if (authUrl == GetRegistrationUrlImpl())
 							{
-								return task_from_result(move(registrationUrl));
+								return task_from_result(AuthResult::Unregistered);
 							}
 
-							unordered_map<wstring, wstring> getHeaders
+							unordered_map<wstring, wstring> headers
 									{
 										{
 											HttpRequestHeaders::Accept,
@@ -94,14 +78,14 @@ namespace AutoLogin
 										}
 									};
 
-							auto authUrlPtr = make_shared<wstring>(move(authUrl));
+							auto authUrlPtr = make_shared<wstring>();
 
-							return httpClient.GetAsync(*authUrlPtr, move(getHeaders))
-											 .then([](TResponse& response)
+							return httpClient.GetAsync(*authUrlPtr, move(headers))
+											 .then([](TResponse &response)
 												 {
 													 return GetPostContentAsync(move(response));
 												 })
-											 .then([httpClient, authUrlPtr](wstring& postContent)
+											 .then([httpClient, authUrlPtr](wstring &postContent)
 												 {
 													 unordered_map<wstring, wstring> postHeaders
 															 {
@@ -110,44 +94,42 @@ namespace AutoLogin
 																	 L"text/html"
 																 },
 																 {
-																	 HttpRequestHeaders::Origin,
-																	 L"https://login.wi-fi.ru"
-																 },
-																 {
 																	 HttpRequestHeaders::UserAgent,
 																	 L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36"
+																 },
+																 {
+																	 HttpRequestHeaders::Connection,
+																	 L"close"
 																 },
 																 {
 																	 HttpRequestHeaders::ContentType,
 																	 L"application/x-www-form-urlencoded"
 																 },
 																 {
-																	 HttpRequestHeaders::Referer,
-																	 *authUrlPtr
+																	 HttpRequestHeaders::Origin,
+																	 L"https://login.wi-fi.ru"
 																 },
 																 {
-																	 HttpRequestHeaders::Connection,
-																	 L"close"
+																	 HttpRequestHeaders::Referer,
+																	 *authUrlPtr
 																 }
 															 };
 
-													 return httpClient.PostAsync(*authUrlPtr,
-																				 move(postContent),
-																				 move(postHeaders));
+													 return httpClient.PostAsync(*authUrlPtr, move(postContent), move(postHeaders));
 												 })
-											 .then([httpClient, authUrlPtr](TResponse& response) -> wstring
+											 .then([](TResponse &response) -> AuthResult
 												 {
 													 return GetStatusCode(move(response)) != 401
-																? AuthStatus::launchAttributeSuccess
-																: *authUrlPtr;
+																? AuthResult::Success
+																: AuthResult::Fail;
 												 });
 						});
 
-					return checkInternetAvailabilityTask.then([authTask](wstring& authUrl)
+					return checkInternetAvailabilityTask.then([authTask](wstring &authUrl)
 						{
 							if (authUrl.empty())
 							{
-								return task_from_result(wstring());
+								return task_from_result(AuthResult::None);
 							}
 
 							return authTask;
@@ -155,11 +137,11 @@ namespace AutoLogin
 				}
 				catch (...)
 				{
-					return task_from_result(wstring());
+					return task_from_result(AuthResult::Fail);
 				}
 			}
 
-			virtual bool CanAuth(const std::wstring& connectionName) const NOEXCEPT override
+			virtual bool CanAuth(const std::wstring &connectionName) const NOEXCEPT override
 			{
 				return connectionName.compare(L"MosMetro_Free") == 0;
 			}

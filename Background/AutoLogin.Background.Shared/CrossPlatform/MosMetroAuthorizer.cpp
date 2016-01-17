@@ -39,14 +39,14 @@ task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetAuthUrlAsync(
 
 	Check(httpContent->ReadAsBufferAsync(&readAsBufferOperation));
 
-	return GetTask(readAsBufferOperation.Get()).then([] (ComPtr<IBuffer>& buffer) -> wstring
+	return GetTask(readAsBufferOperation.Get()).then([](ComPtr<IBuffer> &buffer) -> wstring
 		{
 			if (!buffer) return wstring();
 
 			ComPtr<IBufferByteAccess> bufferByteAccess;
 			Check(buffer.As(&bufferByteAccess));
 
-			byte* content;
+			byte *content;
 			Check(bufferByteAccess->Buffer(&content));
 
 			return MosMetroResponseParser::GetAuthUrl(reinterpret_cast<const char*>(content));
@@ -63,14 +63,17 @@ task<wstring> MosMetroAuthorizer<ComPtr<IHttpResponseMessage>>::GetPostContentAs
 
 	Check(httpContent->ReadAsBufferAsync(&readAsBufferOperation));
 
-	return GetTask(readAsBufferOperation.Get()).then([] (ComPtr<IBuffer>& buffer) -> wstring
+	return GetTask(readAsBufferOperation.Get()).then([](ComPtr<IBuffer> &buffer) -> wstring
 		{
-			if (!buffer) return wstring();
+			if (!buffer)
+			{
+				return wstring();
+			}
 
 			ComPtr<IBufferByteAccess> bufferByteAccess;
 			Check(buffer->QueryInterface<IBufferByteAccess>(&bufferByteAccess));
 
-			byte* content;
+			byte *content;
 			Check(bufferByteAccess->Buffer(&content));
 
 			return MosMetroResponseParser::GetPostString(reinterpret_cast<char*>(content));

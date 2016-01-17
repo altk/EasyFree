@@ -13,6 +13,10 @@ namespace AutoLogin
 		class HttpClient
 		{
 		public:
+			using TUrl = std::wstring;
+			using TContent = std::wstring;
+			using THeaders = std::unordered_map<std::wstring, std::wstring>;
+
 			HttpClient() NOEXCEPT;
 
 			~HttpClient() NOEXCEPT;
@@ -41,12 +45,12 @@ namespace AutoLogin
 				return *this;
 			}
 
-			Concurrency::task<TResponse> GetAsync(std::wstring url,
-												  std::unordered_map<std::wstring, std::wstring> headers = std::unordered_map<std::wstring, std::wstring>()) const;
+			Concurrency::task<TResponse> GetAsync(TUrl url, 
+												  THeaders headers = THeaders()) const;
 
-			Concurrency::task<TResponse> PostAsync(std::wstring url,
-												   std::wstring postContent,
-												   std::unordered_map<std::wstring, std::wstring> headers = std::unordered_map<std::wstring, std::wstring>()) const;
+			Concurrency::task<TResponse> PostAsync(TUrl url, 
+												   TContent postContent, 
+												   THeaders headers = THeaders()) const;
 		private:
 			class HttpClientImpl;
 
