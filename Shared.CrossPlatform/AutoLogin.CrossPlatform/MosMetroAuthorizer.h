@@ -3,6 +3,7 @@
 #include <AuthStatus.h>
 #include <HttpClient.h>
 #include <HttpRequestHeaders.h>
+#include <SettingsProvider.h>
 
 namespace AutoLogin
 {
@@ -37,90 +38,120 @@ namespace AutoLogin
 				try
 				{
 					const HttpClient<TResponse> httpClient;
+					auto pAuthUrlKey = make_shared<wstring>(L"AuthUrl");
+					task<wstring> getAuthUrlTask;
+					SettingsProvider settingsProvider;
+					auto savedAuthUrl = settingsProvider.Get(*pAuthUrlKey);
 
-					return httpClient.GetAsync(L"http://wi-fi.ru")
-									 .then([](TResponse& response)
-										 {
-											 return GetAuthUrlAsync(move(response));
-										 })
-									 .then([httpClient](wstring& authUrl) -> task<wstring>
-										 {
-											 if (authUrl.empty())
-											 {
-												 return task_from_result(wstring());
-											 }
+					auto checkInternetAvailabilityTask = httpClient.GetAsync(L"http://wi-fi.ru")
+																   .then([](TResponse& response)
+																	   {
+																		   return GetAuthUrlAsync(move(response));
+																	   });
 
-											 auto registrationUrl = GetRegistrationUrlImpl();
-											 if (authUrl == registrationUrl)
-											 {
-												 return task_from_result(move(registrationUrl));
-											 }
+					if (savedAuthUrl.empty())
+					{
+						getAuthUrlTask = checkInternetAvailabilityTask.then([settingsProvider, pAuthUrlKey](wstring& authUrl)
+							{
+								if (!authUrl.empty())
+								{
+									settingsProvider.Set(*pAuthUrlKey, authUrl);
+								}
+								return authUrl;
+							});
+					}
+					else
+					{
+						getAuthUrlTask = task_from_result(savedAuthUrl);
+					}
 
-											 unordered_map<wstring, wstring> getHeaders
-													 {
-														 {
-															 HttpRequestHeaders::Accept,
-															 L"text/html"
-														 },
-														 {
-															 HttpRequestHeaders::UserAgent,
-															 L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36"
-														 },
-														 {
-															 HttpRequestHeaders::Connection,
-															 L"close"
-														 }
-													 };
+					auto authTask = getAuthUrlTask.then([httpClient](wstring& authUrl) -> task<wstring>
+						{
+							if (authUrl.empty())
+							{
+								return task_from_result(wstring());
+							}
 
-											 auto authUrlPtr = make_shared<wstring>(move(authUrl));
+							auto registrationUrl = GetRegistrationUrlImpl();
+							if (authUrl == registrationUrl)
+							{
+								return task_from_result(move(registrationUrl));
+							}
 
-											 return httpClient.GetAsync(*authUrlPtr,
-																		move(getHeaders))
-															  .then([](TResponse& response)
-																  {
-																	  return GetPostContentAsync(move(response));
-																  })
-															  .then([httpClient, authUrlPtr](wstring& postContent)
-																  {
-																	  unordered_map<wstring, wstring> postHeaders
-																			  {
-																				  {
-																					  HttpRequestHeaders::Accept,
-																					  L"text/html"
-																				  },
-																				  {
-																					  HttpRequestHeaders::Origin,
-																					  L"https://login.wi-fi.ru"
-																				  },
-																				  {
-																					  HttpRequestHeaders::UserAgent,
-																					  L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36"
-																				  },
-																				  {
-																					  HttpRequestHeaders::ContentType,
-																					  L"application/x-www-form-urlencoded"
-																				  },
-																				  {
-																					  HttpRequestHeaders::Referer,
-																					  *authUrlPtr
-																				  },
-																				  {
-																					  HttpRequestHeaders::Connection,
-																					  L"close"
-																				  }
-																			  };
+							unordered_map<wstring, wstring> getHeaders
+									{
+										{
+											HttpRequestHeaders::Accept,
+											L"text/html"
+										},
+										{
+											HttpRequestHeaders::UserAgent,
+											L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36"
+										},
+										{
+											HttpRequestHeaders::Connection,
+											L"close"
+										}
+									};
 
-																	  return httpClient.PostAsync(*authUrlPtr,
-																								  move(postContent),
-																								  move(postHeaders));
-																  })
-															  .then([httpClient, authUrlPtr](TResponse& response) -> wstring
-																  {
-																	  return GetStatusCode(move(response)) != 401
-																				 ? AuthStatus::launchAttributeSuccess
-																				 : *authUrlPtr;
-																  });
-										 });
+							auto authUrlPtr = make_shared<wstring>(move(authUrl));
+
+							return httpClient.GetAsync(*authUrlPtr, move(getHeaders))
+											 .then([](TResponse& response)
+												 {
+													 return GetPostContentAsync(move(response));
+												 })
+											 .then([httpClient, authUrlPtr](wstring& postContent)
+												 {
+													 unordered_map<wstring, wstring> postHeaders
+															 {
+																 {
+																	 HttpRequestHeaders::Accept,
+																	 L"text/html"
+																 },
+																 {
+																	 HttpRequestHeaders::Origin,
+																	 L"https://login.wi-fi.ru"
+																 },
+																 {
+																	 HttpRequestHeaders::UserAgent,
+																	 L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36"
+																 },
+																 {
+																	 HttpRequestHeaders::ContentType,
+																	 L"application/x-www-form-urlencoded"
+																 },
+																 {
+																	 HttpRequestHeaders::Referer,
+																	 *authUrlPtr
+																 },
+																 {
+																	 HttpRequestHeaders::Connection,
+																	 L"close"
+																 }
+															 };
+
+													 return httpClient.PostAsync(*authUrlPtr,
+																				 move(postContent),
+																				 move(postHeaders));
+												 })
+											 .then([httpClient, authUrlPtr](TResponse& response) -> wstring
+												 {
+													 return GetStatusCode(move(response)) != 401
+																? AuthStatus::launchAttributeSuccess
+																: *authUrlPtr;
+												 });
+						});
+
+					return checkInternetAvailabilityTask.then([authTask](wstring& authUrl)
+						{
+							if (authUrl.empty())
+							{
+								return task_from_result(wstring());
+							}
+
+							return authTask;
+						});
 				}
 				catch (...)
 				{
