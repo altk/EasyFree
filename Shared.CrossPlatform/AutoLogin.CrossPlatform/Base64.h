@@ -9,7 +9,8 @@ namespace AutoLogin
 		class Base64 final
 		{
 		public:
-			static std::string Encode(unsigned char const* bytes, unsigned int length) NOEXCEPT
+			static std::string Encode(unsigned char const *bytes,
+									  unsigned int length) NOEXCEPT
 			{
 				using namespace std;
 
@@ -18,7 +19,7 @@ namespace AutoLogin
 				auto j = 0;
 				unsigned char char_array_3[3];
 				unsigned char char_array_4[4];
-				
+
 				char baseChars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 				while (length--)
@@ -51,11 +52,6 @@ namespace AutoLogin
 				}
 
 				return result;
-			}
-		private:
-			static bool IsBase64(unsigned char c) NOEXCEPT
-			{
-				return (isalnum(c) || (c == '+') || (c == '/'));
 			}
 		};
 	}

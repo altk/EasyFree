@@ -21,13 +21,13 @@ namespace AutoLogin
 
 			~HttpClient() NOEXCEPT;
 
-			HttpClient(const HttpClient& other) NOEXCEPT
+			HttpClient(const HttpClient &other) NOEXCEPT
 				: _impl(other._impl) {}
 
-			HttpClient(HttpClient&& other) NOEXCEPT
+			HttpClient(HttpClient &&other) NOEXCEPT
 				: _impl(std::move(other._impl)) { }
 
-			HttpClient& operator=(const HttpClient& other) NOEXCEPT
+			HttpClient& operator=(const HttpClient &other) NOEXCEPT
 			{
 				if (this != &other)
 				{
@@ -36,7 +36,7 @@ namespace AutoLogin
 				return *this;
 			}
 
-			HttpClient& operator=(HttpClient&& other) NOEXCEPT
+			HttpClient& operator=(HttpClient &&other) NOEXCEPT
 			{
 				if (this != &other)
 				{
@@ -45,12 +45,12 @@ namespace AutoLogin
 				return *this;
 			}
 
-			Concurrency::task<TResponse> GetAsync(TUrl url, 
-												  THeaders headers = THeaders()) const;
+			Concurrency::task<TResponse> GetAsync(const TUrl &url,
+												  const THeaders &headers = THeaders()) const;
 
-			Concurrency::task<TResponse> PostAsync(TUrl url, 
-												   TContent postContent, 
-												   THeaders headers = THeaders()) const;
+			Concurrency::task<TResponse> PostAsync(const TUrl &url,
+												   const THeaders &headers = THeaders(),
+												   const TContent &postContent = TContent()) const;
 		private:
 			class HttpClientImpl;
 

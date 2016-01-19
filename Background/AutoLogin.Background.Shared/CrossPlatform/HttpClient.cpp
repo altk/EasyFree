@@ -1,5 +1,8 @@
 #include <pch.h>
 #include <HttpClient.h>
+#include <algorithm>
+#include <vector>
+#include <tuple>
 #include <windows.web.http.h>
 #include <windows.foundation.collections.h>
 #include <HttpRequestHeaders.h>
@@ -40,7 +43,7 @@ public:
 		ComPtr<IHttpMethodStatics> httpMethodStatics;
 
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Foundation_Uri).Get(),
-								   &uriFactory));
+								   &_uriFactory));
 
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpClient).Get(),
 								   &httpClientFactory));
@@ -82,27 +85,27 @@ public:
 		Check(httpMethodStatics->get_Post(&_httpPostMethod));
 	}
 
-	task<TResponse> GetAsync(TUrl url,
-							 THeaders headers) const
+	task<TResponse> GetAsync(const TUrl &url,
+							 const THeaders &headers) const
 	{
 		task_completion_event<TResponse> taskCompletionEvent;
 
-		GetAsync(make_shared<TUrl>(move(url)),
-				 make_shared<THeaders>(move(headers)),
+		GetAsync(CreateUri(HStringReference(url).Get()),
+				 CreateHeaders(headers),
 				 taskCompletionEvent);
 
 		return task<TResponse>(taskCompletionEvent);
 	}
 
-	task<TResponse> PostAsync(TUrl url,
-							  TContent postContent,
-							  THeaders headers) const
+	task<TResponse> PostAsync(const TUrl &url,
+							  const THeaders &headers,
+							  const TContent &postContent) const
 	{
 		task_completion_event<TResponse> taskCompletionEvent;
 
-		PostAsync(make_shared<TUrl>(move(url)),
-				  make_shared<THeaders>(move(headers)),
-				  make_shared<TContent>(move(postContent)),
+		PostAsync(CreateUri(HStringReference(url).Get()),
+				  CreateHeaders(headers),
+				  HString(postContent),
 				  taskCompletionEvent);
 
 		return task<TResponse>(taskCompletionEvent);
@@ -111,55 +114,62 @@ public:
 private:
 	uint_fast16_t _maxRetryCount;
 
-	ComPtr<IUriRuntimeClassFactory> uriFactory;
+	ComPtr<IUriRuntimeClassFactory> _uriFactory;
 	ComPtr<IHttpClient> _httpClient;
 	ComPtr<IHttpRequestMessageFactory> _httpRequestMessageFactory;
 	ComPtr<IHttpMethod> _httpGetMethod;
 	ComPtr<IHttpMethod> _httpPostMethod;
 
-	ComPtr<IUriRuntimeClass> CreateUri(const TUrl &url) const
+	static shared_ptr<vector<tuple<HString, HString>>> CreateHeaders(const THeaders &headers) NOEXCEPT
+	{
+		auto result = make_shared<vector<tuple<HString, HString>>>();
+		for (auto &header : headers)
+		{
+			result->emplace_back(HString(header.first), HString(header.second));
+		}
+		return result;
+	}
+
+	ComPtr<IUriRuntimeClass> CreateUri(HSTRING urlString) const
 	{
 		ComPtr<IUriRuntimeClass> uri;
-		Check(uriFactory->CreateUri(HStringReference(url).Get(),
-									&uri));
-
+		Check(_uriFactory->CreateUri(urlString, &uri));
 		return uri;
 	}
 
 	ComPtr<IHttpRequestMessage> CreateRequest(IHttpMethod *method,
-											  const TUrl &url,
-											  const THeaders &headers) const
+											  IUriRuntimeClass *uri,
+											  const vector<tuple<HString, HString>> &headers) const
 	{
 		ComPtr<IHttpRequestMessage> httpRequestMessage;
 		ComPtr<IHttpRequestHeaderCollection> httpRequestHeaderCollection;
 
-		Check(_httpRequestMessageFactory->Create(method, CreateUri(url).Get(), &httpRequestMessage));
+		Check(_httpRequestMessageFactory->Create(method, uri, &httpRequestMessage));
 
 		Check(httpRequestMessage->get_Headers(&httpRequestHeaderCollection));
 
-		for (auto &header : headers)
+		for (auto &pair : headers)
 		{
 			boolean isSuccess;
-			Check(httpRequestHeaderCollection->TryAppendWithoutValidation(HStringReference(header.first).Get(),
-																		  HStringReference(header.second).Get(),
+			Check(httpRequestHeaderCollection->TryAppendWithoutValidation(get<0>(pair).Get(),
+																		  get<1>(pair).Get(),
 																		  &isSuccess));
 		}
 
 		return httpRequestMessage;
 	}
 
-	void GetAsync(shared_ptr<TUrl> pUrl,
-				  shared_ptr<THeaders> pHeaders,
+	void GetAsync(ComPtr<IUriRuntimeClass> uri,
+				  shared_ptr<vector<tuple<HString, HString>>> pHeaders,
 				  task_completion_event<TResponse> taskCompletionEvent,
 				  uint_fast16_t attempt = 1) const
 	{
 		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> getAsyncOperation;
 
-		auto httpRequestMessage = CreateRequest(_httpGetMethod.Get(), *pUrl, *pHeaders);
+		Check(_httpClient->SendRequestAsync(CreateRequest(_httpGetMethod.Get(), uri.Get(), *pHeaders).Get(),
+											&getAsyncOperation));
 
-		Check(_httpClient->SendRequestAsync(httpRequestMessage.Get(), &getAsyncOperation));
-
-		GetTask(getAsyncOperation.Get()).then([this, pUrl, pHeaders, taskCompletionEvent, attempt] (const task<TResponse> &task) mutable
+		GetTask(getAsyncOperation.Get()).then([this, uri, pHeaders, taskCompletionEvent, attempt] (const task<TResponse> &task) mutable
 			{
 				try
 				{
@@ -173,15 +183,15 @@ private:
 					}
 					else
 					{
-						GetAsync(move(pUrl), move(pHeaders), move(taskCompletionEvent), attempt + 1);
+						GetAsync(move(uri), move(pHeaders), move(taskCompletionEvent), attempt + 1);
 					}
 				}
 			});
 	}
 
-	void PostAsync(shared_ptr<TUrl> pUrl,
-				   shared_ptr<THeaders> pHeaders,
-				   shared_ptr<TContent> pPostContent,
+	void PostAsync(ComPtr<IUriRuntimeClass> uri,
+				   shared_ptr<vector<tuple<HString, HString>>> pHeaders,
+				   HString postContent,
 				   task_completion_event<TResponse> taskCompletionEvent,
 				   uint_fast16_t attempt = 1) const
 	{
@@ -189,32 +199,34 @@ private:
 		ComPtr<IHttpContent> postHttpContent;
 		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> postAsyncOperation;
 
-		HStringReference hstringPostContent(*pPostContent);
-
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
 								   &stringContentFactory));
 
-		auto contentTypeHeaderIterator = pHeaders->find(HttpRequestHeaders::ContentType);
-		if (contentTypeHeaderIterator != pHeaders->end())
+		auto findContenTypeIter = find_if(begin(*pHeaders),
+										  end(*pHeaders),
+										  [](const decltype(pHeaders)::element_type::value_type &pair) -> bool
+										  {
+											  return HttpRequestHeaders::ContentType.compare(get<0>(pair).GetRawBuffer()) == 0;
+										  });
+		if (findContenTypeIter != pHeaders->end())
 		{
-			Check(stringContentFactory->CreateFromStringWithEncodingAndMediaType(hstringPostContent.Get(),
+			Check(stringContentFactory->CreateFromStringWithEncodingAndMediaType(postContent.Get(),
 																				 UnicodeEncoding_Utf8,
-																				 HStringReference(contentTypeHeaderIterator->second).Get(),
+																				 get<1>(*findContenTypeIter).Get(),
 																				 &postHttpContent));
-			pHeaders->erase(HttpRequestHeaders::ContentType);
 		}
 		else
 		{
-			Check(stringContentFactory->CreateFromString(hstringPostContent.Get(), &postHttpContent));
+			Check(stringContentFactory->CreateFromString(postContent.Get(), &postHttpContent));
 		}
 
-		auto httpRequestMessage = CreateRequest(_httpPostMethod.Get(), *pUrl, *pHeaders);
+		auto httpRequestMessage = CreateRequest(_httpGetMethod.Get(), uri.Get(), *pHeaders);
 
 		Check(httpRequestMessage->put_Content(postHttpContent.Get()));
 
 		Check(_httpClient->SendRequestAsync(httpRequestMessage.Get(), &postAsyncOperation));
 
-		GetTask(postAsyncOperation.Get()).then([this, pUrl, pHeaders, pPostContent, taskCompletionEvent, attempt](const task<TResponse> &task) mutable
+		GetTask(postAsyncOperation.Get()).then([this, uri, pHeaders, postContent, taskCompletionEvent, attempt](const task<TResponse> &task) mutable
 			{
 				try
 				{
@@ -228,7 +240,7 @@ private:
 					}
 					else
 					{
-						PostAsync(move(pUrl), move(pHeaders), move(pPostContent), move(taskCompletionEvent), attempt + 1);
+						PostAsync(move(uri), move(pHeaders), move(postContent), move(taskCompletionEvent), attempt + 1);
 					}
 				}
 			});
@@ -243,16 +255,16 @@ template <>
 THttpClient::~HttpClient() NOEXCEPT {}
 
 template <>
-task<TResponse> THttpClient::GetAsync(TUrl url,
-									  THeaders headers) const
+task<TResponse> THttpClient::GetAsync(const TUrl &url,
+									  const THeaders &headers) const
 {
-	return _impl->GetAsync(move(url), move(headers));
+	return _impl->GetAsync(url, headers);
 }
 
 template <>
-task<TResponse> THttpClient::PostAsync(TUrl url,
-									   TContent postContent,
-									   THeaders headers) const
+task<TResponse> THttpClient::PostAsync(const TUrl &url,
+									   const THeaders &headers,
+									   const TContent &postContent) const
 {
-	return _impl->PostAsync(move(url), move(postContent), move(headers));
+	return _impl->PostAsync(url, headers, postContent);
 }

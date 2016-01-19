@@ -36,7 +36,7 @@ namespace AutoLogin
 					task<wstring> getAuthUrlTask;
 					if (savedAuthUrl.empty())
 					{
-						getAuthUrlTask = checkInternetAvailabilityTask.then([settingsProvider, pAuthUrlKey](wstring &authUrl)
+						getAuthUrlTask = checkInternetAvailabilityTask.then([settingsProvider, pAuthUrlKey](wstring &authUrl) mutable -> wstring
 							{
 								if (!authUrl.empty())
 								{
@@ -62,60 +62,24 @@ namespace AutoLogin
 								return task_from_result(AuthResult::Unregistered);
 							}
 
-							unordered_map<wstring, wstring> headers
-									{
-										{
-											HttpRequestHeaders::Accept,
-											L"text/html"
-										},
-										{
-											HttpRequestHeaders::UserAgent,
-											L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36"
-										},
-										{
-											HttpRequestHeaders::Connection,
-											L"close"
-										}
-									};
+							auto pAuthUrl = make_shared<wstring>(move(authUrl));
 
-							auto authUrlPtr = make_shared<wstring>();
+							auto pHeaders = make_shared<unordered_map<wstring, wstring>>();
+							pHeaders->emplace(HttpRequestHeaders::Accept, L"text/html");
+							pHeaders->emplace(HttpRequestHeaders::UserAgent, L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36");
+							pHeaders->emplace(HttpRequestHeaders::Connection, L"close");
 
-							return httpClient.GetAsync(*authUrlPtr, move(headers))
+							return httpClient.GetAsync(*pAuthUrl, *pHeaders)
 											 .then([](TResponse &response)
 												 {
 													 return GetPostContentAsync(move(response));
 												 })
-											 .then([httpClient, authUrlPtr](wstring &postContent)
+											 .then([httpClient, pAuthUrl, pHeaders](wstring &postContent)
 												 {
-													 unordered_map<wstring, wstring> postHeaders
-															 {
-																 {
-																	 HttpRequestHeaders::Accept,
-																	 L"text/html"
-																 },
-																 {
-																	 HttpRequestHeaders::UserAgent,
-																	 L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36"
-																 },
-																 {
-																	 HttpRequestHeaders::Connection,
-																	 L"close"
-																 },
-																 {
-																	 HttpRequestHeaders::ContentType,
-																	 L"application/x-www-form-urlencoded"
-																 },
-																 {
-																	 HttpRequestHeaders::Origin,
-																	 L"https://login.wi-fi.ru"
-																 },
-																 {
-																	 HttpRequestHeaders::Referer,
-																	 *authUrlPtr
-																 }
-															 };
+													 pHeaders->emplace(HttpRequestHeaders::ContentType, L"application/x-www-form-urlencoded");
+													 pHeaders->emplace(HttpRequestHeaders::Origin, L"https://login.wi-fi.ru");
 
-													 return httpClient.PostAsync(*authUrlPtr, move(postContent), move(postHeaders));
+													 return httpClient.PostAsync(*pAuthUrl, *pHeaders, move(postContent));
 												 })
 											 .then([](TResponse &response) -> AuthResult
 												 {
