@@ -621,7 +621,7 @@ namespace MTL
 
 		bool Empty() const NOEXCEPT
 		{
-			return 0 == WindowsIsStringEmpty(Get());
+			return WindowsIsStringEmpty(Get());
 		}
 	};
 

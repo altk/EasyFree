@@ -81,7 +81,7 @@ namespace AutoLogin
 
 													 return httpClient.PostAsync(*pAuthUrl,
 																				 *pHeaders,
-																				 make_tuple(HttpRequestHeaders::ContentType, wstring(L"application/x-www-form-urlencoded")));
+																				 make_tuple(wstring(L"application/x-www-form-urlencoded"), move(postContent)));
 												 })
 											 .then([](TResponse &response) -> AuthResult
 												 {
