@@ -76,11 +76,12 @@ namespace AutoLogin
 												 })
 											 .then([httpClient, pAuthUrl, pHeaders](wstring &postContent)
 												 {
-													 pHeaders->emplace(HttpRequestHeaders::ContentType, L"application/x-www-form-urlencoded");
 													 pHeaders->emplace(HttpRequestHeaders::Origin, L"https://login.wi-fi.ru");
 													 pHeaders->emplace(HttpRequestHeaders::Referer, *pAuthUrl);
 
-													 return httpClient.PostAsync(*pAuthUrl, *pHeaders, move(postContent));
+													 return httpClient.PostAsync(*pAuthUrl,
+																				 *pHeaders,
+																				 make_tuple(HttpRequestHeaders::ContentType, wstring(L"application/x-www-form-urlencoded")));
 												 })
 											 .then([](TResponse &response) -> AuthResult
 												 {

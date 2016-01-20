@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <tuple>
 #include <memory>
 #include <ppltasks.h>
 #include <macro.h>
@@ -14,8 +15,10 @@ namespace AutoLogin
 		{
 		public:
 			using TUrl = std::wstring;
-			using TContent = std::wstring;
 			using THeaders = std::unordered_map<std::wstring, std::wstring>;
+			using TContent = std::wstring;
+			using TContentType = std::wstring;
+			using TPostContent = std::tuple<TContentType, TContent>;
 
 			HttpClient() NOEXCEPT;
 
@@ -50,7 +53,7 @@ namespace AutoLogin
 
 			Concurrency::task<TResponse> PostAsync(const TUrl &url,
 												   const THeaders &headers = THeaders(),
-												   const TContent &postContent = TContent()) const;
+												   const TPostContent &postContent = TPostContent()) const;
 		private:
 			class HttpClientImpl;
 

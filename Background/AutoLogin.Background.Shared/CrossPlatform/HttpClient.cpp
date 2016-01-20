@@ -27,6 +27,8 @@ using THttpClient = AutoLogin::CrossPlatform::HttpClient<TResponse>;
 using TUrl = THttpClient::TUrl;
 using THeaders = THttpClient::THeaders;
 using TContent = THttpClient::TContent;
+using TContentType = THttpClient::TContentType;
+using TPostContent = THttpClient::TPostContent;
 
 template <>
 class THttpClient::HttpClientImpl final
@@ -99,13 +101,13 @@ public:
 
 	task<TResponse> PostAsync(const TUrl &url,
 							  const THeaders &headers,
-							  const TContent &postContent) const
+							  const TPostContent &postContent) const
 	{
 		task_completion_event<TResponse> taskCompletionEvent;
 
 		PostAsync(CreateUri(HStringReference(url).Get()),
 				  CreateHeaders(headers),
-				  HString(postContent),
+				  CreatePostContent(postContent),
 				  taskCompletionEvent);
 
 		return task<TResponse>(taskCompletionEvent);
@@ -128,6 +130,11 @@ private:
 			result->emplace_back(HString(header.first), HString(header.second));
 		}
 		return result;
+	}
+
+	static shared_ptr<tuple<HString, HString>> CreatePostContent(const TPostContent &postContent) NOEXCEPT
+	{
+		return make_shared<tuple<HString, HString>>(make_tuple(HString(get<0>(postContent)), HString(get<1>(postContent))));
 	}
 
 	ComPtr<IUriRuntimeClass> CreateUri(HSTRING urlString) const
@@ -191,7 +198,7 @@ private:
 
 	void PostAsync(ComPtr<IUriRuntimeClass> uri,
 				   shared_ptr<vector<tuple<HString, HString>>> pHeaders,
-				   HString postContent,
+				   shared_ptr<tuple<HString, HString>> postContent,
 				   task_completion_event<TResponse> taskCompletionEvent,
 				   uint_fast16_t attempt = 1) const
 	{
@@ -202,27 +209,19 @@ private:
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
 								   &stringContentFactory));
 
-		auto findContenTypeIter = find_if(begin(*pHeaders),
-										  end(*pHeaders),
-										  [](const decltype(pHeaders)::element_type::value_type &pair) -> bool
-										  {
-											  return HttpRequestHeaders::ContentType.compare(get<0>(pair).GetRawBuffer()) == 0;
-										  });
-		if (findContenTypeIter != pHeaders->end())
-		{
-			Check(stringContentFactory->CreateFromStringWithEncodingAndMediaType(postContent.Get(),
-																				 UnicodeEncoding_Utf8,
-																				 get<1>(*findContenTypeIter).Get(),
-																				 &postHttpContent));
-		}
-		else
-		{
-			Check(stringContentFactory->CreateFromString(postContent.Get(), &postHttpContent));
-		}
-
 		auto httpRequestMessage = CreateRequest(_httpGetMethod.Get(), uri.Get(), *pHeaders);
 
-		Check(httpRequestMessage->put_Content(postHttpContent.Get()));
+		auto& postContentType = get<0>(*postContent);
+
+		if (!postContentType.Empty())
+		{
+			Check(stringContentFactory->CreateFromStringWithEncodingAndMediaType(get<1>(*postContent).Get(),
+																				 UnicodeEncoding_Utf8,
+																				 postContentType.Get(),
+																				 &postHttpContent));
+
+			Check(httpRequestMessage->put_Content(postHttpContent.Get()));
+		}
 
 		Check(_httpClient->SendRequestAsync(httpRequestMessage.Get(), &postAsyncOperation));
 
@@ -264,7 +263,7 @@ task<TResponse> THttpClient::GetAsync(const TUrl &url,
 template <>
 task<TResponse> THttpClient::PostAsync(const TUrl &url,
 									   const THeaders &headers,
-									   const TContent &postContent) const
+									   const TPostContent &postContent) const
 {
 	return _impl->PostAsync(url, headers, postContent);
 }
