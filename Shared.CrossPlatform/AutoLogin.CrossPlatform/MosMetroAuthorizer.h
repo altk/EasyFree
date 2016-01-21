@@ -2,7 +2,6 @@
 #include <IAuthorizer.h>
 #include <AuthStatus.h>
 #include <HttpClient.h>
-#include <HttpRequestHeaders.h>
 #include <SettingsProvider.h>
 
 namespace AutoLogin
@@ -80,7 +79,7 @@ namespace AutoLogin
 
 													 return httpClient.PostAsync(*pAuthUrl,
 																				 *pHeaders,
-																				 make_tuple(wstring(L"application/x-www-form-urlencoded"), move(postContent)));
+																				 make_pair(wstring(L"application/x-www-form-urlencoded"), move(postContent)));
 												 })
 											 .then([](TResponse &response) -> AuthResult
 												 {
