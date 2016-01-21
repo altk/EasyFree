@@ -209,7 +209,7 @@ private:
 		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
 								   &stringContentFactory));
 
-		auto httpRequestMessage = CreateRequest(_httpGetMethod.Get(), uri.Get(), *pHeaders);
+		auto httpRequestMessage = CreateRequest(_httpPostMethod.Get(), uri.Get(), *pHeaders);
 
 		auto& postContentType = get<0>(*postContent);
 
