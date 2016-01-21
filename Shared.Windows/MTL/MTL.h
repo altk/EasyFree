@@ -182,7 +182,7 @@ namespace MTL
 		private:
 			STDMETHODIMP_(ULONG) AddRef();
 			STDMETHODIMP_(ULONG) Release();
-			STDMETHODIMP QueryTInterface(IID, void**);
+			STDMETHODIMP QueryTInterface(IID, void **);
 		};
 
 #pragma endregion
@@ -195,15 +195,15 @@ namespace MTL
 			friend class ComPtr<TClass>;
 		public:
 
-			ComPtrRef(const ComPtrRef& other)
+			ComPtrRef(const ComPtrRef &other)
 				: _pointer(other._pointer) {}
 
-			ComPtrRef(ComPtrRef&& other)
+			ComPtrRef(ComPtrRef &&other)
 				: _pointer(other._pointer) {}
 
-			ComPtrRef& operator=(const ComPtrRef&) = delete;
+			ComPtrRef& operator=(const ComPtrRef &) = delete;
 
-			ComPtrRef& operator=(ComPtrRef&&) = delete;
+			ComPtrRef& operator=(ComPtrRef &&) = delete;
 
 			template <typename TResult>
 			operator TResult**() const NOEXCEPT
@@ -222,19 +222,19 @@ namespace MTL
 			}
 
 		private:
-			explicit ComPtrRef(TClass** pointer) NOEXCEPT
+			explicit ComPtrRef(TClass **pointer) NOEXCEPT
 				: _pointer(pointer) { }
 
-			TClass** _pointer;
+			TClass **_pointer;
 
 			template <typename TResult>
-			IUnknown** ConvertTo(typename std::enable_if<std::is_base_of<IUnknown, TResult>::value && std::is_base_of<IInspectable, TResult>::value == false>::type* = nullptr) const NOEXCEPT
+			IUnknown** ConvertTo(typename std::enable_if<std::is_base_of<IUnknown, TResult>::value && std::is_base_of<IInspectable, TResult>::value == false>::type * = nullptr) const NOEXCEPT
 			{
 				return reinterpret_cast<IUnknown**>(_pointer);
 			}
 
 			template <typename TResult>
-			IInspectable** ConvertTo(typename std::enable_if<std::is_base_of<IInspectable, TResult>::value>::type* = nullptr) const NOEXCEPT
+			IInspectable** ConvertTo(typename std::enable_if<std::is_base_of<IInspectable, TResult>::value>::type * = nullptr) const NOEXCEPT
 			{
 				return reinterpret_cast<IInspectable**>(_pointer);
 			}
@@ -250,18 +250,18 @@ namespace MTL
 		public:
 			using Pointer = typename Traits::Pointer;
 
-			explicit HandleRef(Handle<Traits>& reference) NOEXCEPT
+			explicit HandleRef(Handle<Traits> &reference) NOEXCEPT
 				: _reference(reference) {}
 
-			HandleRef(const HandleRef& other) NOEXCEPT
+			HandleRef(const HandleRef &other) NOEXCEPT
 				: _reference(other._reference) {}
 
-			HandleRef(HandleRef&& other) NOEXCEPT
+			HandleRef(HandleRef &&other) NOEXCEPT
 				: _reference(std::move(other._reference)) { }
 
-			HandleRef& operator=(const HandleRef&) = delete;
+			HandleRef& operator=(const HandleRef &) = delete;
 
-			HandleRef& operator=(HandleRef&&) = delete;
+			HandleRef& operator=(HandleRef &&) = delete;
 
 			operator Pointer*() NOEXCEPT
 			{
@@ -274,7 +274,7 @@ namespace MTL
 			}
 
 		private:
-			Handle<Traits>& _reference;
+			Handle<Traits> &_reference;
 		};
 
 #pragma endregion
@@ -291,16 +291,16 @@ namespace MTL
 			explicit Handle(Pointer value = Traits::Invalid()) NOEXCEPT
 				: _pointer(value) { }
 
-			Handle(const Handle&) = delete;
+			Handle(const Handle &) = delete;
 
-			Handle& operator=(const Handle&) = delete;
+			Handle& operator=(const Handle &) = delete;
 
-			Handle(Handle&& other) NOEXCEPT
+			Handle(Handle &&other) NOEXCEPT
 				: _pointer(other.Detach()) { }
 
-			Handle& operator=(Handle&& other) NOEXCEPT
+			Handle& operator=(Handle &&other) NOEXCEPT
 			{
-				if (this != &other)
+				if (this != std::addressof(other))
 				{
 					Attach(other.Detach());
 				}
@@ -357,7 +357,7 @@ namespace MTL
 				return value;
 			}
 
-			void Swap(Handle& other) NOEXCEPT
+			void Swap(Handle &other) NOEXCEPT
 			{
 				std::swap(_pointer, other._pointer);
 			}
@@ -449,10 +449,10 @@ namespace MTL
 #endif
 		}
 
-		ComException(const ComException& other) NOEXCEPT
+		ComException(const ComException &other) NOEXCEPT
 			: _hr(other._hr) {}
 
-		ComException& operator=(const ComException& other) NOEXCEPT
+		ComException& operator=(const ComException &other) NOEXCEPT
 		{
 			if (this != &other)
 			{
@@ -509,7 +509,7 @@ namespace MTL
 		explicit HString(Pointer pointer = HStringTraits::Invalid())
 			: Handle<HStringTraits>(pointer) { }
 
-		HString(const wchar_t* const string,
+		HString(const wchar_t * const string,
 				unsigned const length)
 		{
 			Check(WindowsCreateString(string,
@@ -517,17 +517,17 @@ namespace MTL
 									  GetAddressOf()));
 		}
 
-		explicit HString(const wchar_t* const string)
+		explicit HString(const wchar_t * const string)
 			: HString(string, wcslen(string)) { }
 
-		explicit HString(const std::wstring& string)
+		explicit HString(const std::wstring &string)
 			: HString(string.data(), string.size()) { }
 
 		template <unsigned Length>
 		explicit HString(const wchar_t (&string)[Length])
 			: HString(string, Length - 1) { }
 
-		HString(const HString& other)
+		HString(const HString &other)
 		{
 			if (HStringTraits::Invalid() != other.Get())
 			{
@@ -536,10 +536,10 @@ namespace MTL
 			}
 		}
 
-		HString(HString&& other) NOEXCEPT
+		HString(HString &&other) NOEXCEPT
 			: Handle<HStringTraits>(other.Detach()) { }
 
-		HString& operator=(const HString& other)
+		HString& operator=(const HString &other)
 		{
 			if (this != &other)
 			{
@@ -550,7 +550,7 @@ namespace MTL
 			return *this;
 		}
 
-		HString& operator=(HString&& other) NOEXCEPT
+		HString& operator=(HString &&other) NOEXCEPT
 		{
 			if (this != &other)
 			{
@@ -559,14 +559,14 @@ namespace MTL
 			return *this;
 		}
 
-		friend HString operator+(const HString& lhs, const HString& rhs)
+		friend HString operator+(const HString &lhs, const HString &rhs)
 		{
 			HString result;
 			Check(WindowsConcatString(lhs.Get(), rhs.Get(), &result));
 			return result;
 		}
 
-		friend bool operator==(const HString& lhs, const HString& rhs)
+		friend bool operator==(const HString &lhs, const HString &rhs)
 		{
 			auto compareResult = 0;
 			Check(WindowsCompareStringOrdinal(lhs.Get(),
@@ -575,7 +575,7 @@ namespace MTL
 			return compareResult == 0;
 		}
 
-		friend bool operator!=(const HString& lhs, const HString& rhs)
+		friend bool operator!=(const HString &lhs, const HString &rhs)
 		{
 			return !(lhs == rhs);
 		}
@@ -601,7 +601,7 @@ namespace MTL
 			return WindowsGetStringRawBuffer(Get(), nullptr);
 		}
 
-		const wchar_t* GetRawBuffer(unsigned* length) const NOEXCEPT
+		const wchar_t* GetRawBuffer(unsigned *length) const NOEXCEPT
 		{
 			if (HStringTraits::Invalid() == Get())
 			{
@@ -632,7 +632,7 @@ namespace MTL
 	class HStringReference final
 	{
 	public:
-		HStringReference(const wchar_t* const value,
+		HStringReference(const wchar_t * const value,
 						 unsigned length)
 		{
 			Check(WindowsCreateStringReference(value,
@@ -641,27 +641,27 @@ namespace MTL
 											   &_string));
 		}
 
-		explicit HStringReference(const wchar_t* const string)
+		explicit HStringReference(const wchar_t * const string)
 			: HStringReference(string, wcslen(string)) { }
 
 		template <unsigned Length>
 		explicit HStringReference(const wchar_t (&string)[Length])
 			: HStringReference(string, Length - 1) { }
 
-		explicit HStringReference(const std::wstring& string)
+		explicit HStringReference(const std::wstring &string)
 			: HStringReference(string.data(), string.size()) {}
 
-		HStringReference(const HStringReference&) = delete;
+		HStringReference(const HStringReference &) = delete;
 
-		HStringReference& operator=(const HStringReference&) = delete;
+		HStringReference& operator=(const HStringReference &) = delete;
 
 		void* operator new(size_t) = delete;
 
 		void* operator new[](size_t) = delete;
 
-		void operator delete(void*) = delete;
+		void operator delete(void *) = delete;
 
-		void operator delete[](void*) = delete;
+		void operator delete[](void *) = delete;
 
 		HSTRING Get() const NOEXCEPT
 		{
@@ -715,7 +715,7 @@ namespace MTL
 			return remaining;
 		}
 
-		STDMETHODIMP QueryInterface(const GUID& guid, void** result) NOEXCEPT override
+		STDMETHODIMP QueryInterface(const GUID &guid, void **result) NOEXCEPT override
 		{
 			if (guid == __uuidof(TDefaultInterface) ||
 				guid == __uuidof(IUnknown) ||
@@ -746,7 +746,7 @@ namespace MTL
 		}
 
 		template <typename U, typename ... Us>
-		void* QueryInterfaceImpl(const GUID& guid) NOEXCEPT
+		void* QueryInterfaceImpl(const GUID &guid) NOEXCEPT
 		{
 			using namespace Internals;
 
@@ -758,7 +758,7 @@ namespace MTL
 		}
 
 		template <int = 0>
-		void* QueryInterfaceImpl(const GUID&) const NOEXCEPT
+		void* QueryInterfaceImpl(const GUID &) const NOEXCEPT
 		{
 			return nullptr;
 		}
@@ -777,7 +777,7 @@ namespace MTL
 												  TInterfaces...>
 	{
 	public:
-		STDMETHODIMP GetIids(ULONG* count, GUID** array) NOEXCEPT override final
+		STDMETHODIMP GetIids(ULONG *count, GUID **array) NOEXCEPT override final
 		{
 			using namespace Internals;
 
@@ -790,7 +790,7 @@ namespace MTL
 			return S_OK;
 		}
 
-		STDMETHODIMP GetTrustLevel(TrustLevel* trustLevel) NOEXCEPT override final
+		STDMETHODIMP GetTrustLevel(TrustLevel *trustLevel) NOEXCEPT override final
 		{
 			*trustLevel = BaseTrust;
 			return S_OK;
@@ -805,7 +805,7 @@ namespace MTL
 	class ActivationFactory final : public RuntimeClass<IActivationFactory>
 	{
 	public:
-		STDMETHODIMP ActivateInstance(IInspectable** instance) NOEXCEPT override final
+		STDMETHODIMP ActivateInstance(IInspectable **instance) NOEXCEPT override final
 		{
 			*instance = new(std::nothrow) TClass();
 			if (nullptr == *instance)
@@ -815,7 +815,7 @@ namespace MTL
 			return S_OK;
 		}
 
-		STDMETHODIMP GetRuntimeClassName(HSTRING*) NOEXCEPT override final
+		STDMETHODIMP GetRuntimeClassName(HSTRING *) NOEXCEPT override final
 		{
 			return E_ILLEGAL_METHOD_CALL;
 		}
@@ -842,28 +842,28 @@ namespace MTL
 			InternalRelease();
 		}
 
-		explicit ComPtr(TClass* defaultInterface) NOEXCEPT
+		explicit ComPtr(TClass *defaultInterface) NOEXCEPT
 			: _pointer(defaultInterface)
 		{
 			InternalAddRef();
 		}
 
-		ComPtr(const ComPtr& other) NOEXCEPT
+		ComPtr(const ComPtr &other) NOEXCEPT
 			: ComPtr(other._pointer) { }
 
-		ComPtr(ComPtr&& other) NOEXCEPT
+		ComPtr(ComPtr &&other) NOEXCEPT
 			: _pointer(other._pointer)
 		{
 			other._pointer = nullptr;
 		}
 
-		ComPtr& operator=(const ComPtr& other) NOEXCEPT
+		ComPtr& operator=(const ComPtr &other) NOEXCEPT
 		{
 			InternalCopy(other);
 			return *this;
 		}
 
-		ComPtr& operator=(ComPtr&& other) NOEXCEPT
+		ComPtr& operator=(ComPtr &&other) NOEXCEPT
 		{
 			InternalMove(std::move(other));
 			return *this;
@@ -874,12 +874,12 @@ namespace MTL
 			return nullptr != _pointer;
 		}
 
-		friend bool operator==(const ComPtr& lhs, const ComPtr& rhs) NOEXCEPT
+		friend bool operator==(const ComPtr &lhs, const ComPtr &rhs) NOEXCEPT
 		{
 			return lhs._pointer == rhs._pointer;
 		}
 
-		friend bool operator!=(const ComPtr& lhs, const ComPtr& rhs) NOEXCEPT
+		friend bool operator!=(const ComPtr &lhs, const ComPtr &rhs) NOEXCEPT
 		{
 			return !(lhs == rhs);
 		}
@@ -917,7 +917,7 @@ namespace MTL
 			return GetAddressOf();
 		}
 
-		void Attach(TClass* ptr) NOEXCEPT
+		void Attach(TClass *ptr) NOEXCEPT
 		{
 			InternalRelease();
 			_pointer = ptr;
@@ -926,7 +926,7 @@ namespace MTL
 
 		TClass* Detach() NOEXCEPT
 		{
-			TClass* temp = _pointer;
+			TClass *temp = _pointer;
 			_pointer = nullptr;
 			return static_cast<TClass*>(temp);
 		}
@@ -939,12 +939,12 @@ namespace MTL
 			return _pointer->QueryInterface(static_cast<U**>(target));
 		}
 
-		void Swap(ComPtr& other) NOEXCEPT
+		void Swap(ComPtr &other) NOEXCEPT
 		{
 			swap(_pointer, other._pointer);
 		}
 
-		friend void swap(ComPtr& lhs, ComPtr& rhs) NOEXCEPT
+		friend void swap(ComPtr &lhs, ComPtr &rhs) NOEXCEPT
 		{
 			using std::swap;
 			swap(lhs._pointer, rhs._pointer);
@@ -952,7 +952,7 @@ namespace MTL
 
 	private:
 
-		TClass* _pointer = nullptr;
+		TClass *_pointer = nullptr;
 
 		void InternalAddRef() NOEXCEPT
 		{
@@ -972,9 +972,9 @@ namespace MTL
 			}
 		}
 
-		void InternalCopy(const ComPtr& other) NOEXCEPT
+		void InternalCopy(const ComPtr &other) NOEXCEPT
 		{
-			if (_pointer != other._pointer)
+			if (this != std::addressof(other))
 			{
 				InternalRelease();
 				_pointer = other._pointer;
@@ -982,9 +982,9 @@ namespace MTL
 			}
 		}
 
-		void InternalMove(ComPtr&& other) NOEXCEPT
+		void InternalMove(ComPtr &&other) NOEXCEPT
 		{
-			if (_pointer != other._pointer)
+			if (this != std::addressof(other))
 			{
 				InternalRelease();
 				_pointer = other._pointer;
@@ -1004,29 +1004,29 @@ namespace MTL
 
 	public:
 
-		IteratorAdapter(TIterator&& begin, TIterator&& end) NOEXCEPT
+		IteratorAdapter(TIterator &&begin, TIterator &&end) NOEXCEPT
 			: _begin(std::forward<TIterator>(begin))
 			  , _end(std::forward<TIterator>(end)) { }
 
-		STDMETHODIMP GetRuntimeClassName(HSTRING* className) NOEXCEPT override
+		STDMETHODIMP GetRuntimeClassName(HSTRING *className) NOEXCEPT override
 		{
 			*className = HString(IteratorType::z_get_rc_name_impl()).Detach();
 			return S_OK;
 		}
 
-		STDMETHODIMP get_Current(typename TIterator::value_type* current) NOEXCEPT override
+		STDMETHODIMP get_Current(typename TIterator::value_type *current) NOEXCEPT override
 		{
 			*current = *_begin;
 			return S_OK;
 		}
 
-		STDMETHODIMP get_HasCurrent(boolean* hasCurrent) NOEXCEPT override
+		STDMETHODIMP get_HasCurrent(boolean *hasCurrent) NOEXCEPT override
 		{
 			*hasCurrent = _begin != _end;
 			return S_OK;
 		}
 
-		STDMETHODIMP MoveNext(boolean* hasCurrent) NOEXCEPT override
+		STDMETHODIMP MoveNext(boolean *hasCurrent) NOEXCEPT override
 		{
 			if (_begin != _end)
 			{
@@ -1056,16 +1056,16 @@ namespace MTL
 
 	public:
 
-		explicit IterableAdapter(TCollection&& collection) NOEXCEPT
+		explicit IterableAdapter(TCollection &&collection) NOEXCEPT
 			: _collection(std::forward<TCollection>(collection)) { }
 
-		STDMETHODIMP GetRuntimeClassName(HSTRING* className) NOEXCEPT override
+		STDMETHODIMP GetRuntimeClassName(HSTRING *className) NOEXCEPT override
 		{
 			*className = HString(IterableType::z_get_rc_name_impl()).Detach();
 			return S_OK;
 		}
 
-		STDMETHODIMP First(ABI::Windows::Foundation::Collections::IIterator<typename TCollection::value_type>** first) override
+		STDMETHODIMP First(ABI::Windows::Foundation::Collections::IIterator<typename TCollection::value_type> **first) override
 		{
 			*first = new(std::nothrow) IteratorAdapter<typename TCollection::iterator>(std::begin(_collection), std::end(_collection));
 			if (nullptr == *first)
@@ -1089,16 +1089,16 @@ namespace MTL
 	class Delegate final : public ComClass<TDelegateInterface>
 	{
 	public:
-		explicit Delegate(TCallback&& callback) NOEXCEPT
+		explicit Delegate(TCallback &&callback) NOEXCEPT
 			: _callback(std::forward<TCallback>(callback)) { }
 
-		Delegate(const Delegate& other) NOEXCEPT
+		Delegate(const Delegate &other) NOEXCEPT
 			: _callback(other._callback) { }
 
-		Delegate(Delegate&& other) NOEXCEPT
+		Delegate(Delegate &&other) NOEXCEPT
 			: _callback(std::move(other._callback)) { }
 
-		Delegate& operator=(const Delegate& other) NOEXCEPT
+		Delegate& operator=(const Delegate &other) NOEXCEPT
 		{
 			if (this != &other)
 			{
@@ -1107,7 +1107,7 @@ namespace MTL
 			return *this;
 		}
 
-		Delegate& operator=(Delegate&& other) NOEXCEPT
+		Delegate& operator=(Delegate &&other) NOEXCEPT
 		{
 			if (this != &other)
 			{
@@ -1135,7 +1135,7 @@ namespace MTL
 	public:
 		Iterator() NOEXCEPT { }
 
-		explicit Iterator(ABI::Windows::Foundation::Collections::IIterable<TItem>* iterable)
+		explicit Iterator(ABI::Windows::Foundation::Collections::IIterable<TItem> *iterable)
 		{
 			boolean hasCurrent;
 			Check(iterable->First(&_iterator));
@@ -1143,13 +1143,13 @@ namespace MTL
 			if (!hasCurrent) _iterator.Release();
 		}
 
-		Iterator(const Iterator& other) NOEXCEPT
+		Iterator(const Iterator &other) NOEXCEPT
 			: _iterator(other._iterator) {}
 
-		Iterator(Iterator&& other) NOEXCEPT
+		Iterator(Iterator &&other) NOEXCEPT
 			: _iterator(std::move(other._iterator)) {}
 
-		Iterator& operator=(const Iterator& other) NOEXCEPT
+		Iterator& operator=(const Iterator &other) NOEXCEPT
 		{
 			if (this != &other)
 			{
@@ -1158,7 +1158,7 @@ namespace MTL
 			return *this;
 		}
 
-		Iterator& operator=(Iterator&& other) NOEXCEPT
+		Iterator& operator=(Iterator &&other) NOEXCEPT
 		{
 			if (this != &other)
 			{
@@ -1182,17 +1182,17 @@ namespace MTL
 			return *this;
 		}
 
-		friend bool operator==(const Iterator& lhs, const Iterator& rhs)
+		friend bool operator==(const Iterator &lhs, const Iterator &rhs)
 		{
 			return lhs._iterator == rhs._iterator;
 		}
 
-		friend bool operator!=(const Iterator& lhs, const Iterator& rhs)
+		friend bool operator!=(const Iterator &lhs, const Iterator &rhs)
 		{
 			return !(lhs == rhs);
 		}
 
-		friend void swap(Iterator& lhs, Iterator& rhs) NOEXCEPT
+		friend void swap(Iterator &lhs, Iterator &rhs) NOEXCEPT
 		{
 			using std::swap;
 			swap(lhs._iterator, rhs._iterator);
@@ -1207,14 +1207,14 @@ namespace MTL
 	template <typename TDelegateInterface,
 			  typename TCallback,
 			  typename ... TArgs>
-	inline Delegate<TDelegateInterface, TCallback, TArgs...> ÑreateDelegate(TCallback&& callback,
+	inline Delegate<TDelegateInterface, TCallback, TArgs...> ÑreateDelegate(TCallback &&callback,
 																			std::tuple<TArgs...>) NOEXCEPT
 	{
 		return Delegate<TDelegateInterface, TCallback, TArgs...>(std::forward<TCallback>(callback));
 	}
 
 	template <typename TClass>
-	inline ComPtr<TClass> CreateComPtr(TClass* ptr) NOEXCEPT
+	inline ComPtr<TClass> CreateComPtr(TClass *ptr) NOEXCEPT
 	{
 		return ComPtr<TClass>(ptr);
 	}
@@ -1230,7 +1230,7 @@ namespace MTL
 
 	template <typename TDelegateInterface,
 			  typename TCallback>
-	inline ComPtr<TDelegateInterface> CreateCallback(TCallback&& callback) NOEXCEPT
+	inline ComPtr<TDelegateInterface> CreateCallback(TCallback &&callback) NOEXCEPT
 	{
 		using namespace Internals;
 
@@ -1247,7 +1247,7 @@ namespace MTL
 	};
 
 	template <typename TAsyncOperation>
-	inline auto GetTask(TAsyncOperation* asyncOperation) ->
+	inline auto GetTask(TAsyncOperation *asyncOperation) ->
 	Concurrency::task<typename Internals::AsynOperationHelper<TAsyncOperation>::TResult>
 	{
 		using namespace Internals;
@@ -1264,7 +1264,7 @@ namespace MTL
 
 		auto callback = CreateCallback<typename TAsyncOperationHelper::THandler>(
 			[asyncOperationPointer, taskCompletitionEvent]
-			(TOperation* operation, AsyncStatus status) mutable ->
+			(TOperation *operation, AsyncStatus status) mutable ->
 			HRESULT
 			{
 				try
@@ -1304,7 +1304,7 @@ namespace MTL
 					asyncOperationPointer.Release();
 					Check(asyncInfo->Close());
 				}
-				catch (const ComException& exception)
+				catch (const ComException &exception)
 				{
 					taskCompletitionEvent.set_exception(exception);
 				}
@@ -1327,21 +1327,21 @@ namespace MTL
 }
 
 template <typename TItem>
-inline MTL::Iterator<TItem> begin(ABI::Windows::Foundation::Collections::IIterable<TItem>* iterable) NOEXCEPT
+inline MTL::Iterator<TItem> begin(ABI::Windows::Foundation::Collections::IIterable<TItem> *iterable) NOEXCEPT
 {
 	using namespace MTL;
 	return Iterator<TItem>(iterable);
 }
 
 template <typename TItem>
-inline MTL::Iterator<TItem> end(ABI::Windows::Foundation::Collections::IIterable<TItem>*) NOEXCEPT
+inline MTL::Iterator<TItem> end(ABI::Windows::Foundation::Collections::IIterable<TItem> *) NOEXCEPT
 {
 	using namespace MTL;
 	return Iterator<TItem>();
 }
 
 template <typename TKey, typename TValue>
-inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, TValue>*> begin(ABI::Windows::Foundation::Collections::IMap<TKey, TValue>* map) NOEXCEPT
+inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, TValue>*> begin(ABI::Windows::Foundation::Collections::IMap<TKey, TValue> *map) NOEXCEPT
 {
 	using namespace MTL;
 	using namespace ABI::Windows::Foundation::Collections;
@@ -1354,7 +1354,7 @@ inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, 
 }
 
 template <typename TKey, typename TValue>
-inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, TValue>*> end(ABI::Windows::Foundation::Collections::IMap<TKey, TValue>*) NOEXCEPT
+inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, TValue>*> end(ABI::Windows::Foundation::Collections::IMap<TKey, TValue> *) NOEXCEPT
 {
 	using namespace MTL;
 	using namespace ABI::Windows::Foundation::Collections;
@@ -1363,7 +1363,7 @@ inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, 
 }
 
 template <typename TKey, typename TValue>
-inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, TValue>*> begin(ABI::Windows::Foundation::Collections::IMapView<TKey, TValue>* mapView) NOEXCEPT
+inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, TValue>*> begin(ABI::Windows::Foundation::Collections::IMapView<TKey, TValue> *mapView) NOEXCEPT
 {
 	using namespace MTL;
 	using namespace ABI::Windows::Foundation::Collections;
@@ -1376,7 +1376,7 @@ inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, 
 }
 
 template <typename TKey, typename TValue>
-inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, TValue>*> end(ABI::Windows::Foundation::Collections::IMapView<TKey, TValue>*) NOEXCEPT
+inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, TValue>*> end(ABI::Windows::Foundation::Collections::IMapView<TKey, TValue> *) NOEXCEPT
 {
 	using namespace MTL;
 	using namespace ABI::Windows::Foundation::Collections;
@@ -1385,7 +1385,7 @@ inline MTL::Iterator<ABI::Windows::Foundation::Collections::IKeyValuePair<TKey, 
 }
 
 template <typename TValue>
-inline MTL::Iterator<TValue> begin(ABI::Windows::Foundation::Collections::IVector<TValue>* vector) NOEXCEPT
+inline MTL::Iterator<TValue> begin(ABI::Windows::Foundation::Collections::IVector<TValue> *vector) NOEXCEPT
 {
 	using namespace MTL;
 	using namespace ABI::Windows::Foundation::Collections;
@@ -1398,7 +1398,7 @@ inline MTL::Iterator<TValue> begin(ABI::Windows::Foundation::Collections::IVecto
 }
 
 template <typename TValue>
-inline MTL::Iterator<TValue> end(ABI::Windows::Foundation::Collections::IVector<TValue>*) NOEXCEPT
+inline MTL::Iterator<TValue> end(ABI::Windows::Foundation::Collections::IVector<TValue> *) NOEXCEPT
 {
 	using namespace MTL;
 
@@ -1406,7 +1406,7 @@ inline MTL::Iterator<TValue> end(ABI::Windows::Foundation::Collections::IVector<
 }
 
 template <typename TValue>
-inline MTL::Iterator<TValue> begin(ABI::Windows::Foundation::Collections::IVectorView<TValue>* vectorView) NOEXCEPT
+inline MTL::Iterator<TValue> begin(ABI::Windows::Foundation::Collections::IVectorView<TValue> *vectorView) NOEXCEPT
 {
 	using namespace MTL;
 	using namespace ABI::Windows::Foundation::Collections;
@@ -1419,7 +1419,7 @@ inline MTL::Iterator<TValue> begin(ABI::Windows::Foundation::Collections::IVecto
 }
 
 template <typename TValue>
-inline MTL::Iterator<TValue> end(ABI::Windows::Foundation::Collections::IVectorView<TValue>*) NOEXCEPT
+inline MTL::Iterator<TValue> end(ABI::Windows::Foundation::Collections::IVectorView<TValue> *) NOEXCEPT
 {
 	using namespace MTL;
 
