@@ -541,7 +541,7 @@ namespace MTL
 
 		HString& operator=(const HString &other)
 		{
-			if (this != &other)
+			if (this != std::addressof(other))
 			{
 				ReleaseInternal();
 				Check(WindowsDuplicateString(other.Get(),
@@ -552,7 +552,7 @@ namespace MTL
 
 		HString& operator=(HString &&other) NOEXCEPT
 		{
-			if (this != &other)
+			if (this != std::addressof(other))
 			{
 				Attach(other.Detach());
 			}
@@ -653,7 +653,11 @@ namespace MTL
 
 		HStringReference(const HStringReference &) = delete;
 
+		HStringReference(HStringReference &&other) = delete;
+
 		HStringReference& operator=(const HStringReference &) = delete;
+
+		HStringReference& operator=(HStringReference &&other) = delete;
 
 		void* operator new(size_t) = delete;
 
