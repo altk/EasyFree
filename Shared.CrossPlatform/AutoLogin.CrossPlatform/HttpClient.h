@@ -5,6 +5,7 @@
 #include <memory>
 #include <ppltasks.h>
 #include <macro.h>
+#include <HttpHeader.h>
 
 namespace AutoLogin
 {
@@ -15,10 +16,10 @@ namespace AutoLogin
 		{
 		public:
 			using TUrl = std::wstring;
-			using THeaders = std::unordered_map<std::wstring, std::wstring>;
+			using THeaders = std::unordered_map<HttpHeader, std::wstring>;
 			using TContent = std::wstring;
 			using TContentType = std::wstring;
-			using TPostContent = std::tuple<TContentType, TContent>;
+			using TPostContent = std::pair<TContentType, TContent>;
 
 			HttpClient() NOEXCEPT;
 

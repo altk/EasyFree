@@ -5,7 +5,6 @@
 #include <tuple>
 #include <windows.web.http.h>
 #include <windows.foundation.collections.h>
-#include <HttpRequestHeaders.h>
 #include <MTL.h>
 
 using namespace std;
@@ -33,6 +32,8 @@ using TPostContent = THttpClient::TPostContent;
 template <>
 class THttpClient::HttpClientImpl final
 {
+	using THeadersImpl = vector<pair<HString, HString>>;
+
 public:
 	explicit HttpClientImpl(uint_fast16_t maxRetryCount = 3)
 		: _maxRetryCount(maxRetryCount)
@@ -85,6 +86,9 @@ public:
 		Check(httpMethodStatics->get_Get(&_httpGetMethod));
 
 		Check(httpMethodStatics->get_Post(&_httpPostMethod));
+
+		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
+								   &_stringContentFactory));
 	}
 
 	task<TResponse> GetAsync(const TUrl &url,
@@ -121,20 +125,51 @@ private:
 	ComPtr<IHttpRequestMessageFactory> _httpRequestMessageFactory;
 	ComPtr<IHttpMethod> _httpGetMethod;
 	ComPtr<IHttpMethod> _httpPostMethod;
+	ComPtr<IHttpStringContentFactory> _stringContentFactory;
 
-	static shared_ptr<vector<tuple<HString, HString>>> CreateHeaders(const THeaders &headers) NOEXCEPT
+	static shared_ptr<THeadersImpl> CreateHeaders(const THeaders &headers) NOEXCEPT
 	{
-		auto result = make_shared<vector<tuple<HString, HString>>>();
-		for (auto &header : headers)
+		auto result = make_shared<THeadersImpl>();
+		for (auto &pair : headers)
 		{
-			result->emplace_back(HString(header.first), HString(header.second));
+			HString header;
+			switch (pair.first)
+			{
+				case HttpHeader::Accept:
+					header = HString(L"Accept");
+					break;
+				case HttpHeader::Connection:
+					header = HString(L"Connection");
+					break;
+				case HttpHeader::Origin:
+					header = HString(L"Origin");
+					break;
+				case HttpHeader::Referer:
+					header = HString(L"Referer");
+					break;
+				case HttpHeader::UserAgent:
+					header = HString(L"User-Agent");
+					break;
+				default:
+					continue;
+			}
+
+			result->emplace_back(move(header), HString(pair.second));
 		}
 		return result;
 	}
 
-	static shared_ptr<tuple<HString, HString>> CreatePostContent(const TPostContent &postContent) NOEXCEPT
+	ComPtr<IHttpContent> CreatePostContent(const TPostContent &postContent) const NOEXCEPT
 	{
-		return make_shared<tuple<HString, HString>>(make_tuple(HString(get<0>(postContent)), HString(get<1>(postContent))));
+		ComPtr<IHttpContent> postHttpContent;
+		if (!postContent.first.empty())
+		{
+			Check(_stringContentFactory->CreateFromStringWithEncodingAndMediaType(HStringReference(postContent.second).Get(),
+																				  UnicodeEncoding_Utf8,
+																				  HStringReference(postContent.first).Get(),
+																				  &postHttpContent));
+		}
+		return postHttpContent;
 	}
 
 	ComPtr<IUriRuntimeClass> CreateUri(HSTRING urlString) const
@@ -146,7 +181,7 @@ private:
 
 	ComPtr<IHttpRequestMessage> CreateRequest(IHttpMethod *method,
 											  IUriRuntimeClass *uri,
-											  const vector<tuple<HString, HString>> &headers) const
+											  const THeadersImpl &headers) const
 	{
 		ComPtr<IHttpRequestMessage> httpRequestMessage;
 		ComPtr<IHttpRequestHeaderCollection> httpRequestHeaderCollection;
@@ -158,8 +193,8 @@ private:
 		for (auto &pair : headers)
 		{
 			boolean isSuccess;
-			Check(httpRequestHeaderCollection->TryAppendWithoutValidation(get<0>(pair).Get(),
-																		  get<1>(pair).Get(),
+			Check(httpRequestHeaderCollection->TryAppendWithoutValidation(pair.first.Get(),
+																		  pair.second.Get(),
 																		  &isSuccess));
 		}
 
@@ -167,7 +202,7 @@ private:
 	}
 
 	void GetAsync(ComPtr<IUriRuntimeClass> uri,
-				  shared_ptr<vector<tuple<HString, HString>>> pHeaders,
+				  shared_ptr<THeadersImpl> pHeaders,
 				  task_completion_event<TResponse> taskCompletionEvent,
 				  uint_fast16_t attempt = 1) const
 	{
@@ -197,30 +232,18 @@ private:
 	}
 
 	void PostAsync(ComPtr<IUriRuntimeClass> uri,
-				   shared_ptr<vector<tuple<HString, HString>>> pHeaders,
-				   shared_ptr<tuple<HString, HString>> postContent,
+				   shared_ptr<THeadersImpl> pHeaders,
+				   ComPtr<IHttpContent> postContent,
 				   task_completion_event<TResponse> taskCompletionEvent,
 				   uint_fast16_t attempt = 1) const
 	{
-		ComPtr<IHttpStringContentFactory> stringContentFactory;
-		ComPtr<IHttpContent> postHttpContent;
 		ComPtr<IAsyncOperationWithProgress<HttpResponseMessage*, HttpProgress>> postAsyncOperation;
-
-		Check(GetActivationFactory(HStringReference(RuntimeClass_Windows_Web_Http_HttpStringContent).Get(),
-								   &stringContentFactory));
 
 		auto httpRequestMessage = CreateRequest(_httpPostMethod.Get(), uri.Get(), *pHeaders);
 
-		auto& postContentType = get<0>(*postContent);
-
-		if (!postContentType.Empty())
+		if (static_cast<bool>(postContent))
 		{
-			Check(stringContentFactory->CreateFromStringWithEncodingAndMediaType(get<1>(*postContent).Get(),
-																				 UnicodeEncoding_Utf8,
-																				 postContentType.Get(),
-																				 &postHttpContent));
-
-			Check(httpRequestMessage->put_Content(postHttpContent.Get()));
+			Check(httpRequestMessage->put_Content(postContent.Get()));
 		}
 
 		Check(_httpClient->SendRequestAsync(httpRequestMessage.Get(), &postAsyncOperation));

@@ -64,9 +64,9 @@ namespace AutoLogin
 
 							auto pAuthUrl = make_shared<wstring>(move(authUrl));
 
-							auto pHeaders = make_shared<unordered_map<wstring, wstring>>();
-							pHeaders->emplace(HttpRequestHeaders::Accept, L"text/html");
-							pHeaders->emplace(HttpRequestHeaders::UserAgent, L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36");
+							auto pHeaders = make_shared<unordered_map<HttpHeader, wstring>>();
+							pHeaders->emplace(HttpHeader::Accept, L"text/html");
+							pHeaders->emplace(HttpHeader::UserAgent, L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36");
 
 							return httpClient.GetAsync(*pAuthUrl, *pHeaders)
 											 .then([](TResponse &response)
@@ -75,8 +75,8 @@ namespace AutoLogin
 												 })
 											 .then([httpClient, pAuthUrl, pHeaders](wstring &postContent)
 												 {
-													 pHeaders->emplace(HttpRequestHeaders::Origin, L"https://login.wi-fi.ru");
-													 pHeaders->emplace(HttpRequestHeaders::Referer, *pAuthUrl);
+													 pHeaders->emplace(HttpHeader::Origin, L"https://login.wi-fi.ru");
+													 pHeaders->emplace(HttpHeader::Referer, *pAuthUrl);
 
 													 return httpClient.PostAsync(*pAuthUrl,
 																				 *pHeaders,

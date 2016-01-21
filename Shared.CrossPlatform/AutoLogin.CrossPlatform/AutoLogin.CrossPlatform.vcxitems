@@ -19,14 +19,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)AuthResult.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Base64.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)HttpClient.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)HttpRequestHeaders.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)HttpHeader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)IAuthorizer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)LicenseChecker.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MosMetroAuthorizer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MosMetroResponseParcer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SettingsProvider.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)HttpRequestHeaders.cpp" />
   </ItemGroup>
 </Project>
