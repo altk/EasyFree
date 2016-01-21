@@ -76,6 +76,7 @@ namespace AutoLogin
 												 {
 													 pHeaders->emplace(HttpHeader::Origin, L"https://login.wi-fi.ru");
 													 pHeaders->emplace(HttpHeader::Referer, *pAuthUrl);
+													 pHeaders->emplace(HttpHeader::Connection, "Close");
 
 													 return httpClient.PostAsync(*pAuthUrl,
 																				 *pHeaders,
