@@ -67,7 +67,6 @@ namespace AutoLogin
 							auto pHeaders = make_shared<unordered_map<wstring, wstring>>();
 							pHeaders->emplace(HttpRequestHeaders::Accept, L"text/html");
 							pHeaders->emplace(HttpRequestHeaders::UserAgent, L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36");
-							pHeaders->emplace(HttpRequestHeaders::Connection, L"close");
 
 							return httpClient.GetAsync(*pAuthUrl, *pHeaders)
 											 .then([](TResponse &response)
