@@ -177,9 +177,11 @@
       <CompileAsWinRT>false</CompileAsWinRT>
       <CompileAsManaged>false</CompileAsManaged>
       <EnablePREfast>false</EnablePREfast>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
     <Midl>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
@@ -238,9 +240,11 @@
       <CompileAsWinRT>false</CompileAsWinRT>
       <CompileAsManaged>false</CompileAsManaged>
       <EnablePREfast>false</EnablePREfast>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
     </Link>
     <Midl>
       <GenerateTypeLibrary>false</GenerateTypeLibrary>
