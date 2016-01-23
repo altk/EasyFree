@@ -32,7 +32,7 @@ public:
 		Check(propertySet.As(&_propertyMap));
 	}
 
-	wstring Get(const wstring& key) const NOEXCEPT
+	wstring Get(const wstring &key) const NOEXCEPT
 	{
 		wstring result;
 
@@ -59,13 +59,11 @@ public:
 		return result;
 	}
 
-	bool Set(const wstring& key,
-			 const wstring& value) const NOEXCEPT
+	bool Set(const wstring &key, const wstring &value) NOEXCEPT
 	{
 		try
 		{
 			boolean isReplaced;
-
 			ComPtr<IPropertyValueStatics> propertyValueStatics;
 			ComPtr<IPropertyValue> propertyValue;
 
@@ -87,6 +85,29 @@ public:
 		return true;
 	}
 
+	bool Delete(const wstring &key) NOEXCEPT
+	{
+		try
+		{
+			Check(_propertyMap->Remove(HStringReference(key).Get()));
+			
+			return true;
+		}
+		catch (...)
+		{
+			return false;
+		}
+	}
+
+	bool Contains(const wstring &key) const
+	{
+		boolean found;
+		Check(_propertyMap->HasKey(HStringReference(key).Get(),
+								   &found));
+
+		return found;
+	}
+
 private:
 	ComPtr<IMap<HSTRING, IInspectable*>> _propertyMap;
 };
@@ -96,13 +117,22 @@ SettingsProvider::SettingsProvider()
 
 SettingsProvider::~SettingsProvider() NOEXCEPT {}
 
-wstring SettingsProvider::Get(const wstring& key) const NOEXCEPT
+wstring SettingsProvider::Get(const wstring &key) const NOEXCEPT
 {
 	return _impl->Get(key);
 }
 
-bool SettingsProvider::Set(const wstring& key,
-						   const wstring& value) const NOEXCEPT
+bool SettingsProvider::Set(const wstring &key, const wstring &value) NOEXCEPT
 {
 	return _impl->Set(key, value);
+}
+
+bool SettingsProvider::Delete(const std::wstring &key) NOEXCEPT
+{
+	return _impl->Delete(key);
+}
+
+bool SettingsProvider::HasKey(const std::wstring &key) const
+{
+	return _impl->Contains(key);
 }

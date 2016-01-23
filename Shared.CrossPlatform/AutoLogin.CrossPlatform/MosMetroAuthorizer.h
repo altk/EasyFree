@@ -90,7 +90,8 @@ namespace AutoLogin
 												 });
 						});
 
-					return checkInternetAvailabilityTask.then([authTask](wstring &authUrl)
+
+					auto resultTask = checkInternetAvailabilityTask.then([authTask](wstring &authUrl)
 						{
 							if (authUrl.empty())
 							{
@@ -99,6 +100,54 @@ namespace AutoLogin
 
 							return authTask;
 						});
+
+					//Если адрес авторизации не был сохранён
+					if (savedAuthUrl.empty())
+					{
+						return resultTask;
+					}
+					else
+					{
+						return resultTask.then([settingsProvider, pAuthUrlKey](AuthResult authResult) mutable
+							{
+								try
+								{
+									wstring tryCountKey = L"TryCount";
+									auto countString = settingsProvider.Get(tryCountKey);
+									switch (authResult)
+									{
+										case AuthResult::Fail:
+											if (countString.empty())
+											{
+												settingsProvider.Set(tryCountKey, L"1");
+											}
+											else
+											{
+												auto count = stoi(settingsProvider.Get(tryCountKey));
+												if (++count > 5)
+												{
+													settingsProvider.Delete(tryCountKey);
+													settingsProvider.Delete(*pAuthUrlKey);
+												}
+												else
+												{
+													settingsProvider.Set(tryCountKey, std::to_wstring(count));
+												}
+											}
+											break;
+										case AuthResult::Success:
+											if (!countString.empty())
+											{
+												settingsProvider.Delete(tryCountKey);
+											}
+											break;
+									}
+								}
+								catch (...) {}
+
+								return authResult;
+							});
+					}
 				}
 				catch (...)
 				{

@@ -40,7 +40,11 @@ namespace AutoLogin
 
 			std::wstring Get(const std::wstring &key) const NOEXCEPT;
 
-			bool Set(const std::wstring &key, const std::wstring &value) const NOEXCEPT;
+			bool Set(const std::wstring &key, const std::wstring &value) NOEXCEPT;
+
+			bool Delete(const std::wstring &key) NOEXCEPT;
+
+			bool HasKey(const std::wstring &key) const;
 		private:
 			class SettingsProviderImpl;
 
