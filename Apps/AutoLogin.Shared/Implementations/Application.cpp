@@ -167,10 +167,12 @@ HRESULT Application::SetWindow(ICoreWindow* window) NOEXCEPT
 									Check(launcherStatics->LaunchUriAsync(launchUri.Get(),
 																		  &launchAsyncOperation));
 
-									Check(pCoreWindow->Close());
+									Draw(Labels::RegistrationNeed);
 								}
-
-								Draw(Labels::SuccessDescription);
+								else
+								{
+									Draw(Labels::SuccessDescription);
+								}
 							}
 						}
 					}
