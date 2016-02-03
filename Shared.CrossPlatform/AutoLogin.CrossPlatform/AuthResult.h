@@ -9,7 +9,8 @@ namespace AutoLogin
 			Success,
 			Fail,
 			Unregistered,
-			None
+			None,
+			Unlicensed
 		};
 	}
 }

@@ -3,6 +3,7 @@
 #include <AuthStatus.h>
 #include <HttpClient.h>
 #include <SettingsProvider.h>
+#include <LicenseChecker.h>
 
 namespace AutoLogin
 {
@@ -21,6 +22,8 @@ namespace AutoLogin
 				try
 				{
 					const HttpClient<TResponse> httpClient;
+
+					auto licenseCheckTask = create_task(LicenseChecker::Check);
 
 					auto checkInternetAvailabilityTask = httpClient.GetAsync(L"http://wi-fi.ru")
 																   .then([](TResponse &response)
@@ -49,7 +52,7 @@ namespace AutoLogin
 						getAuthUrlTask = task_from_result(savedAuthUrl);
 					}
 
-					auto authTask = getAuthUrlTask.then([httpClient](wstring &authUrl) mutable -> task<AuthResult>
+					auto authTask = getAuthUrlTask.then([httpClient, licenseCheckTask](wstring &authUrl) mutable -> task<AuthResult>
 						{
 							if (authUrl.empty())
 							{
@@ -67,29 +70,37 @@ namespace AutoLogin
 							pHeaders->emplace(HttpHeader::Accept, L"text/html");
 							pHeaders->emplace(HttpHeader::UserAgent, L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36");
 
-							return httpClient.GetAsync(*pAuthUrl, *pHeaders)
-											 .then([](TResponse &response)
-												 {
-													 return GetPostContentAsync(move(response));
-												 })
-											 .then([httpClient, pAuthUrl, pHeaders](wstring &postContent)
-												 {
-													 pHeaders->emplace(HttpHeader::Origin, L"https://login.wi-fi.ru");
-													 pHeaders->emplace(HttpHeader::Referer, *pAuthUrl);
-													 pHeaders->emplace(HttpHeader::Connection, L"Close");
+							auto postContentTask = httpClient.GetAsync(*pAuthUrl, *pHeaders)
+															 .then([](TResponse &response)
+																 {
+																	 return GetPostContentAsync(move(response));
+																 });
 
-													 return httpClient.PostAsync(*pAuthUrl,
-																				 *pHeaders,
-																				 make_pair(wstring(L"application/x-www-form-urlencoded"), move(postContent)));
-												 })
-											 .then([](TResponse &response) -> AuthResult
-												 {
-													 return GetStatusCode(move(response)) != 401
-																? AuthResult::Success
-																: AuthResult::Fail;
-												 });
+							return licenseCheckTask.then([httpClient, pAuthUrl, pHeaders, postContentTask](bool licenceOk)-> task<AuthResult>
+								{
+									if (!licenceOk)
+									{
+										return task_from_result(AuthResult::Unlicensed);
+									}
+
+									return postContentTask.then([httpClient, pAuthUrl, pHeaders](wstring &postContent)
+															  {
+																  pHeaders->emplace(HttpHeader::Origin, L"https://login.wi-fi.ru");
+																  pHeaders->emplace(HttpHeader::Referer, *pAuthUrl);
+																  pHeaders->emplace(HttpHeader::Connection, L"Close");
+
+																  return httpClient.PostAsync(*pAuthUrl,
+																							  *pHeaders,
+																							  make_pair(wstring(L"application/x-www-form-urlencoded"), move(postContent)));
+															  })
+														  .then([](TResponse &response) -> AuthResult
+															  {
+																  return GetStatusCode(move(response)) != 401
+																			 ? AuthResult::Success
+																			 : AuthResult::Fail;
+															  });
+								});
 						});
-
 
 					auto resultTask = checkInternetAvailabilityTask.then([authTask](wstring &authUrl)
 						{
@@ -106,48 +117,46 @@ namespace AutoLogin
 					{
 						return resultTask;
 					}
-					else
-					{
-						return resultTask.then([settingsProvider, pAuthUrlKey](AuthResult authResult) mutable
+
+					return resultTask.then([settingsProvider, pAuthUrlKey](AuthResult authResult) mutable
+						{
+							try
 							{
-								try
+								wstring tryCountKey = L"TryCount";
+								auto countString = settingsProvider.Get(tryCountKey);
+								switch (authResult)
 								{
-									wstring tryCountKey = L"TryCount";
-									auto countString = settingsProvider.Get(tryCountKey);
-									switch (authResult)
-									{
-										case AuthResult::Fail:
-											if (countString.empty())
+									case AuthResult::Fail:
+										if (countString.empty())
+										{
+											settingsProvider.Set(tryCountKey, L"1");
+										}
+										else
+										{
+											auto count = stoi(settingsProvider.Get(tryCountKey));
+											if (++count > 5)
 											{
-												settingsProvider.Set(tryCountKey, L"1");
+												settingsProvider.Delete(tryCountKey);
+												settingsProvider.Delete(*pAuthUrlKey);
 											}
 											else
 											{
-												auto count = stoi(settingsProvider.Get(tryCountKey));
-												if (++count > 5)
-												{
-													settingsProvider.Delete(tryCountKey);
-													settingsProvider.Delete(*pAuthUrlKey);
-												}
-												else
-												{
-													settingsProvider.Set(tryCountKey, std::to_wstring(count));
-												}
+												settingsProvider.Set(tryCountKey, std::to_wstring(count));
 											}
-											break;
-										case AuthResult::Success:
-											if (!countString.empty())
-											{
-												settingsProvider.Delete(tryCountKey);
-											}
-											break;
-									}
+										}
+										break;
+									case AuthResult::Success:
+										if (!countString.empty())
+										{
+											settingsProvider.Delete(tryCountKey);
+										}
+										break;
 								}
-								catch (...) {}
+							}
+							catch (...) {}
 
-								return authResult;
-							});
-					}
+							return authResult;
+						});
 				}
 				catch (...)
 				{

@@ -7,7 +7,6 @@
 #include <MTL.h>
 #include <MosMetroAuthorizer.h>
 #include <NetworkInfoProvider.h>
-#include <LicenseChecker.h>
 #include <Labels.h>
 #include <AuthStatus.h>
 #include <UriUtilities.h>
@@ -106,61 +105,65 @@ HRESULT LoginTask::Run(IBackgroundTaskInstance *taskInstance) NOEXCEPT
 
 			if (findIterator != end(authorizers))
 			{
-				if (LicenseChecker::Check())
-				{
-					auto authorizer = *findIterator;
+				auto authorizer = *findIterator;
 
-					ComPtr<IBackgroundTaskDeferral> taskDefferal;
-					Check(taskInstance->GetDeferral(&taskDefferal));
+				ComPtr<IBackgroundTaskDeferral> taskDefferal;
+				Check(taskInstance->GetDeferral(&taskDefferal));
 
-					authorizer->AuthAsync().then(
-						[connectionNameStr, taskDefferal, authorizer]
-						(task<AuthResult> authResultTask) NOEXCEPT ->
-						void
+				authorizer->AuthAsync().then(
+					[connectionNameStr, taskDefferal, authorizer]
+					(task<AuthResult> authResultTask) NOEXCEPT ->
+					void
+					{
+						try
 						{
-							try
-							{
-								wstring launchArgument,
-										description;
+							const wstring *launchArgument,
+										  *description,
+										  *title;
+							wstring temp;
 
-								switch (authResultTask.get())
-								{
-									case AutoLogin::CrossPlatform::AuthResult::Success:
-										launchArgument = AuthStatus::launchAttributeSuccess;
-										description = Labels::AuthSuccess;
-										break;
-									case AutoLogin::CrossPlatform::AuthResult::Fail:
-										launchArgument = AuthStatus::launchAttributeFail;
-										description = Labels::AuthFail;
-										break;
-									case AutoLogin::CrossPlatform::AuthResult::Unregistered:
-										launchArgument = authorizer->GetRegistrationUrl();
-										description = Labels::RegistrationNeed;
-										break;
-									default:
-										return;
-								}
-
-								NotificationHelper::PromtNotification(connectionNameStr,
-																	  UriUtilities().Escape(launchArgument).GetRawBuffer(),
-																	  description);
-							}
-							catch (...)
+							switch (authResultTask.get())
 							{
-								NotificationHelper::PromtNotification(Labels::Title,
-																	  UriUtilities().Escape(AuthStatus::launchAttributeFail).GetRawBuffer(),
-																	  Labels::AuthFail);
+								case AuthResult::Success:
+									title = &connectionNameStr;
+									launchArgument = &AuthStatus::launchAttributeSuccess;
+									description = &Labels::AuthSuccess;
+									break;
+								case AuthResult::Fail:
+									title = &connectionNameStr;
+									launchArgument = &AuthStatus::launchAttributeFail;
+									description = &Labels::AuthFail;
+									break;
+								case AuthResult::Unregistered:
+									title = &connectionNameStr;
+									temp = authorizer->GetRegistrationUrl();
+									launchArgument = &temp;
+									description = &Labels::RegistrationNeed;
+									break;
+								case AuthResult::Unlicensed:
+									title = &Labels::Title;
+									launchArgument = &AuthStatus::launchAttributeUnlicensed;
+									description = &Labels::Unlicensed;
+									break;
+								default:
+									return;
 							}
 
-							Check(taskDefferal->Complete());
-						});
-				}
-				else
-				{
-					NotificationHelper::PromtNotification(Labels::Title,
-														  UriUtilities().Escape(AuthStatus::launchAttributeUnlicensed).GetRawBuffer(),
-														  Labels::Unlicensed);
-				}
+							NotificationHelper::PromtNotification(*title,
+																  UriUtilities().Escape(*launchArgument)
+																				.GetRawBuffer(),
+																  *description);
+						}
+						catch (...)
+						{
+							NotificationHelper::PromtNotification(Labels::Title,
+																  UriUtilities().Escape(AuthStatus::launchAttributeFail)
+																				.GetRawBuffer(),
+																  Labels::AuthFail);
+						}
+
+						Check(taskDefferal->Complete());
+					});
 			}
 		}
 	}
