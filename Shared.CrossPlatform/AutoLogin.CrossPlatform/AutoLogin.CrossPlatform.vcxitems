@@ -24,6 +24,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)LicenseChecker.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MosMetroAuthorizer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MosMetroResponseParcer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)PostData.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SettingsProvider.h" />
   </ItemGroup>
 </Project>

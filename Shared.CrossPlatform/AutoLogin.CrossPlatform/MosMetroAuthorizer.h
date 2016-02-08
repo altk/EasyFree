@@ -1,190 +1,166 @@
 #pragma once
+#include <memory>
 #include <IAuthorizer.h>
-#include <AuthStatus.h>
-#include <HttpClient.h>
-#include <SettingsProvider.h>
-#include <LicenseChecker.h>
 
 namespace AutoLogin
 {
-	namespace CrossPlatform
-	{
-		template <typename TResponse>
-		class MosMetroAuthorizer final : public IAuthorizer
-		{
-		public:
-			virtual Concurrency::task<AuthResult> AuthAsync() NOEXCEPT override
-			{
-				using namespace std;
-				using namespace Concurrency;
-				using namespace Resources;
+    namespace CrossPlatform
+    {
+        class MosMetroAuthorizer final : public IAuthorizer
+        {
+        public:
+            virtual Concurrency::task<AuthResult> AuthAsync() NOEXCEPT override;
 
-				try
-				{
-					const HttpClient<TResponse> httpClient;
+            virtual bool CanAuth(const std::wstring &connectionName) const NOEXCEPT override
+            {
+                return connectionName.compare(L"MosMetro_Free") == 0;
+            }
 
-					auto licenseCheckTask = create_task(LicenseChecker::Check);
+            virtual std::wstring GetRegistrationUrl() const NOEXCEPT override
+            {
+                return GetRegistrationUrlImpl();
+            }
 
-					auto checkInternetAvailabilityTask = httpClient.GetAsync(L"http://wi-fi.ru")
-																   .then([](TResponse &response)
-																	   {
-																		   return GetAuthUrlAsync(move(response));
-																	   });
+            //{
+            //    using namespace std;
+            //    using namespace Concurrency;
+            //    using namespace Resources;
 
-					SettingsProvider settingsProvider;
-					auto pAuthUrlKey = make_shared<wstring>(L"AuthUrl");
-					auto savedAuthUrl = settingsProvider.Get(*pAuthUrlKey);
+            //    try
+            //    {
+            //        const HttpClient<TResponse> httpClient;
 
-					task<wstring> getAuthUrlTask;
-					if (savedAuthUrl.empty())
-					{
-						getAuthUrlTask = checkInternetAvailabilityTask.then([settingsProvider, pAuthUrlKey](wstring &authUrl) mutable -> wstring
-							{
-								if (!authUrl.empty())
-								{
-									settingsProvider.Set(*pAuthUrlKey, authUrl);
-								}
-								return authUrl;
-							});
-					}
-					else
-					{
-						getAuthUrlTask = task_from_result(savedAuthUrl);
-					}
+            //        auto licenseCheckTask = create_task(LicenseChecker::Check);
 
-					auto authTask = getAuthUrlTask.then([httpClient, licenseCheckTask](wstring &authUrl) mutable -> task<AuthResult>
-						{
-							if (authUrl.empty())
-							{
-								return task_from_result(AuthResult::None);
-							}
+            //        auto getAuthUrlTask = httpClient.GetAsync(L"http://wi-fi.ru")
+            //                                        .then([](TResponse &response)
+            //                                            {
+            //                                                return GetAuthUrlAsync(move(response));
+            //                                            });
 
-							if (authUrl == GetRegistrationUrlImpl())
-							{
-								return task_from_result(AuthResult::Unregistered);
-							}
+            //        auto authTask = getAuthUrlTask.then([httpClient, licenseCheckTask](wstring &authUrl) mutable -> task<AuthResult>
+            //            {
+            //                if (authUrl.empty())
+            //                {
+            //                    return task_from_result(AuthResult::None);
+            //                }
 
-							auto pAuthUrl = make_shared<wstring>(move(authUrl));
+            //                if (authUrl == GetRegistrationUrlImpl())
+            //                {
+            //                    return task_from_result(AuthResult::Unregistered);
+            //                }
 
-							auto pHeaders = make_shared<unordered_map<HttpHeader, wstring>>();
-							pHeaders->emplace(HttpHeader::Accept, L"text/html");
-							pHeaders->emplace(HttpHeader::UserAgent, L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36");
+            //                auto pAuthUrl = make_shared<wstring>(move(authUrl));
 
-							auto postContentTask = httpClient.GetAsync(*pAuthUrl, *pHeaders)
-															 .then([](TResponse &response)
-																 {
-																	 return GetPostContentAsync(move(response));
-																 });
+            //                auto pHeaders = make_shared<unordered_map<HttpHeader, wstring>>();
+            //                pHeaders->emplace(HttpHeader::Accept, L"text/html");
+            //                pHeaders->emplace(HttpHeader::UserAgent, L"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36");
 
-							return licenseCheckTask.then([httpClient, pAuthUrl, pHeaders, postContentTask](bool licenceOk)-> task<AuthResult>
-								{
-									if (!licenceOk)
-									{
-										return task_from_result(AuthResult::Unlicensed);
-									}
+            //                auto postContentTask = httpClient.GetAsync(*pAuthUrl, *pHeaders)
+            //                                                 .then([](TResponse &response)
+            //                                                     {
+            //                                                         return GetPostContentAsync(move(response));
+            //                                                     });
 
-									return postContentTask.then([httpClient, pAuthUrl, pHeaders](wstring &postContent)
-															  {
-																  pHeaders->emplace(HttpHeader::Origin, L"https://login.wi-fi.ru");
-																  pHeaders->emplace(HttpHeader::Referer, *pAuthUrl);
-																  pHeaders->emplace(HttpHeader::Connection, L"Close");
+            //                return licenseCheckTask.then([httpClient, pAuthUrl, pHeaders, postContentTask](bool licenceOk)-> task<AuthResult>
+            //                    {
+            //                        if (!licenceOk)
+            //                        {
+            //                            return task_from_result(AuthResult::Unlicensed);
+            //                        }
 
-																  return httpClient.PostAsync(*pAuthUrl,
-																							  *pHeaders,
-																							  make_pair(wstring(L"application/x-www-form-urlencoded"), move(postContent)));
-															  })
-														  .then([](TResponse &response) -> AuthResult
-															  {
-																  return GetStatusCode(move(response)) != 401
-																			 ? AuthResult::Success
-																			 : AuthResult::Fail;
-															  });
-								});
-						});
+            //                        return postContentTask.then([httpClient, pAuthUrl, pHeaders](wstring &postContent)
+            //                                                  {
+            //                                                      pHeaders->emplace(HttpHeader::Referer, *pAuthUrl);
 
-					auto resultTask = checkInternetAvailabilityTask.then([authTask](wstring &authUrl)
-						{
-							if (authUrl.empty())
-							{
-								return task_from_result(AuthResult::None);
-							}
+            //                                                      return httpClient.PostAsync(*pAuthUrl,
+            //                                                                                  *pHeaders,
+            //                                                                                  make_pair(wstring(L"application/x-www-form-urlencoded"), move(postContent)));
+            //                                                  })
+            //                                              .then([](TResponse &response) -> AuthResult
+            //                                                  {
+            //                                                      return GetStatusCode(move(response)) != 401
+            //                                                                 ? AuthResult::Success
+            //                                                                 : AuthResult::Fail;
+            //                                                  });
+            //                    });
+            //            });
 
-							return authTask;
-						});
+            //        auto resultTask = checkInternetAvailabilityTask.then([authTask](wstring &authUrl)
+            //            {
+            //                if (authUrl.empty())
+            //                {
+            //                    return task_from_result(AuthResult::None);
+            //                }
 
-					//Если адрес авторизации не был сохранён
-					if (savedAuthUrl.empty())
-					{
-						return resultTask;
-					}
+            //                return authTask;
+            //            });
 
-					return resultTask.then([settingsProvider, pAuthUrlKey](AuthResult authResult) mutable
-						{
-							try
-							{
-								wstring tryCountKey = L"TryCount";
-								auto countString = settingsProvider.Get(tryCountKey);
-								switch (authResult)
-								{
-									case AuthResult::Fail:
-										if (countString.empty())
-										{
-											settingsProvider.Set(tryCountKey, L"1");
-										}
-										else
-										{
-											auto count = stoi(settingsProvider.Get(tryCountKey));
-											if (++count > 5)
-											{
-												settingsProvider.Delete(tryCountKey);
-												settingsProvider.Delete(*pAuthUrlKey);
-											}
-											else
-											{
-												settingsProvider.Set(tryCountKey, std::to_wstring(count));
-											}
-										}
-										break;
-									case AuthResult::Success:
-										if (!countString.empty())
-										{
-											settingsProvider.Delete(tryCountKey);
-										}
-										break;
-								}
-							}
-							catch (...) {}
+            //        //Если адрес авторизации не был сохранён
+            //        if (savedAuthUrl.empty())
+            //        {
+            //            return resultTask;
+            //        }
 
-							return authResult;
-						});
-				}
-				catch (...)
-				{
-					return task_from_result(AuthResult::Fail);
-				}
-			}
+            //        return resultTask.then([settingsProvider, pAuthUrlKey](AuthResult authResult) mutable
+            //            {
+            //                try
+            //                {
+            //                    wstring tryCountKey = L"TryCount";
+            //                    auto countString = settingsProvider.Get(tryCountKey);
+            //                    switch (authResult)
+            //                    {
+            //                        case AuthResult::Fail:
+            //                            if (countString.empty())
+            //                            {
+            //                                settingsProvider.Set(tryCountKey, L"1");
+            //                            }
+            //                            else
+            //                            {
+            //                                auto count = stoi(settingsProvider.Get(tryCountKey));
+            //                                if (++count > 5)
+            //                                {
+            //                                    settingsProvider.Delete(tryCountKey);
+            //                                    settingsProvider.Delete(*pAuthUrlKey);
+            //                                }
+            //                                else
+            //                                {
+            //                                    settingsProvider.Set(tryCountKey, to_wstring(count));
+            //                                }
+            //                            }
+            //                            break;
+            //                        case AuthResult::Success:
+            //                            if (!countString.empty())
+            //                            {
+            //                                settingsProvider.Delete(tryCountKey);
+            //                            }
+            //                            break;
+            //                    }
+            //                }
+            //                catch (...) {}
 
-			virtual bool CanAuth(const std::wstring &connectionName) const NOEXCEPT override
-			{
-				return connectionName.compare(L"MosMetro_Free") == 0;
-			}
+            //                return authResult;
+            //            });
+            //    }
+            //    catch (...)
+            //    {
+            //        return task_from_result(AuthResult::Fail);
+            //    }
+            //}
 
-			virtual std::wstring GetRegistrationUrl() const NOEXCEPT override
-			{
-				return GetRegistrationUrlImpl();
-			}
+        private:
+            static std::wstring GetRegistrationUrlImpl() NOEXCEPT
+            {
+                return L"https://login.wi-fi.ru/am/UI/Login";
+            }
 
-		private:
-			static std::wstring GetRegistrationUrlImpl() NOEXCEPT
-			{
-				return L"https://login.wi-fi.ru/am/UI/Login";
-			}
 
-			static uint_fast16_t GetStatusCode(TResponse response);
 
-			static Concurrency::task<std::wstring> GetAuthUrlAsync(TResponse response);
+            /*static uint_fast16_t GetStatusCode(TResponse response);
 
-			static Concurrency::task<std::wstring> GetPostContentAsync(TResponse response);
-		};
-	}
+            static Concurrency::task<std::wstring> GetAuthUrlAsync(TResponse response);
+
+            static Concurrency::task<PostData> GetPostContentAsync(TResponse response);*/
+        };
+    }
 }
