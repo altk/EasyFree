@@ -77,7 +77,7 @@ namespace AutoLogin
                     return result;
                 }
 
-                char headBeginTag[] = "<head";
+                /*char headBeginTag[] = "<head";
                 const auto headBeginTagLen = extent<decltype(headBeginTag)>::value - 1;
 
                 char headEndTag[] = "</head>";
@@ -98,9 +98,9 @@ namespace AutoLogin
                                                 headEndTag,
                                                 headEndTag + headEndTagLen);
 
-                auto temp = string(formBeginTagPointer, formEndTagPointer + headEndTagLen);
+                auto temp = string(formBeginTagPointer, formEndTagPointer + headEndTagLen);*/
 
-                auto output = gumbo_parse(temp.data());
+                auto output = gumbo_parse(source);
 
                 if (output)
                 {

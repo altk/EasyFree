@@ -130,10 +130,10 @@ task<AuthResult> MosMetroAuthorizer::AuthAsync() NOEXCEPT
                              {
                                  const auto statusCode = GetStatusCode(response);
 
-                                 if (statusCode == HttpStatusCode_Ok)
+                                 /*if (statusCode == HttpStatusCode_Ok)
                                  {
                                      cancel_current_task();
-                                 }
+                                 }*/
 
                                  return licenseCheckTask.then([response](bool licenceOk) -> task<ComPtr<IBuffer>>
                                      {
