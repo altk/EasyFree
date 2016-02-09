@@ -34,7 +34,7 @@ namespace AutoLogin
                                                     formBeginTag,
                                                     formBeginTag + formBeginTagLen);
 
-                if(formBeginTagPointer == source+sourceLen)
+                if (formBeginTagPointer == source + sourceLen)
                 {
                     return result;
                 }
@@ -44,22 +44,20 @@ namespace AutoLogin
                                                 formEndTag,
                                                 formEndTag + formEndTagLen);
 
-                auto output = gumbo_parse(string(formBeginTagPointer, formEndTagPointer + formEndTagLen).data());
+                auto temp = string(formBeginTagPointer, formEndTagPointer + formEndTagLen);
 
-                if (!output)
+                auto output = gumbo_parse(temp.data());
+
+                if (output)
                 {
-                    return result;
+                    auto formNode = FindNode(output->root,
+                                             GUMBO_TAG_FORM);
+
+                    if (formNode)
+                    {
+                        result = PostData(GetAction(formNode), GetFormParams(formNode));
+                    }
                 }
-
-                auto formNode = FindNode(output->root,
-                                         GUMBO_TAG_FORM);
-
-                if (!formNode)
-                {
-                    return PostData();
-                }
-
-                result = PostData(GetAction(formNode), GetFormParams(formNode));
 
                 gumbo_destroy_output(&kGumboDefaultOptions,
                                      output);
@@ -100,22 +98,20 @@ namespace AutoLogin
                                                 headEndTag,
                                                 headEndTag + headEndTagLen);
 
-                auto output = gumbo_parse(string(formBeginTagPointer, formEndTagPointer + headEndTagLen).data());
+                auto temp = string(formBeginTagPointer, formEndTagPointer + headEndTagLen);
 
-                if (!output)
+                auto output = gumbo_parse(temp.data());
+
+                if (output)
                 {
-                    return result;
+                    auto headNode = FindNode(output->root,
+                                             GUMBO_TAG_HEAD);
+
+                    if (headNode)
+                    {
+                        result = GetUrl(headNode);
+                    }
                 }
-
-                auto headNode = FindNode(output->root,
-                                         GUMBO_TAG_HEAD);
-
-                if(!headNode)
-                {
-                    return result;
-                }
-
-                result = GetUrl(headNode);
 
                 gumbo_destroy_output(&kGumboDefaultOptions,
                                      output);
@@ -197,7 +193,7 @@ namespace AutoLogin
                 for (unsigned j = 0; j < attributes->length; ++j)
                 {
                     auto attribute = static_cast<GumboAttribute*>(attributes->data[j]);
-                    if (strcmp(attribute->name, "action"))
+                    if (strcmp(attribute->name, "action") == 0)
                     {
                         temp.append(attribute->value);
                         break;
@@ -258,8 +254,6 @@ namespace AutoLogin
             {
                 using namespace std;
 
-                string temp;
-
                 auto children = &headNode->v.element.children;
                 for (unsigned i = 0; i < children->length; ++i)
                 {
@@ -267,10 +261,16 @@ namespace AutoLogin
                     if (GUMBO_TAG_META == child->v.element.tag)
                     {
                         auto attributes = &child->v.element.attributes;
-                        if (attributes->length <= 0) break;
+                        if (attributes->length <= 0)
+                        {
+                            continue;
+                        }
 
                         auto httpEquivAttribute = static_cast<GumboAttribute*>(attributes->data[0]);
-                        if (_stricmp(httpEquivAttribute->name, "http-equiv") != 0 || _stricmp(httpEquivAttribute->value, "refresh") != 0) continue;
+                        if (_stricmp(httpEquivAttribute->name, "http-equiv") != 0 || _stricmp(httpEquivAttribute->value, "refresh") != 0)
+                        {
+                            continue;
+                        }
 
                         for (unsigned j = 1; j < attributes->length; ++j)
                         {
@@ -279,16 +279,18 @@ namespace AutoLogin
                             {
                                 const char term[] = "http";
                                 auto first = strstr(attribute->value, term);
+                                string temp;
                                 if (nullptr != first)
                                 {
                                     temp.append(first);
                                 }
+                                return wstring(begin(temp), end(temp));
                             }
                         }
                     }
                 }
 
-                return wstring(begin(temp), end(temp));
+                return wstring();
             }
         };
     }

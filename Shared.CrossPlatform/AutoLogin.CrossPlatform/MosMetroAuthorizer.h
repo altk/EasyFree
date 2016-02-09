@@ -13,6 +13,7 @@ namespace AutoLogin
 
             virtual bool CanAuth(const std::wstring &connectionName) const NOEXCEPT override
             {
+                return true;
                 return connectionName.compare(L"MosMetro_Free") == 0;
             }
 

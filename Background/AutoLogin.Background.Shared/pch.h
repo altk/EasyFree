@@ -5,7 +5,6 @@
 #include <vector>
 #include <string>
 #include <MTL.h>
-
 #include <intrin.h>
 #include <stddef.h>
 #include <assert.h>
@@ -16,7 +15,7 @@
 #include <typeinfo>
 #include <algorithm>
 #include <map>
-
+#include <unordered_map>
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN

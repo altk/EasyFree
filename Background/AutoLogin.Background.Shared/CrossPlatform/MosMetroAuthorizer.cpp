@@ -1,15 +1,15 @@
 #include "pch.h"
 #include <MosMetroAuthorizer.h>
 #include <MosMetroResponseParcer.h>
+#include <HttpHeader.h>
+#include <HttpClient.h>
+#include <PostData.h>
 #include <LicenseChecker.h>
 #include <robuffer.h>
 #include <windows.web.http.h>
 #include <windows.storage.streams.h>
 #include <windows.networking.connectivity.h>
 #include <MTL.h>
-#include <unordered_map>
-#include <HttpHeader.h>
-#include <HttpClient.h>
 
 using namespace std;
 using namespace Concurrency;
@@ -102,7 +102,7 @@ void PostImpl(THttpClient httpClient,
                                  {
                                      auto statusCode = GetStatusCode(attemptResponse);
 
-                                     if (statusCode == HttpStatusCode_Ok)
+                                     if (HttpStatusCode_Ok <= statusCode && statusCode < HttpStatusCode_BadRequest)
                                      {
                                          tce.set(AuthResult::Success);
                                      }
@@ -139,7 +139,6 @@ task<AuthResult> MosMetroAuthorizer::AuthAsync() NOEXCEPT
                                      {
                                          if (!licenceOk)
                                          {
-                                             //TODO Throw correct exception
                                              cancel_current_task();
                                          }
 
@@ -158,12 +157,11 @@ task<AuthResult> MosMetroAuthorizer::AuthAsync() NOEXCEPT
                                  Check(buffer->get_Length(&length));
 
                                  auto authUrl = MosMetroResponseParser::GetAuthUrl(reinterpret_cast<char*>(content), length);
-
                                  if (authUrl.empty())
                                  {
                                      cancel_current_task();
                                  }
-
+                                 
                                  auto headers = unordered_map<HttpHeader, wstring>
                                          {
                                              {HttpHeader::Accept, AcceptHeaderValue},
@@ -180,17 +178,17 @@ task<AuthResult> MosMetroAuthorizer::AuthAsync() NOEXCEPT
 
                                  return task<AuthResult>(tce);
                              })
-                         .then([](task<AuthResult> task) -> AuthResult 
+                         .then([](task<AuthResult> task) -> AuthResult
                              {
                                  try
                                  {
                                      return task.get();
                                  }
-                                 catch (const task_canceled&)
+                                 catch (const task_canceled &)
                                  {
                                      return AuthResult::None;
                                  }
-                                 catch(...)
+                                 catch (...)
                                  {
                                      return AuthResult::Fail;
                                  }
