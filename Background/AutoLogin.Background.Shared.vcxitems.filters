@@ -28,9 +28,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)macro.h" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)AutoLogin.Background.idl" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="Implementations">
       <UniqueIdentifier>{227b3ea7-256d-445c-b91e-d5638d5ce320}</UniqueIdentifier>
     </Filter>

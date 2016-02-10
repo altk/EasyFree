@@ -6,5 +6,5 @@
 
 	<PropertyGroup>
 		<BuildDependsOn>CheckWarningLevel;$(BuildDependsOn)</BuildDependsOn>
-	</PropertyGroup>  
+	</PropertyGroup>
 </Project>

@@ -32,7 +32,7 @@
 		<PlatformToolset Condition="'$(ApplicationType)' == 'Windows Store'">v140</PlatformToolset>
 		<PlatformToolset Condition="'$(ApplicationType)' == 'Windows Phone'">v120_wp81</PlatformToolset>
 	</PropertyGroup>
-		
+
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
 		<UseDebugLibraries>true</UseDebugLibraries>
 	</PropertyGroup>
@@ -44,19 +44,14 @@
 	<PropertyGroup>
 		<OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
 		<IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
+		<UnmergedWinmdDirectory>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\UnmergedWinMD</UnmergedWinmdDirectory>
+		<MergedWinmdDirectory>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\MergedWinMD</MergedWinmdDirectory>
 		<GeneratedFilesDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\Generated Files\</GeneratedFilesDir>
 		<GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>    
 		<GenerateManifest>false</GenerateManifest>
 	</PropertyGroup>
 	
 	<ItemDefinitionGroup>
-		<Midl>
-			<SuppressStartupBanner>true</SuppressStartupBanner>
-			<GenerateTypeLibrary>false</GenerateTypeLibrary>
-			<GenerateClientFiles>None</GenerateClientFiles>
-			<GenerateServerFiles>None</GenerateServerFiles>
-			<GenerateStublessProxies>false</GenerateStublessProxies>
-		</Midl>
 		<ClCompile>
 			<PreprocessorDefinitions Condition="'$(ApplicationType)' == 'Windows Phone'">WINDOWS_PHONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 			<PreprocessorDefinitions Condition="'$(ApplicationType)' == 'Windows Store'">UNIVERSAL_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -127,5 +122,29 @@
 			<PreprocessorDefinitions>WIN32;_ARM_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 		</ClCompile>
 	</ItemDefinitionGroup>
-			
+
+	<Target Name="mdmerge" AfterTargets="Midl" Inputs="@(Midl -> '%(MetadataFileName)')" Outputs="$(MergedWinmdDirectory)\$(RootNamespace).winmd">
+		<PropertyGroup>
+			<MdMergeExe>"$(WindowsSdkDir)\bin\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
+		</PropertyGroup>
+		<ItemGroup Condition="'$(ApplicationTypeRevision)' == '8.1'">
+			<MetaDataDir Include="$(WindowsSDK_MetadataPath)" />
+		</ItemGroup>
+		<ItemGroup Condition="'$(ApplicationTypeRevision)' == '10.0'">
+			<MetaDataDir Include="$(WindowsSDK_MetadataPath)\Windows.Foundation.FoundationContract\1.0.0.0" />
+			<MetaDataDir Include="$(WindowsSDK_MetadataPath)\Windows.Foundation.UniversalApiContract\1.0.0.0" />
+		</ItemGroup>
+		<Exec Command="$(MdMergeExe) -v @(MetaDataDir -> '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(MergedWinmdDirectory)&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:$(RootNamespace):3" />
+	</Target>
+
+	<ItemGroup>
+		<CopyMergedWinMD Include="$(MergedWinmdDirectory)\$(RootNamespace).winmd" />
+	</ItemGroup>
+	
+	<Target Name="CopyMergedWinMD" BeforeTargets="Link" Outputs="@(CopiedWinMDFile)">
+		<Copy SourceFiles="@(CopyMergedWinMD)" DestinationFolder="$(Outdir)" SkipUnchangedFiles="true">
+			<Output TaskParameter="CopiedFiles" ItemName="CopiedWinMDFile" />
+		</Copy>
+	</Target>
+
 </Project>
