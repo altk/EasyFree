@@ -468,11 +468,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Background\AutoLogin.Background.UWP\AutoLogin.Background.UWP.vcxproj">
-      <Project>{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="AutoLogin.UWP_StoreKey.pfx" />
   </ItemGroup>
   <ItemGroup>

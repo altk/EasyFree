@@ -4,11 +4,19 @@
 #include <crtdbg.h>
 
 #ifndef CONSTEXPR
+#ifdef WINDOWS_PHONE
 #define CONSTEXPR const
+#elif UNIVERSAL_WINDOWS
+#define CONSTEXPR constexpr
+#endif
 #endif
 
 #ifndef NOEXCEPT
+#ifdef WINDOWS_PHONE
 #define NOEXCEPT throw()
+#elif UNIVERSAL_WINDOWS
+#define NOEXCEPT noexcept
+#endif
 #endif
 
 #ifndef NOVTABLE

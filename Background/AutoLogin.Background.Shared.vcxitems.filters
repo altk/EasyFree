@@ -25,6 +25,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\LoginTask.h">
       <Filter>Implementations</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)macro.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)AutoLogin.Background.idl" />
@@ -36,5 +37,8 @@
     <Filter Include="CrossPlatform">
       <UniqueIdentifier>{091c254a-7d03-4ec6-b0f9-68fe5513c7d4}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)AutoLogin.Background.def" />
   </ItemGroup>
 </Project>
