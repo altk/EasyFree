@@ -125,15 +125,13 @@ task<AuthResult> MosMetroAuthorizer::AuthAsync() NOEXCEPT
 
         auto licenseCheckTask = create_task(LicenseChecker::Check);
 
-        return httpClient.GetAsync(L"http://wi-fi.ru")
+        return httpClient.GetAsync(L"http://httpbin.org/status/500")
                          .then([licenseCheckTask](ComPtr<IHttpResponseMessage> response) -> task<ComPtr<IBuffer>>
                              {
-                                 const auto statusCode = GetStatusCode(response);
-
-                                 /*if (statusCode == HttpStatusCode_Ok)
+                                 if (GetStatusCode(response) == 500)
                                  {
                                      cancel_current_task();
-                                 }*/
+                                 }
 
                                  return licenseCheckTask.then([response](bool licenceOk) -> task<ComPtr<IBuffer>>
                                      {
@@ -161,7 +159,7 @@ task<AuthResult> MosMetroAuthorizer::AuthAsync() NOEXCEPT
                                  {
                                      cancel_current_task();
                                  }
-                                 
+
                                  auto headers = unordered_map<HttpHeader, wstring>
                                          {
                                              {HttpHeader::Accept, AcceptHeaderValue},

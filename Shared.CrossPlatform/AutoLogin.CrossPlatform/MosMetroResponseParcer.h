@@ -10,6 +10,14 @@ namespace AutoLogin
     {
         class MosMetroResponseParser final
         {
+            struct ComparePredicate final
+            {
+                bool operator()(char left, char right) const NOEXCEPT
+                {
+                    return tolower(left) == right;
+                }
+            };
+
         public:
             static PostData GetPostData(const char *source,
                                         uint_fast32_t sourceLen) NOEXCEPT
@@ -32,7 +40,8 @@ namespace AutoLogin
                 auto formBeginTagPointer = find_end(source,
                                                     source + sourceLen,
                                                     formBeginTag,
-                                                    formBeginTag + formBeginTagLen);
+                                                    formBeginTag + formBeginTagLen,
+                                                    ComparePredicate());
 
                 if (formBeginTagPointer == source + sourceLen)
                 {
@@ -42,7 +51,8 @@ namespace AutoLogin
                 auto formEndTagPointer = search(formBeginTagPointer,
                                                 source + sourceLen,
                                                 formEndTag,
-                                                formEndTag + formEndTagLen);
+                                                formEndTag + formEndTagLen,
+                                                ComparePredicate());
 
                 auto temp = string(formBeginTagPointer, formEndTagPointer + formEndTagLen);
 
@@ -77,7 +87,7 @@ namespace AutoLogin
                     return result;
                 }
 
-                /*char headBeginTag[] = "<head";
+                char headBeginTag[] = "<head";
                 const auto headBeginTagLen = extent<decltype(headBeginTag)>::value - 1;
 
                 char headEndTag[] = "</head>";
@@ -86,7 +96,8 @@ namespace AutoLogin
                 auto formBeginTagPointer = find_end(source,
                                                     source + sourceLen,
                                                     headBeginTag,
-                                                    headBeginTag + headBeginTagLen);
+                                                    headBeginTag + headBeginTagLen,
+                                                    ComparePredicate());
 
                 if (formBeginTagPointer == source + sourceLen)
                 {
@@ -96,11 +107,12 @@ namespace AutoLogin
                 auto formEndTagPointer = search(formBeginTagPointer,
                                                 source + sourceLen,
                                                 headEndTag,
-                                                headEndTag + headEndTagLen);
+                                                headEndTag + headEndTagLen,
+                                                ComparePredicate());
 
-                auto temp = string(formBeginTagPointer, formEndTagPointer + headEndTagLen);*/
+                auto temp = string(formBeginTagPointer, formEndTagPointer + headEndTagLen);
 
-                auto output = gumbo_parse(source);
+                auto output = gumbo_parse(temp.data());
 
                 if (output)
                 {

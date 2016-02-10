@@ -529,7 +529,7 @@ task<wstring> Application::RegisterBackgroundTask() NOEXCEPT
 												   &systemTriggerActivationFactory));
 
 						ComPtr<ISystemTrigger> systemTrigger;
-						Check(systemTriggerActivationFactory->Create(SystemTriggerType_TimeZoneChange,
+						Check(systemTriggerActivationFactory->Create(SystemTriggerType_NetworkStateChange,
 																	 false,
 																	 &systemTrigger));
 
