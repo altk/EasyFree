@@ -39,14 +39,14 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <AppxManifest Include="$(MSBuildThisFileDirectory)\WP\Package.appxmanifest" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)\WP\Package.StoreAssociation.xml" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">
       <UniqueIdentifier>{2ee7f155-7a3a-400b-ab59-67a8fa5f0690}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="WP\Package.appxmanifest" />
   </ItemGroup>
 </Project>

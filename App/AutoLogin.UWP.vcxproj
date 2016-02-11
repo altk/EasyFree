@@ -1,134 +1,133 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<PropertyGroup Label="Globals">
-		<ProjectGuid>{172efb8c-df85-444b-9220-2551b7443d62}</ProjectGuid>
-		<RootNamespace>AutoLogin</RootNamespace>
-		<DefaultLanguage>ru-RU</DefaultLanguage>
-		<MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
-		<AppContainerApplication>true</AppContainerApplication>
-		<ApplicationType>Windows Store</ApplicationType>
-		<WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
-		<WindowsTargetPlatformMinVersion>10.0.10240.0</WindowsTargetPlatformMinVersion>
-		<ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-		<EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
-		<ProjectName>AutoLogin.UWP</ProjectName>
-	</PropertyGroup>
-	<Import Project="$(SolutionDir)\Build\common.props" />
-	<Import Project="$(SolutionDir)\Build\midlrt.props" />
-	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-	<PropertyGroup>
-		<ConfigurationType>Application</ConfigurationType>
-	</PropertyGroup>
-	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-	<ImportGroup Label="Shared">
-		<Import Project="AutoLogin.Shared.vcxitems" Label="Shared" />
-		<Import Project="$(SolutionDir)\Shared.Windows\MTL\MTL.vcxitems" Label="Shared" />
-		<Import Project="$(SolutionDir)\Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems" Label="Shared" />
-		<Import Project="$(SolutionDir)\Shared.Windows\AutoLogin.Windows\AutoLogin.Windows.vcxitems" Label="Shared" />
-	</ImportGroup>
-	<PropertyGroup>
-		<IgnoreImportLibrary>true</IgnoreImportLibrary>
-	</PropertyGroup>
-	<PropertyGroup>
-		<PackageCertificateKeyFile>$(MSBuildThisFileDirectory)\UWP\AutoLogin.UWP_StoreKey.pfx</PackageCertificateKeyFile>
-		<PackageCertificateThumbprint>63EE64734A35A62C1A5F2BF37520D4BD73745381</PackageCertificateThumbprint>
-		<AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
-		<AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-		<AppxBundle>Never</AppxBundle>
-		<AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
-	</PropertyGroup>
-	<ItemGroup>
-		<AppxManifest Include="$(MSBuildThisFileDirectory)\UWP\Package.appxmanifest">
-			<SubType>Designer</SubType>
-		</AppxManifest>
-	</ItemGroup>
-	<ItemGroup>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square150x150Logo.scale-100.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square150x150Logo.scale-125.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square150x150Logo.scale-150.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square150x150Logo.scale-200.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square150x150Logo.scale-400.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.scale-100_altform-unplated.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.scale-125_altform-unplated.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.scale-150_altform-unplated.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.scale-200.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.scale-400.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.targetsize-16_altform-unplated.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.targetsize-256_altform-unplated.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.targetsize-48_altform-unplated.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square71x71Logo.scale-100.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square71x71Logo.scale-125.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square71x71Logo.scale-150.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square71x71Logo.scale-200.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square71x71Logo.scale-400.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\StoreLogo.scale-100.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\StoreLogo.scale-125.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\StoreLogo.scale-150.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\StoreLogo.scale-200.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-		<Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\StoreLogo.scale-400.png">
-			<DeploymentContent>true</DeploymentContent>
-		</Image>
-	</ItemGroup>
-	<ItemGroup>
-		<None Include="$(MSBuildThisFileDirectory)\UWP\AutoLogin.UWP_StoreKey.pfx" />
-	</ItemGroup>
-	<ItemGroup>
-		<None Include="$(MSBuildThisFileDirectory)\UWP\Package.StoreAssociation.xml" />
-	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="$(SolutionDir)\Background\AutoLogin.Background.UWP.vcxproj">
-			<Project>{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}</Project>
-		</ProjectReference>
-	</ItemGroup>
-	<Import Project="$(SolutionDir)\Build\common.targets" />
-	<Import Project="$(SolutionDir)\Build\midlrt.targets" />
-	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{172efb8c-df85-444b-9220-2551b7443d62}</ProjectGuid>
+    <RootNamespace>AutoLogin</RootNamespace>
+    <DefaultLanguage>ru-RU</DefaultLanguage>
+    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>true</AppContainerApplication>
+    <ApplicationType>Windows Store</ApplicationType>
+    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformMinVersion>10.0.10240.0</WindowsTargetPlatformMinVersion>
+    <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
+    <EnableDotNetNativeCompatibleProfile>true</EnableDotNetNativeCompatibleProfile>
+    <ProjectName>AutoLogin.UWP</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\Build\common.props" />
+  <Import Project="$(SolutionDir)\Build\midlrt.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup>
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="Shared">
+    <Import Project="AutoLogin.Shared.vcxitems" Label="Shared" />
+    <Import Project="$(SolutionDir)\Shared.Windows\MTL\MTL.vcxitems" Label="Shared" />
+    <Import Project="$(SolutionDir)\Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems" Label="Shared" />
+    <Import Project="$(SolutionDir)\Shared.Windows\AutoLogin.Windows\AutoLogin.Windows.vcxitems" Label="Shared" />
+  </ImportGroup>
+  <PropertyGroup>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageCertificateKeyFile>$(MSBuildThisFileDirectory)\UWP\AutoLogin.UWP_StoreKey.pfx</PackageCertificateKeyFile>
+    <PackageCertificateThumbprint>63EE64734A35A62C1A5F2BF37520D4BD73745381</PackageCertificateThumbprint>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+    <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+    <AppxBundle>Never</AppxBundle>
+    <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+  </PropertyGroup>
+  <ItemGroup>
+    <AppxManifest Include="UWP\Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square150x150Logo.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square150x150Logo.scale-125.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square150x150Logo.scale-150.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square150x150Logo.scale-200.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square150x150Logo.scale-400.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.scale-100_altform-unplated.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.scale-125_altform-unplated.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.scale-150_altform-unplated.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.scale-200.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.scale-400.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.targetsize-16_altform-unplated.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.targetsize-256_altform-unplated.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square44x44Logo.targetsize-48_altform-unplated.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square71x71Logo.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square71x71Logo.scale-125.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square71x71Logo.scale-150.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square71x71Logo.scale-200.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\Square71x71Logo.scale-400.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\StoreLogo.scale-100.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\StoreLogo.scale-125.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\StoreLogo.scale-150.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\StoreLogo.scale-200.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+    <Image Include="$(MSBuildThisFileDirectory)\UWP\Assets\StoreLogo.scale-400.png">
+      <DeploymentContent>true</DeploymentContent>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)\UWP\AutoLogin.UWP_StoreKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)\UWP\Package.StoreAssociation.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(SolutionDir)\Background\AutoLogin.Background.UWP.vcxproj">
+      <Project>{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(SolutionDir)\Build\common.targets" />
+  <Import Project="$(SolutionDir)\Build\midlrt.targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
