@@ -50,7 +50,7 @@
 		<GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>    
 		<GenerateManifest>false</GenerateManifest>
 	</PropertyGroup>
-	
+
 	<ItemDefinitionGroup>
 		<ClCompile>
 			<PreprocessorDefinitions Condition="'$(ApplicationType)' == 'Windows Phone'">WINDOWS_PHONE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -59,16 +59,13 @@
 			<RuntimeTypeInfo>false</RuntimeTypeInfo>
 			<CompileAsWinRT>false</CompileAsWinRT>
 			<CompileAsManaged>false</CompileAsManaged>
-			<WarningLevel>Level4</WarningLevel>
-			<ObjectFileName>$(IntDir)</ObjectFileName>
-			<ProgramDataBaseFileName>$(OutDir)</ProgramDataBaseFileName>
 		</ClCompile>
 		<Link>
 			<GenerateMapFile>false</GenerateMapFile>
 			<SubSystem>Windows</SubSystem>
 		</Link>
 	</ItemDefinitionGroup>
-	
+
 	<ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
 		<Midl>
 			<PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -93,11 +90,13 @@
 			<Optimization>MaxSpeed</Optimization>
 			<FunctionLevelLinking>true</FunctionLevelLinking>
 			<IntrinsicFunctions>true</IntrinsicFunctions>
+			<WholeProgramOptimization>true</WholeProgramOptimization>
 		</ClCompile>
 		<Link>
 			<EnableCOMDATFolding>true</EnableCOMDATFolding>
 			<OptimizeReferences>true</OptimizeReferences>
 			<GenerateDebugInformation>false</GenerateDebugInformation>
+			<LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
 		</Link>
 		<ResourceCompile>
 			<PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
