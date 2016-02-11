@@ -13,12 +13,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Module.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)AutoLogin.idl" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)pch.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Implementations\Application.h">
       <Filter>Implementations</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)macro.h" />
   </ItemGroup>
 </Project>

@@ -3,15 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{BD3A3789-27B5-49EE-9F09-E74848B3D5AC}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App", "App", "{BD3A3789-27B5-49EE-9F09-E74848B3D5AC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Background", "Background", "{08C8F0ED-C719-42CF-959B-B84FB66B7AEE}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin.WP81", "Apps\AutoLogin.WP81\AutoLogin.WP81.vcxproj", "{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin.UWP", "Apps\AutoLogin.UWP\AutoLogin.UWP.vcxproj", "{172EFB8C-DF85-444B-9220-2551B7443D62}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin.Shared", "Apps\AutoLogin.Shared\AutoLogin.Shared.vcxitems", "{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared.CrossPlatform", "Shared.CrossPlatform", "{99937BD2-FCC1-435E-897F-9EB88F202EC0}"
 EndProject
@@ -49,38 +43,44 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{91F26518
 		Build\MidlRT.xml = Build\MidlRT.xml
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin.Shared", "App\AutoLogin.Shared.vcxitems", "{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin.WP81", "App\AutoLogin.WP81.vcxproj", "{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoLogin.UWP", "App\AutoLogin.UWP.vcxproj", "{172EFB8C-DF85-444B-9220-2551B7443D62}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Shared.CrossPlatform\cryptopp\cryptopp.vcxitems*{568ec50b-0796-4514-9d13-c48c2245bbc6}*SharedItemsImports = 9
-		Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems*{c4171d98-d049-453a-bad3-b2a409419126}*SharedItemsImports = 4
-		Shared.Windows\MTL\MTL.vcxitems*{c4171d98-d049-453a-bad3-b2a409419126}*SharedItemsImports = 4
-		Shared.CrossPlatform\gumbo\gumbo.vcxitems*{c4171d98-d049-453a-bad3-b2a409419126}*SharedItemsImports = 4
-		Background\AutoLogin.Background.Shared.vcxitems*{c4171d98-d049-453a-bad3-b2a409419126}*SharedItemsImports = 4
-		Shared.CrossPlatform\AutoLogin.CrossPlatform\AutoLogin.CrossPlatform.vcxitems*{c4171d98-d049-453a-bad3-b2a409419126}*SharedItemsImports = 4
-		Shared.CrossPlatform\cryptopp\cryptopp.vcxitems*{c4171d98-d049-453a-bad3-b2a409419126}*SharedItemsImports = 4
 		Shared.Windows\AutoLogin.Windows\AutoLogin.Windows.vcxitems*{c4171d98-d049-453a-bad3-b2a409419126}*SharedItemsImports = 4
+		Shared.CrossPlatform\AutoLogin.CrossPlatform\AutoLogin.CrossPlatform.vcxitems*{c4171d98-d049-453a-bad3-b2a409419126}*SharedItemsImports = 4
+		Shared.Windows\MTL\MTL.vcxitems*{c4171d98-d049-453a-bad3-b2a409419126}*SharedItemsImports = 4
+		Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems*{c4171d98-d049-453a-bad3-b2a409419126}*SharedItemsImports = 4
+		Shared.CrossPlatform\cryptopp\cryptopp.vcxitems*{c4171d98-d049-453a-bad3-b2a409419126}*SharedItemsImports = 4
+		Background\AutoLogin.Background.Shared.vcxitems*{c4171d98-d049-453a-bad3-b2a409419126}*SharedItemsImports = 4
+		Shared.CrossPlatform\gumbo\gumbo.vcxitems*{c4171d98-d049-453a-bad3-b2a409419126}*SharedItemsImports = 4
 		Shared.Windows\MTL\MTL.vcxitems*{8f74a2b9-8385-4336-a294-a64e3947e266}*SharedItemsImports = 9
 		Shared.CrossPlatform\AutoLogin.CrossPlatform\AutoLogin.CrossPlatform.vcxitems*{ca6ef515-9720-4f58-b4a7-e8cb7a805177}*SharedItemsImports = 9
 		Background\AutoLogin.Background.Shared.vcxitems*{99b70b50-eb7b-4512-a146-b89b2092287d}*SharedItemsImports = 9
 		Shared.Windows\AutoLogin.Windows\AutoLogin.Windows.vcxitems*{9ea09251-f176-47ab-8824-b1e0981046bf}*SharedItemsImports = 9
-		Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems*{172efb8c-df85-444b-9220-2551b7443d62}*SharedItemsImports = 4
-		Shared.Windows\MTL\MTL.vcxitems*{172efb8c-df85-444b-9220-2551b7443d62}*SharedItemsImports = 4
-		Apps\AutoLogin.Shared\AutoLogin.Shared.vcxitems*{172efb8c-df85-444b-9220-2551b7443d62}*SharedItemsImports = 4
 		Shared.Windows\AutoLogin.Windows\AutoLogin.Windows.vcxitems*{172efb8c-df85-444b-9220-2551b7443d62}*SharedItemsImports = 4
+		Shared.Windows\MTL\MTL.vcxitems*{172efb8c-df85-444b-9220-2551b7443d62}*SharedItemsImports = 4
+		App\AutoLogin.Shared.vcxitems*{172efb8c-df85-444b-9220-2551b7443d62}*SharedItemsImports = 4
+		Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems*{172efb8c-df85-444b-9220-2551b7443d62}*SharedItemsImports = 4
 		Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems*{752c07d3-bec7-435d-aa11-fbbc00b75233}*SharedItemsImports = 9
-		Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems*{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}*SharedItemsImports = 4
-		Shared.Windows\MTL\MTL.vcxitems*{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}*SharedItemsImports = 4
-		Shared.CrossPlatform\gumbo\gumbo.vcxitems*{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}*SharedItemsImports = 4
-		Background\AutoLogin.Background.Shared.vcxitems*{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}*SharedItemsImports = 4
-		Shared.CrossPlatform\AutoLogin.CrossPlatform\AutoLogin.CrossPlatform.vcxitems*{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}*SharedItemsImports = 4
-		Shared.CrossPlatform\cryptopp\cryptopp.vcxitems*{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}*SharedItemsImports = 4
 		Shared.Windows\AutoLogin.Windows\AutoLogin.Windows.vcxitems*{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}*SharedItemsImports = 4
-		Apps\AutoLogin.Shared\AutoLogin.Shared.vcxitems*{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}*SharedItemsImports = 9
+		Shared.CrossPlatform\AutoLogin.CrossPlatform\AutoLogin.CrossPlatform.vcxitems*{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}*SharedItemsImports = 4
+		Shared.Windows\MTL\MTL.vcxitems*{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}*SharedItemsImports = 4
+		Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems*{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}*SharedItemsImports = 4
+		Shared.CrossPlatform\cryptopp\cryptopp.vcxitems*{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}*SharedItemsImports = 4
+		Background\AutoLogin.Background.Shared.vcxitems*{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}*SharedItemsImports = 4
+		Shared.CrossPlatform\gumbo\gumbo.vcxitems*{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}*SharedItemsImports = 4
+		App\AutoLogin.Shared.vcxitems*{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}*SharedItemsImports = 9
 		Shared.CrossPlatform\gumbo\gumbo.vcxitems*{a9f722c7-dff7-43ad-a566-03f7406007ad}*SharedItemsImports = 9
-		Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems*{56342b2c-8301-4be0-a5a4-a96fd9c76aee}*SharedItemsImports = 4
-		Shared.Windows\MTL\MTL.vcxitems*{56342b2c-8301-4be0-a5a4-a96fd9c76aee}*SharedItemsImports = 4
-		Apps\AutoLogin.Shared\AutoLogin.Shared.vcxitems*{56342b2c-8301-4be0-a5a4-a96fd9c76aee}*SharedItemsImports = 4
 		Shared.Windows\AutoLogin.Windows\AutoLogin.Windows.vcxitems*{56342b2c-8301-4be0-a5a4-a96fd9c76aee}*SharedItemsImports = 4
+		Shared.Windows\MTL\MTL.vcxitems*{56342b2c-8301-4be0-a5a4-a96fd9c76aee}*SharedItemsImports = 4
+		App\AutoLogin.Shared.vcxitems*{56342b2c-8301-4be0-a5a4-a96fd9c76aee}*SharedItemsImports = 4
+		Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems*{56342b2c-8301-4be0-a5a4-a96fd9c76aee}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -94,56 +94,6 @@ Global
 		ReleaseTest|x86 = ReleaseTest|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|ARM.ActiveCfg = Debug|ARM
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|ARM.Build.0 = Debug|ARM
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|ARM.Deploy.0 = Debug|ARM
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x64.ActiveCfg = Debug|Win32
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x64.Build.0 = Debug|Win32
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x64.Deploy.0 = Debug|Win32
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x86.ActiveCfg = Debug|Win32
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x86.Build.0 = Debug|Win32
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x86.Deploy.0 = Debug|Win32
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|ARM.ActiveCfg = Release|ARM
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|ARM.Build.0 = Release|ARM
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|ARM.Deploy.0 = Release|ARM
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x64.ActiveCfg = Release|Win32
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x86.ActiveCfg = Release|Win32
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x86.Build.0 = Release|Win32
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x86.Deploy.0 = Release|Win32
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|ARM.ActiveCfg = ReleaseTest|ARM
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|ARM.Build.0 = ReleaseTest|ARM
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|ARM.Deploy.0 = ReleaseTest|ARM
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|x64.ActiveCfg = ReleaseTest|Win32
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|x86.ActiveCfg = ReleaseTest|Win32
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|x86.Build.0 = ReleaseTest|Win32
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|x86.Deploy.0 = ReleaseTest|Win32
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|ARM.ActiveCfg = Debug|ARM
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|ARM.Build.0 = Debug|ARM
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|ARM.Deploy.0 = Debug|ARM
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|x64.ActiveCfg = Debug|Win32
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|x64.Build.0 = Debug|Win32
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|x64.Deploy.0 = Debug|Win32
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|x86.ActiveCfg = Debug|Win32
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|x86.Build.0 = Debug|Win32
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|x86.Deploy.0 = Debug|Win32
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|ARM.ActiveCfg = Release|ARM
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|ARM.Build.0 = Release|ARM
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|ARM.Deploy.0 = Release|ARM
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x64.ActiveCfg = Release|x64
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x64.Build.0 = Release|x64
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x64.Deploy.0 = Release|x64
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x86.ActiveCfg = Release|Win32
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x86.Build.0 = Release|Win32
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x86.Deploy.0 = Release|Win32
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|ARM.ActiveCfg = ReleaseTest|ARM
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|ARM.Build.0 = ReleaseTest|ARM
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|ARM.Deploy.0 = ReleaseTest|ARM
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|x64.ActiveCfg = ReleaseTest|x64
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|x64.Build.0 = ReleaseTest|x64
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|x64.Deploy.0 = ReleaseTest|x64
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|x86.ActiveCfg = ReleaseTest|Win32
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|x86.Build.0 = ReleaseTest|Win32
-		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|x86.Deploy.0 = ReleaseTest|Win32
 		{C4171D98-D049-453A-BAD3-B2A409419126}.Debug|ARM.ActiveCfg = Debug|ARM
 		{C4171D98-D049-453A-BAD3-B2A409419126}.Debug|ARM.Build.0 = Debug|ARM
 		{C4171D98-D049-453A-BAD3-B2A409419126}.Debug|x64.ActiveCfg = Debug|x64
@@ -178,14 +128,65 @@ Global
 		{5E0CEFF9-0FFE-498B-B82C-04F72E2217B6}.ReleaseTest|x64.Build.0 = Release|Win32
 		{5E0CEFF9-0FFE-498B-B82C-04F72E2217B6}.ReleaseTest|x86.ActiveCfg = Release|Win32
 		{5E0CEFF9-0FFE-498B-B82C-04F72E2217B6}.ReleaseTest|x86.Build.0 = Release|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|ARM.ActiveCfg = Debug|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|ARM.Build.0 = Debug|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|ARM.Deploy.0 = Debug|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x64.ActiveCfg = Debug|x64
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x64.Build.0 = Debug|x64
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x64.Deploy.0 = Debug|x64
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x86.ActiveCfg = Debug|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x86.Build.0 = Debug|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Debug|x86.Deploy.0 = Debug|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|ARM.ActiveCfg = Release|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|ARM.Build.0 = Release|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|ARM.Deploy.0 = Release|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x64.ActiveCfg = Release|x64
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x64.Build.0 = Release|x64
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x64.Deploy.0 = Release|x64
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x86.ActiveCfg = Release|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x86.Build.0 = Release|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.Release|x86.Deploy.0 = Release|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|ARM.ActiveCfg = Release|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|ARM.Build.0 = Release|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|ARM.Deploy.0 = Release|ARM
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|x64.ActiveCfg = Release|x64
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|x64.Build.0 = Release|x64
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|x64.Deploy.0 = Release|x64
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|x86.ActiveCfg = Release|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|x86.Build.0 = Release|Win32
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE}.ReleaseTest|x86.Deploy.0 = Release|Win32
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|ARM.ActiveCfg = Debug|ARM
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|ARM.Build.0 = Debug|ARM
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|ARM.Deploy.0 = Debug|ARM
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|x64.ActiveCfg = Debug|x64
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|x64.Build.0 = Debug|x64
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|x64.Deploy.0 = Debug|x64
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|x86.ActiveCfg = Debug|Win32
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|x86.Build.0 = Debug|Win32
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Debug|x86.Deploy.0 = Debug|Win32
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|ARM.ActiveCfg = Release|ARM
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|ARM.Build.0 = Release|ARM
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|ARM.Deploy.0 = Release|ARM
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x64.ActiveCfg = Release|x64
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x64.Build.0 = Release|x64
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x64.Deploy.0 = Release|x64
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x86.ActiveCfg = Release|Win32
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x86.Build.0 = Release|Win32
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.Release|x86.Deploy.0 = Release|Win32
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|ARM.ActiveCfg = Release|ARM
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|ARM.Build.0 = Release|ARM
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|ARM.Deploy.0 = Release|ARM
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|x64.ActiveCfg = Release|x64
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|x64.Build.0 = Release|x64
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|x64.Deploy.0 = Release|x64
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|x86.ActiveCfg = Release|Win32
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|x86.Build.0 = Release|Win32
+		{172EFB8C-DF85-444B-9220-2551B7443D62}.ReleaseTest|x86.Deploy.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE} = {BD3A3789-27B5-49EE-9F09-E74848B3D5AC}
-		{172EFB8C-DF85-444B-9220-2551B7443D62} = {BD3A3789-27B5-49EE-9F09-E74848B3D5AC}
-		{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7} = {BD3A3789-27B5-49EE-9F09-E74848B3D5AC}
 		{8F74A2B9-8385-4336-A294-A64E3947E266} = {FFB57737-5AEC-46E1-BB8F-C44E1A2ADD00}
 		{A9F722C7-DFF7-43AD-A566-03F7406007AD} = {99937BD2-FCC1-435E-897F-9EB88F202EC0}
 		{568EC50B-0796-4514-9D13-C48C2245BBC6} = {99937BD2-FCC1-435E-897F-9EB88F202EC0}
@@ -195,5 +196,8 @@ Global
 		{99B70B50-EB7B-4512-A146-B89B2092287D} = {08C8F0ED-C719-42CF-959B-B84FB66B7AEE}
 		{C4171D98-D049-453A-BAD3-B2A409419126} = {08C8F0ED-C719-42CF-959B-B84FB66B7AEE}
 		{5E0CEFF9-0FFE-498B-B82C-04F72E2217B6} = {08C8F0ED-C719-42CF-959B-B84FB66B7AEE}
+		{45D41ACC-2C3C-43D2-BC10-02AA73FFC7C7} = {BD3A3789-27B5-49EE-9F09-E74848B3D5AC}
+		{56342B2C-8301-4BE0-A5A4-A96FD9C76AEE} = {BD3A3789-27B5-49EE-9F09-E74848B3D5AC}
+		{172EFB8C-DF85-444B-9220-2551B7443D62} = {BD3A3789-27B5-49EE-9F09-E74848B3D5AC}
 	EndGlobalSection
 EndGlobal

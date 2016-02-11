@@ -14,7 +14,7 @@
 	</ItemDefinitionGroup>
 	<ItemDefinitionGroup>
 		<Link>
-			<SubSystem>Console</SubSystem>
+			<SubSystem>Windows</SubSystem>
 			<ModuleDefinitionFile>AutoLogin.Background.def</ModuleDefinitionFile>
 			<WindowsMetadataFile>$(Outdir)\$(RootNamespace).winmd</WindowsMetadataFile>
 		</Link>

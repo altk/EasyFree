@@ -86,6 +86,7 @@
 			<PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 		</Midl>
 		<ClCompile>
+			<DebugInformationFormat>None</DebugInformationFormat>
 			<PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 			<Optimization>MaxSpeed</Optimization>
 			<FunctionLevelLinking>true</FunctionLevelLinking>
