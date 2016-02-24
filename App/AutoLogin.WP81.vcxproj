@@ -81,12 +81,12 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)\WP\Package.StoreAssociation.xml" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="$(SolutionDir)\Background\AutoLogin.Background.WP81.vcxproj">
       <Project>{c4171d98-d049-453a-bad3-b2a409419126}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Package.StoreAssociation.xml" />
   </ItemGroup>
   <Import Project="$(SolutionDir)\Build\common.targets" />
   <Import Project="$(SolutionDir)\Build\midlrt.targets" />

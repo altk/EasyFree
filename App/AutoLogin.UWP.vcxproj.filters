@@ -75,11 +75,11 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <AppxManifest Include="$(MSBuildThisFileDirectory)\UWP\Package.appxmanifest" />
+    <AppxManifest Include="UWP\Package.appxmanifest" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)\UWP\AutoLogin.UWP_StoreKey.pfx" />
-    <None Include="$(MSBuildThisFileDirectory)\UWP\Package.StoreAssociation.xml" />
+    <None Include="Package.StoreAssociation.xml" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Assets">

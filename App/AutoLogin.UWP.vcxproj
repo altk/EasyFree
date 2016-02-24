@@ -36,6 +36,7 @@
     <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
     <AppxBundle>Never</AppxBundle>
     <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
+    <AppxPackageDir>C:\GitHub\AutoLogin\AppPackages\AutoLogin.UWP\</AppxPackageDir>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="UWP\Package.appxmanifest">
@@ -120,12 +121,12 @@
     <None Include="$(MSBuildThisFileDirectory)\UWP\AutoLogin.UWP_StoreKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)\UWP\Package.StoreAssociation.xml" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="$(SolutionDir)\Background\AutoLogin.Background.UWP.vcxproj">
       <Project>{5e0ceff9-0ffe-498b-b82c-04f72e2217b6}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Package.StoreAssociation.xml" />
   </ItemGroup>
   <Import Project="$(SolutionDir)\Build\common.targets" />
   <Import Project="$(SolutionDir)\Build\midlrt.targets" />
