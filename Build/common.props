@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
 	<ItemGroup Label="ProjectConfigurations">
@@ -27,7 +28,7 @@
 			<Platform>ARM</Platform>
 		</ProjectConfiguration>
 	</ItemGroup>
-		
+
 	<PropertyGroup Label="Configuration">
 		<PlatformToolset Condition="'$(ApplicationType)' == 'Windows Store'">v140</PlatformToolset>
 		<PlatformToolset Condition="'$(ApplicationType)' == 'Windows Phone'">v120_wp81</PlatformToolset>
@@ -40,14 +41,14 @@
 		<UseDebugLibraries>false</UseDebugLibraries>
 		<WholeProgramOptimization>true</WholeProgramOptimization>
 	</PropertyGroup>
-	
+
 	<PropertyGroup>
 		<OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
 		<IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
 		<UnmergedWinmdDirectory>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\UnmergedWinMD</UnmergedWinmdDirectory>
 		<MergedWinmdDirectory>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\MergedWinMD</MergedWinmdDirectory>
 		<GeneratedFilesDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\Generated Files\</GeneratedFilesDir>
-		<GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>    
+		<GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
 		<GenerateManifest>false</GenerateManifest>
 	</PropertyGroup>
 
@@ -59,7 +60,6 @@
 			<RuntimeTypeInfo>false</RuntimeTypeInfo>
 			<CompileAsWinRT>false</CompileAsWinRT>
 			<CompileAsManaged>false</CompileAsManaged>
-			<RuntimeTypeInfo>true</RuntimeTypeInfo>
 		</ClCompile>
 		<Link>
 			<GenerateMapFile>false</GenerateMapFile>
@@ -103,8 +103,8 @@
 		<ResourceCompile>
 			<PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 		</ResourceCompile>
-	</ItemDefinitionGroup>	
-	
+	</ItemDefinitionGroup>
+
 	<ItemDefinitionGroup Condition="'$(Platform)' == 'Win32'">
 		<ClCompile>
 			<PreprocessorDefinitions>WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -135,13 +135,14 @@
 			<MetaDataDir Include="$(WindowsSDK_MetadataPath)\Windows.Foundation.FoundationContract\1.0.0.0" />
 			<MetaDataDir Include="$(WindowsSDK_MetadataPath)\Windows.Foundation.UniversalApiContract\1.0.0.0" />
 		</ItemGroup>
-		<Exec Command="$(MdMergeExe) -v @(MetaDataDir -> '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(MergedWinmdDirectory)&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:$(RootNamespace):3" />
+		<Exec
+			Command="$(MdMergeExe) -v @(MetaDataDir -> '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(MergedWinmdDirectory)&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:$(RootNamespace):3" />
 	</Target>
 
 	<ItemGroup>
 		<CopyMergedWinMD Include="$(MergedWinmdDirectory)\$(RootNamespace).winmd" />
 	</ItemGroup>
-	
+
 	<Target Name="CopyMergedWinMD" BeforeTargets="Link" Outputs="@(CopiedWinMDFile)">
 		<Copy SourceFiles="@(CopyMergedWinMD)" DestinationFolder="$(Outdir)" SkipUnchangedFiles="true">
 			<Output TaskParameter="CopiedFiles" ItemName="CopiedWinMDFile" />

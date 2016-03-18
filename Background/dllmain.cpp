@@ -5,40 +5,39 @@
 #include <MTL.h>
 #include <Implementations\LoginTask.h>
 
-
 BOOL APIENTRY DllMain(HMODULE, DWORD, LPVOID) NOEXCEPT
 {
-	return TRUE;
+    return TRUE;
 }
 
 HRESULT WINAPI DllGetActivationFactory(HSTRING activatableClassId,
-									   IActivationFactory** factory) NOEXCEPT
+                                       IActivationFactory **factory) NOEXCEPT
 {
-	using namespace MTL;
-	using namespace ABI::AutoLogin;
-	using namespace AutoLogin::Background::Implementations;
+    using namespace MTL;
+    using namespace ABI::AutoLogin;
+    using namespace AutoLogin::Background::Implementations;
 
-	*factory = nullptr;
-	
-	if (nullptr == activatableClassId || nullptr == factory)
-	{
-		return E_INVALIDARG;
-	}
+    *factory = nullptr;
 
-	if (HString(activatableClassId) != HString(RuntimeClass_AutoLogin_Background_LoginTask))
-	{
-		return E_NOINTERFACE;
-	}
+    if (nullptr == activatableClassId || nullptr == factory)
+    {
+        return E_INVALIDARG;
+    }
 
-	if (nullptr == (*factory = new(std::nothrow) ActivationFactory<LoginTask>()))
-	{
-		return E_OUTOFMEMORY;
-	}
+    if (HString(activatableClassId) != HString(RuntimeClass_AutoLogin_Background_LoginTask))
+    {
+        return E_NOINTERFACE;
+    }
 
-	return S_OK;
+    if (nullptr == (*factory = new(std::nothrow) ActivationFactory<LoginTask>()))
+    {
+        return E_OUTOFMEMORY;
+    }
+
+    return S_OK;
 }
 
 HRESULT WINAPI DllCanUnloadNow() NOEXCEPT
 {
-	return MTL::Module::CanUnload() ? S_OK : S_FALSE;
+    return MTL::Module::CanUnload() ? S_OK : S_FALSE;
 }

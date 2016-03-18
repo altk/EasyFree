@@ -1,7 +1,7 @@
 #include <pch.h>
 #include "LicenseChecker.h"
 #include "Base64.h"
-#include <sha3.h>
+#include <sha256.h>
 #include <Windows.ApplicationModel.h>
 #include <MTL.h>
 
@@ -11,7 +11,6 @@ bool LicenseChecker::Check() NOEXCEPT
 {
     using namespace std;
     using namespace MTL;
-    using namespace CryptoPP;
     using namespace ABI::Windows::ApplicationModel;
 
     try
@@ -41,15 +40,17 @@ bool LicenseChecker::Check() NOEXCEPT
                 << publisherId.GetRawBuffer()
                 << packageVersion.Major
                 << packageVersion.Minor;
-        
+
         auto identity = identityStream.str();
 
-        array<byte, SHA3_512::DIGESTSIZE> digest;
-        SHA3_512().CalculateDigest(digest.data(),
-                                   reinterpret_cast<const byte*>(identity.data()),
-                                   sizeof(wchar_t) * identity.size());
+        array<uint8_t, SHA256_BLOCK_SIZE> digest;
+        SHA256_CTX ctx;
 
-        return Base64::Encode(reinterpret_cast<unsigned const char*>(digest.data()), digest.size()).compare("BBFX8TyLiZr8vG0fVK+wHcSnMgsBEA5+dWwFPvW/J2XpKudWRXfnD3NBs4Jftb9Xdffl+qWQfDqF2iBTLqqMlw==") == 0;
+        sha256_init(&ctx);
+        sha256_update(&ctx, reinterpret_cast<const byte*>(identity.data()), sizeof(wchar_t) * identity.size());
+        sha256_final(&ctx, digest.data());
+
+        return Base64::Encode(reinterpret_cast<unsigned const char* const>(digest.data()), digest.size()).compare("eD8MU7AO235vNPYDpCMXsu8LBopwquNLnW1qYjk8egY=") == 0;
     }
     catch (...)
     {

@@ -1,37 +1,35 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<PropertyGroup Label="Globals">
-		<ProjectGuid>{c4171d98-d049-453a-bad3-b2a409419126}</ProjectGuid>
-		<RootNamespace>AutoLogin.Background</RootNamespace>
-		<DefaultLanguage>ru-RU</DefaultLanguage>
-		<MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
-		<AppContainerApplication>true</AppContainerApplication>
-		<ApplicationType>Windows Phone</ApplicationType>		
-		<ApplicationTypeRevision>8.1</ApplicationTypeRevision>
-		<TargetPlatformIdentifier>WindowsPhoneApp</TargetPlatformIdentifier>
-	</PropertyGroup>
-	<Import Project="$(SolutionDir)\Build\common.props" />
-	<Import Project="$(SolutionDir)\Build\midlrt.props" />
-	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-	<PropertyGroup Label="Configuration">
-		<ConfigurationType>DynamicLibrary</ConfigurationType>
-	</PropertyGroup>
-	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-	<PropertyGroup>
-		<IgnoreImportLibrary>true</IgnoreImportLibrary>
-	</PropertyGroup>
-	<ImportGroup Label="Shared">
-		<Import Project="AutoLogin.Background.Shared.vcxitems" Label="Shared" />
-		<Import Project="$(SolutionDir)\Shared.Windows\MTL\MTL.vcxitems" Label="Shared" />
-		<Import Project="$(SolutionDir)\Shared.CrossPlatform\gumbo\gumbo.vcxitems" Label="Shared" />
-		<Import Project="$(SolutionDir)\Shared.CrossPlatform\cryptopp\cryptopp.vcxitems" Label="Shared" />
-		<Import Project="$(SolutionDir)\Shared.CrossPlatform\AutoLogin.CrossPlatform\AutoLogin.CrossPlatform.vcxitems"
-		        Label="Shared" />
-		<Import Project="$(SolutionDir)\Shared.Windows\AutoLogin.Windows\AutoLogin.Windows.vcxitems" Label="Shared" />
-		<Import Project="$(SolutionDir)\Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems" Label="Shared" />
-	</ImportGroup>
-	<Import Project="$(SolutionDir)\Build\common.targets" />
-	<Import Project="$(SolutionDir)\Build\midlrt.targets" />
-	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{c4171d98-d049-453a-bad3-b2a409419126}</ProjectGuid>
+    <RootNamespace>AutoLogin.Background</RootNamespace>
+    <DefaultLanguage>ru-RU</DefaultLanguage>
+    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>true</AppContainerApplication>
+    <ApplicationType>Windows Phone</ApplicationType>
+    <ApplicationTypeRevision>8.1</ApplicationTypeRevision>
+    <TargetPlatformIdentifier>WindowsPhoneApp</TargetPlatformIdentifier>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\Build\common.props" />
+  <Import Project="$(SolutionDir)\Build\midlrt.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+  </PropertyGroup>
+  <ImportGroup Label="Shared">
+    <Import Project="AutoLogin.Background.Shared.vcxitems" Label="Shared" />
+    <Import Project="$(SolutionDir)\Shared.Windows\MTL\MTL.vcxitems" Label="Shared" />
+    <Import Project="$(SolutionDir)\Shared.CrossPlatform\gumbo\gumbo.vcxitems" Label="Shared" />
+    <Import Project="$(SolutionDir)\Shared.CrossPlatform\AutoLogin.CrossPlatform\AutoLogin.CrossPlatform.vcxitems" Label="Shared" />
+    <Import Project="$(SolutionDir)\Shared.Windows\AutoLogin.Windows\AutoLogin.Windows.vcxitems" Label="Shared" />
+    <Import Project="$(SolutionDir)\Shared.CrossPlatform\AutoLogin.Resources\AutoLogin.Resources.vcxitems" Label="Shared" />
+    <Import Project="..\Shared.CrossPlatform\crypto-algorithms\crypto-algorithms.vcxitems" Label="Shared" />
+  </ImportGroup>
+  <Import Project="$(SolutionDir)\Build\common.targets" />
+  <Import Project="$(SolutionDir)\Build\midlrt.targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
