@@ -12,7 +12,7 @@ namespace AutoLogin
 
             virtual bool CanAuth(const std::wstring &connectionName) const NOEXCEPT override
             {
-                return connectionName.compare(L"MosMetro_Free") == 0;
+                return _wcsicmp(connectionName.data(), L"mosmetro_free") == 0 || _wcsicmp(connectionName.data(), L"aura") == 0;
             }
 
             virtual std::wstring GetRegistrationUrl() const NOEXCEPT override

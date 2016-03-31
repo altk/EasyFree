@@ -69,8 +69,4 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)util.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)vector.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)char_ref.rl" />
-    <None Include="$(MSBuildThisFileDirectory)tag.in" />
-  </ItemGroup>
 </Project>
