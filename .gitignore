@@ -250,3 +250,5 @@ paket-files/
 *.sln.iml
 *.db
 *.appxupload
+/App/AutoLogin_h.h
+/Background/AutoLogin.Background_h.h

@@ -7,7 +7,7 @@
 			<Configuration>Debug</Configuration>
 			<Platform>Win32</Platform>
 		</ProjectConfiguration>
-		<ProjectConfiguration Include="Debug|x64">
+		<ProjectConfiguration Include="Debug|x64" Condition="'$(ApplicationType)' == 'Windows Store'">
 			<Configuration>Debug</Configuration>
 			<Platform>x64</Platform>
 		</ProjectConfiguration>
@@ -19,7 +19,7 @@
 			<Configuration>Release</Configuration>
 			<Platform>Win32</Platform>
 		</ProjectConfiguration>
-		<ProjectConfiguration Include="Release|x64">
+		<ProjectConfiguration Include="Release|x64" Condition="'$(ApplicationType)' == 'Windows Store'">
 			<Configuration>Release</Configuration>
 			<Platform>x64</Platform>
 		</ProjectConfiguration>
@@ -43,6 +43,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
+		<OutputPath>$(SolutionDir)\AppPackages\</OutputPath>
 		<OutDir>$(SolutionDir)\Output\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutDir>
 		<IntDir>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</IntDir>
 		<UnmergedWinmdDirectory>$(SolutionDir)\Intermediate\$(Platform)\$(Configuration)\$(MSBuildProjectName)\UnmergedWinMD</UnmergedWinmdDirectory>
@@ -112,11 +113,11 @@
 		</ClCompile>
 	</ItemDefinitionGroup>
 
-	<ItemDefinitionGroup Condition="'$(Platform)' == 'x64'">
+	<!--<ItemDefinitionGroup Condition="'$(Platform)' == 'x64'">
 		<ClCompile>
 			<PreprocessorDefinitions>WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 		</ClCompile>
-	</ItemDefinitionGroup>
+	</ItemDefinitionGroup>-->
 
 	<ItemDefinitionGroup Condition="'$(Platform)' == 'ARM'">
 		<ClCompile>
