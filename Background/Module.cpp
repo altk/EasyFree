@@ -17,5 +17,5 @@ void Module::Decrement() NOEXCEPT
 
 bool Module::CanUnload() NOEXCEPT
 {
-	return _refCount > 0;
+    return InterlockedCompareExchange(&_refCount, 0, 0) == 0;
 }
